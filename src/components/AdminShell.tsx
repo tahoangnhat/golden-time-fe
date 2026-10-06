@@ -1,5 +1,5 @@
-import { Link, useRouterState } from "@tanstack/react-router";
-import { useState } from "react";
+import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
 import {
   LayoutDashboard,
   Users,
@@ -19,6 +19,7 @@ import {
   Search,
   ChevronDown,
 } from "lucide-react";
+import { api, logout, type UserProfile } from "@/lib/api";
 
 export const ADMIN_NAV = [
   { to: "/admin/dashboard", label: "Tổng quan", icon: LayoutDashboard },
@@ -46,7 +47,25 @@ export function AdminShell({
   children: React.ReactNode;
 }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const navigate = useNavigate();
   const [open, setOpen] = useState(false);
+  const [user, setUser] = useState<UserProfile | null>(null);
+  const [authorized, setAuthorized] = useState(false);
+  useEffect(() => {
+    let active = true;
+    api.me().then((profile) => {
+      if (!active) return;
+      if (profile.role !== "ADMIN") {
+        navigate({ to: profile.role === "SHOP_OWNER" ? "/business/dashboard" : "/home", replace: true });
+        return;
+      }
+      setUser(profile);
+      setAuthorized(true);
+    }).catch(() => navigate({ to: "/admin/login", replace: true }));
+    return () => { active = false; };
+  }, [navigate]);
+
+  if (!authorized) return <div className="min-h-screen grid place-items-center text-sm text-muted-foreground">Đang xác thực quyền quản trị…</div>;
 
   return (
     <div className="min-h-screen bg-[oklch(0.98_0.02_100)] text-foreground">
@@ -93,15 +112,14 @@ export function AdminShell({
             </div>
             <button className="relative h-9 w-9 grid place-items-center rounded-lg hover:bg-muted">
               <Bell className="h-5 w-5" />
-              <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-orange-500" />
             </button>
             <div className="hidden sm:flex items-center gap-2 pl-3 border-l border-border">
               <div className="h-9 w-9 rounded-full gt-gradient grid place-items-center text-white font-bold text-sm">
-                AD
+                {user?.fullName.split(/\s+/).slice(0, 2).map((word) => word[0]).join("") || "—"}
               </div>
               <div className="text-xs leading-tight">
-                <p className="font-semibold">Nguyễn Quản Trị</p>
-                <p className="text-muted-foreground">Super Admin</p>
+                <p className="font-semibold">{user?.fullName ?? "Chưa đăng nhập"}</p>
+                <p className="text-muted-foreground">{user?.email ?? "Quản trị"}</p>
               </div>
               <ChevronDown className="h-4 w-4 text-muted-foreground" />
             </div>
@@ -163,7 +181,7 @@ function SidebarInner({
       <div className="p-3 border-t border-border">
         <Link
           to="/admin/login"
-          onClick={onNavigate}
+          onClick={() => { void logout(); onNavigate?.(); }}
           className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-foreground/70 hover:bg-muted"
         >
           <LogOut className="h-4 w-4" />

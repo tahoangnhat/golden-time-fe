@@ -20,26 +20,27 @@ import { Route as MapRouteImport } from './routes/map'
 import { Route as KnowledgeRouteImport } from './routes/knowledge'
 import { Route as HomeRouteImport } from './routes/home'
 import { Route as DownloadRouteImport } from './routes/download'
-import { Route as ContentAdminRouteImport } from './routes/content-admin'
 import { Route as ContactRouteImport } from './routes/contact'
 import { Route as CompareRouteImport } from './routes/compare'
 import { Route as CartRouteImport } from './routes/cart'
+import { Route as BusinessRouteImport } from './routes/business'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ShopIndexRouteImport } from './routes/shop.index'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
-import { Route as ShopTraceabilityRouteImport } from './routes/shop.traceability'
-import { Route as ShopSupportRouteImport } from './routes/shop.support'
-import { Route as ShopReviewsRouteImport } from './routes/shop.reviews'
-import { Route as ShopPromotionsRouteImport } from './routes/shop.promotions'
-import { Route as ShopProfileRouteImport } from './routes/shop.profile'
-import { Route as ShopProductsRouteImport } from './routes/shop.products'
-import { Route as ShopOrdersRouteImport } from './routes/shop.orders'
-import { Route as ShopLoginRouteImport } from './routes/shop.login'
-import { Route as ShopInventoryRouteImport } from './routes/shop.inventory'
-import { Route as ShopDashboardRouteImport } from './routes/shop.dashboard'
 import { Route as KnowledgeSlugRouteImport } from './routes/knowledge.$slug'
+import { Route as BusinessTraceabilityRouteImport } from './routes/business.traceability'
+import { Route as BusinessSupportRouteImport } from './routes/business.support'
+import { Route as BusinessReviewsRouteImport } from './routes/business.reviews'
+import { Route as BusinessRegisterRouteImport } from './routes/business.register'
+import { Route as BusinessPromotionsRouteImport } from './routes/business.promotions'
+import { Route as BusinessProfileRouteImport } from './routes/business.profile'
+import { Route as BusinessProductsRouteImport } from './routes/business.products'
+import { Route as BusinessOrdersRouteImport } from './routes/business.orders'
+import { Route as BusinessLoginRouteImport } from './routes/business.login'
+import { Route as BusinessInventoryRouteImport } from './routes/business.inventory'
+import { Route as BusinessDashboardRouteImport } from './routes/business.dashboard'
 import { Route as AppLoginRouteImport } from './routes/app.login'
 import { Route as AdminUsersRouteImport } from './routes/admin.users'
 import { Route as AdminTraceabilityRouteImport } from './routes/admin.traceability'
@@ -109,11 +110,6 @@ const DownloadRoute = DownloadRouteImport.update({
   path: '/download',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ContentAdminRoute = ContentAdminRouteImport.update({
-  id: '/content-admin',
-  path: '/content-admin',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const ContactRoute = ContactRouteImport.update({
   id: '/contact',
   path: '/contact',
@@ -127,6 +123,11 @@ const CompareRoute = CompareRouteImport.update({
 const CartRoute = CartRouteImport.update({
   id: '/cart',
   path: '/cart',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BusinessRoute = BusinessRouteImport.update({
+  id: '/business',
+  path: '/business',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminRoute = AdminRouteImport.update({
@@ -154,60 +155,65 @@ const AdminIndexRoute = AdminIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AdminRoute,
 } as any)
-const ShopTraceabilityRoute = ShopTraceabilityRouteImport.update({
-  id: '/traceability',
-  path: '/traceability',
-  getParentRoute: () => ShopRoute,
-} as any)
-const ShopSupportRoute = ShopSupportRouteImport.update({
-  id: '/support',
-  path: '/support',
-  getParentRoute: () => ShopRoute,
-} as any)
-const ShopReviewsRoute = ShopReviewsRouteImport.update({
-  id: '/reviews',
-  path: '/reviews',
-  getParentRoute: () => ShopRoute,
-} as any)
-const ShopPromotionsRoute = ShopPromotionsRouteImport.update({
-  id: '/promotions',
-  path: '/promotions',
-  getParentRoute: () => ShopRoute,
-} as any)
-const ShopProfileRoute = ShopProfileRouteImport.update({
-  id: '/profile',
-  path: '/profile',
-  getParentRoute: () => ShopRoute,
-} as any)
-const ShopProductsRoute = ShopProductsRouteImport.update({
-  id: '/products',
-  path: '/products',
-  getParentRoute: () => ShopRoute,
-} as any)
-const ShopOrdersRoute = ShopOrdersRouteImport.update({
-  id: '/orders',
-  path: '/orders',
-  getParentRoute: () => ShopRoute,
-} as any)
-const ShopLoginRoute = ShopLoginRouteImport.update({
-  id: '/login',
-  path: '/login',
-  getParentRoute: () => ShopRoute,
-} as any)
-const ShopInventoryRoute = ShopInventoryRouteImport.update({
-  id: '/inventory',
-  path: '/inventory',
-  getParentRoute: () => ShopRoute,
-} as any)
-const ShopDashboardRoute = ShopDashboardRouteImport.update({
-  id: '/dashboard',
-  path: '/dashboard',
-  getParentRoute: () => ShopRoute,
-} as any)
 const KnowledgeSlugRoute = KnowledgeSlugRouteImport.update({
   id: '/$slug',
   path: '/$slug',
   getParentRoute: () => KnowledgeRoute,
+} as any)
+const BusinessTraceabilityRoute = BusinessTraceabilityRouteImport.update({
+  id: '/traceability',
+  path: '/traceability',
+  getParentRoute: () => BusinessRoute,
+} as any)
+const BusinessSupportRoute = BusinessSupportRouteImport.update({
+  id: '/support',
+  path: '/support',
+  getParentRoute: () => BusinessRoute,
+} as any)
+const BusinessReviewsRoute = BusinessReviewsRouteImport.update({
+  id: '/reviews',
+  path: '/reviews',
+  getParentRoute: () => BusinessRoute,
+} as any)
+const BusinessRegisterRoute = BusinessRegisterRouteImport.update({
+  id: '/register',
+  path: '/register',
+  getParentRoute: () => BusinessRoute,
+} as any)
+const BusinessPromotionsRoute = BusinessPromotionsRouteImport.update({
+  id: '/promotions',
+  path: '/promotions',
+  getParentRoute: () => BusinessRoute,
+} as any)
+const BusinessProfileRoute = BusinessProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
+  getParentRoute: () => BusinessRoute,
+} as any)
+const BusinessProductsRoute = BusinessProductsRouteImport.update({
+  id: '/products',
+  path: '/products',
+  getParentRoute: () => BusinessRoute,
+} as any)
+const BusinessOrdersRoute = BusinessOrdersRouteImport.update({
+  id: '/orders',
+  path: '/orders',
+  getParentRoute: () => BusinessRoute,
+} as any)
+const BusinessLoginRoute = BusinessLoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => BusinessRoute,
+} as any)
+const BusinessInventoryRoute = BusinessInventoryRouteImport.update({
+  id: '/inventory',
+  path: '/inventory',
+  getParentRoute: () => BusinessRoute,
+} as any)
+const BusinessDashboardRoute = BusinessDashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => BusinessRoute,
 } as any)
 const AppLoginRoute = AppLoginRouteImport.update({
   id: '/app/login',
@@ -279,10 +285,10 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/admin': typeof AdminRouteWithChildren
+  '/business': typeof BusinessRouteWithChildren
   '/cart': typeof CartRoute
   '/compare': typeof CompareRoute
   '/contact': typeof ContactRoute
-  '/content-admin': typeof ContentAdminRoute
   '/download': typeof DownloadRoute
   '/home': typeof HomeRoute
   '/knowledge': typeof KnowledgeRouteWithChildren
@@ -307,27 +313,28 @@ export interface FileRoutesByFullPath {
   '/admin/traceability': typeof AdminTraceabilityRoute
   '/admin/users': typeof AdminUsersRoute
   '/app/login': typeof AppLoginRoute
+  '/business/dashboard': typeof BusinessDashboardRoute
+  '/business/inventory': typeof BusinessInventoryRoute
+  '/business/login': typeof BusinessLoginRoute
+  '/business/orders': typeof BusinessOrdersRoute
+  '/business/products': typeof BusinessProductsRoute
+  '/business/profile': typeof BusinessProfileRoute
+  '/business/promotions': typeof BusinessPromotionsRoute
+  '/business/register': typeof BusinessRegisterRoute
+  '/business/reviews': typeof BusinessReviewsRoute
+  '/business/support': typeof BusinessSupportRoute
+  '/business/traceability': typeof BusinessTraceabilityRoute
   '/knowledge/$slug': typeof KnowledgeSlugRoute
-  '/shop/dashboard': typeof ShopDashboardRoute
-  '/shop/inventory': typeof ShopInventoryRoute
-  '/shop/login': typeof ShopLoginRoute
-  '/shop/orders': typeof ShopOrdersRoute
-  '/shop/products': typeof ShopProductsRoute
-  '/shop/profile': typeof ShopProfileRoute
-  '/shop/promotions': typeof ShopPromotionsRoute
-  '/shop/reviews': typeof ShopReviewsRoute
-  '/shop/support': typeof ShopSupportRoute
-  '/shop/traceability': typeof ShopTraceabilityRoute
   '/admin/': typeof AdminIndexRoute
   '/shop/': typeof ShopIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/business': typeof BusinessRouteWithChildren
   '/cart': typeof CartRoute
   '/compare': typeof CompareRoute
   '/contact': typeof ContactRoute
-  '/content-admin': typeof ContentAdminRoute
   '/download': typeof DownloadRoute
   '/home': typeof HomeRoute
   '/knowledge': typeof KnowledgeRouteWithChildren
@@ -351,17 +358,18 @@ export interface FileRoutesByTo {
   '/admin/traceability': typeof AdminTraceabilityRoute
   '/admin/users': typeof AdminUsersRoute
   '/app/login': typeof AppLoginRoute
+  '/business/dashboard': typeof BusinessDashboardRoute
+  '/business/inventory': typeof BusinessInventoryRoute
+  '/business/login': typeof BusinessLoginRoute
+  '/business/orders': typeof BusinessOrdersRoute
+  '/business/products': typeof BusinessProductsRoute
+  '/business/profile': typeof BusinessProfileRoute
+  '/business/promotions': typeof BusinessPromotionsRoute
+  '/business/register': typeof BusinessRegisterRoute
+  '/business/reviews': typeof BusinessReviewsRoute
+  '/business/support': typeof BusinessSupportRoute
+  '/business/traceability': typeof BusinessTraceabilityRoute
   '/knowledge/$slug': typeof KnowledgeSlugRoute
-  '/shop/dashboard': typeof ShopDashboardRoute
-  '/shop/inventory': typeof ShopInventoryRoute
-  '/shop/login': typeof ShopLoginRoute
-  '/shop/orders': typeof ShopOrdersRoute
-  '/shop/products': typeof ShopProductsRoute
-  '/shop/profile': typeof ShopProfileRoute
-  '/shop/promotions': typeof ShopPromotionsRoute
-  '/shop/reviews': typeof ShopReviewsRoute
-  '/shop/support': typeof ShopSupportRoute
-  '/shop/traceability': typeof ShopTraceabilityRoute
   '/admin': typeof AdminIndexRoute
   '/shop': typeof ShopIndexRoute
 }
@@ -370,10 +378,10 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/admin': typeof AdminRouteWithChildren
+  '/business': typeof BusinessRouteWithChildren
   '/cart': typeof CartRoute
   '/compare': typeof CompareRoute
   '/contact': typeof ContactRoute
-  '/content-admin': typeof ContentAdminRoute
   '/download': typeof DownloadRoute
   '/home': typeof HomeRoute
   '/knowledge': typeof KnowledgeRouteWithChildren
@@ -398,17 +406,18 @@ export interface FileRoutesById {
   '/admin/traceability': typeof AdminTraceabilityRoute
   '/admin/users': typeof AdminUsersRoute
   '/app/login': typeof AppLoginRoute
+  '/business/dashboard': typeof BusinessDashboardRoute
+  '/business/inventory': typeof BusinessInventoryRoute
+  '/business/login': typeof BusinessLoginRoute
+  '/business/orders': typeof BusinessOrdersRoute
+  '/business/products': typeof BusinessProductsRoute
+  '/business/profile': typeof BusinessProfileRoute
+  '/business/promotions': typeof BusinessPromotionsRoute
+  '/business/register': typeof BusinessRegisterRoute
+  '/business/reviews': typeof BusinessReviewsRoute
+  '/business/support': typeof BusinessSupportRoute
+  '/business/traceability': typeof BusinessTraceabilityRoute
   '/knowledge/$slug': typeof KnowledgeSlugRoute
-  '/shop/dashboard': typeof ShopDashboardRoute
-  '/shop/inventory': typeof ShopInventoryRoute
-  '/shop/login': typeof ShopLoginRoute
-  '/shop/orders': typeof ShopOrdersRoute
-  '/shop/products': typeof ShopProductsRoute
-  '/shop/profile': typeof ShopProfileRoute
-  '/shop/promotions': typeof ShopPromotionsRoute
-  '/shop/reviews': typeof ShopReviewsRoute
-  '/shop/support': typeof ShopSupportRoute
-  '/shop/traceability': typeof ShopTraceabilityRoute
   '/admin/': typeof AdminIndexRoute
   '/shop/': typeof ShopIndexRoute
 }
@@ -418,10 +427,10 @@ export interface FileRouteTypes {
     | '/'
     | '/about'
     | '/admin'
+    | '/business'
     | '/cart'
     | '/compare'
     | '/contact'
-    | '/content-admin'
     | '/download'
     | '/home'
     | '/knowledge'
@@ -446,27 +455,28 @@ export interface FileRouteTypes {
     | '/admin/traceability'
     | '/admin/users'
     | '/app/login'
+    | '/business/dashboard'
+    | '/business/inventory'
+    | '/business/login'
+    | '/business/orders'
+    | '/business/products'
+    | '/business/profile'
+    | '/business/promotions'
+    | '/business/register'
+    | '/business/reviews'
+    | '/business/support'
+    | '/business/traceability'
     | '/knowledge/$slug'
-    | '/shop/dashboard'
-    | '/shop/inventory'
-    | '/shop/login'
-    | '/shop/orders'
-    | '/shop/products'
-    | '/shop/profile'
-    | '/shop/promotions'
-    | '/shop/reviews'
-    | '/shop/support'
-    | '/shop/traceability'
     | '/admin/'
     | '/shop/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/about'
+    | '/business'
     | '/cart'
     | '/compare'
     | '/contact'
-    | '/content-admin'
     | '/download'
     | '/home'
     | '/knowledge'
@@ -490,17 +500,18 @@ export interface FileRouteTypes {
     | '/admin/traceability'
     | '/admin/users'
     | '/app/login'
+    | '/business/dashboard'
+    | '/business/inventory'
+    | '/business/login'
+    | '/business/orders'
+    | '/business/products'
+    | '/business/profile'
+    | '/business/promotions'
+    | '/business/register'
+    | '/business/reviews'
+    | '/business/support'
+    | '/business/traceability'
     | '/knowledge/$slug'
-    | '/shop/dashboard'
-    | '/shop/inventory'
-    | '/shop/login'
-    | '/shop/orders'
-    | '/shop/products'
-    | '/shop/profile'
-    | '/shop/promotions'
-    | '/shop/reviews'
-    | '/shop/support'
-    | '/shop/traceability'
     | '/admin'
     | '/shop'
   id:
@@ -508,10 +519,10 @@ export interface FileRouteTypes {
     | '/'
     | '/about'
     | '/admin'
+    | '/business'
     | '/cart'
     | '/compare'
     | '/contact'
-    | '/content-admin'
     | '/download'
     | '/home'
     | '/knowledge'
@@ -536,17 +547,18 @@ export interface FileRouteTypes {
     | '/admin/traceability'
     | '/admin/users'
     | '/app/login'
+    | '/business/dashboard'
+    | '/business/inventory'
+    | '/business/login'
+    | '/business/orders'
+    | '/business/products'
+    | '/business/profile'
+    | '/business/promotions'
+    | '/business/register'
+    | '/business/reviews'
+    | '/business/support'
+    | '/business/traceability'
     | '/knowledge/$slug'
-    | '/shop/dashboard'
-    | '/shop/inventory'
-    | '/shop/login'
-    | '/shop/orders'
-    | '/shop/products'
-    | '/shop/profile'
-    | '/shop/promotions'
-    | '/shop/reviews'
-    | '/shop/support'
-    | '/shop/traceability'
     | '/admin/'
     | '/shop/'
   fileRoutesById: FileRoutesById
@@ -555,10 +567,10 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AboutRoute: typeof AboutRoute
   AdminRoute: typeof AdminRouteWithChildren
+  BusinessRoute: typeof BusinessRouteWithChildren
   CartRoute: typeof CartRoute
   CompareRoute: typeof CompareRoute
   ContactRoute: typeof ContactRoute
-  ContentAdminRoute: typeof ContentAdminRoute
   DownloadRoute: typeof DownloadRoute
   HomeRoute: typeof HomeRoute
   KnowledgeRoute: typeof KnowledgeRouteWithChildren
@@ -652,13 +664,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DownloadRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/content-admin': {
-      id: '/content-admin'
-      path: '/content-admin'
-      fullPath: '/content-admin'
-      preLoaderRoute: typeof ContentAdminRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/contact': {
       id: '/contact'
       path: '/contact'
@@ -678,6 +683,13 @@ declare module '@tanstack/react-router' {
       path: '/cart'
       fullPath: '/cart'
       preLoaderRoute: typeof CartRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/business': {
+      id: '/business'
+      path: '/business'
+      fullPath: '/business'
+      preLoaderRoute: typeof BusinessRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin': {
@@ -715,82 +727,89 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminIndexRouteImport
       parentRoute: typeof AdminRoute
     }
-    '/shop/traceability': {
-      id: '/shop/traceability'
-      path: '/traceability'
-      fullPath: '/shop/traceability'
-      preLoaderRoute: typeof ShopTraceabilityRouteImport
-      parentRoute: typeof ShopRoute
-    }
-    '/shop/support': {
-      id: '/shop/support'
-      path: '/support'
-      fullPath: '/shop/support'
-      preLoaderRoute: typeof ShopSupportRouteImport
-      parentRoute: typeof ShopRoute
-    }
-    '/shop/reviews': {
-      id: '/shop/reviews'
-      path: '/reviews'
-      fullPath: '/shop/reviews'
-      preLoaderRoute: typeof ShopReviewsRouteImport
-      parentRoute: typeof ShopRoute
-    }
-    '/shop/promotions': {
-      id: '/shop/promotions'
-      path: '/promotions'
-      fullPath: '/shop/promotions'
-      preLoaderRoute: typeof ShopPromotionsRouteImport
-      parentRoute: typeof ShopRoute
-    }
-    '/shop/profile': {
-      id: '/shop/profile'
-      path: '/profile'
-      fullPath: '/shop/profile'
-      preLoaderRoute: typeof ShopProfileRouteImport
-      parentRoute: typeof ShopRoute
-    }
-    '/shop/products': {
-      id: '/shop/products'
-      path: '/products'
-      fullPath: '/shop/products'
-      preLoaderRoute: typeof ShopProductsRouteImport
-      parentRoute: typeof ShopRoute
-    }
-    '/shop/orders': {
-      id: '/shop/orders'
-      path: '/orders'
-      fullPath: '/shop/orders'
-      preLoaderRoute: typeof ShopOrdersRouteImport
-      parentRoute: typeof ShopRoute
-    }
-    '/shop/login': {
-      id: '/shop/login'
-      path: '/login'
-      fullPath: '/shop/login'
-      preLoaderRoute: typeof ShopLoginRouteImport
-      parentRoute: typeof ShopRoute
-    }
-    '/shop/inventory': {
-      id: '/shop/inventory'
-      path: '/inventory'
-      fullPath: '/shop/inventory'
-      preLoaderRoute: typeof ShopInventoryRouteImport
-      parentRoute: typeof ShopRoute
-    }
-    '/shop/dashboard': {
-      id: '/shop/dashboard'
-      path: '/dashboard'
-      fullPath: '/shop/dashboard'
-      preLoaderRoute: typeof ShopDashboardRouteImport
-      parentRoute: typeof ShopRoute
-    }
     '/knowledge/$slug': {
       id: '/knowledge/$slug'
       path: '/$slug'
       fullPath: '/knowledge/$slug'
       preLoaderRoute: typeof KnowledgeSlugRouteImport
       parentRoute: typeof KnowledgeRoute
+    }
+    '/business/traceability': {
+      id: '/business/traceability'
+      path: '/traceability'
+      fullPath: '/business/traceability'
+      preLoaderRoute: typeof BusinessTraceabilityRouteImport
+      parentRoute: typeof BusinessRoute
+    }
+    '/business/support': {
+      id: '/business/support'
+      path: '/support'
+      fullPath: '/business/support'
+      preLoaderRoute: typeof BusinessSupportRouteImport
+      parentRoute: typeof BusinessRoute
+    }
+    '/business/reviews': {
+      id: '/business/reviews'
+      path: '/reviews'
+      fullPath: '/business/reviews'
+      preLoaderRoute: typeof BusinessReviewsRouteImport
+      parentRoute: typeof BusinessRoute
+    }
+    '/business/register': {
+      id: '/business/register'
+      path: '/register'
+      fullPath: '/business/register'
+      preLoaderRoute: typeof BusinessRegisterRouteImport
+      parentRoute: typeof BusinessRoute
+    }
+    '/business/promotions': {
+      id: '/business/promotions'
+      path: '/promotions'
+      fullPath: '/business/promotions'
+      preLoaderRoute: typeof BusinessPromotionsRouteImport
+      parentRoute: typeof BusinessRoute
+    }
+    '/business/profile': {
+      id: '/business/profile'
+      path: '/profile'
+      fullPath: '/business/profile'
+      preLoaderRoute: typeof BusinessProfileRouteImport
+      parentRoute: typeof BusinessRoute
+    }
+    '/business/products': {
+      id: '/business/products'
+      path: '/products'
+      fullPath: '/business/products'
+      preLoaderRoute: typeof BusinessProductsRouteImport
+      parentRoute: typeof BusinessRoute
+    }
+    '/business/orders': {
+      id: '/business/orders'
+      path: '/orders'
+      fullPath: '/business/orders'
+      preLoaderRoute: typeof BusinessOrdersRouteImport
+      parentRoute: typeof BusinessRoute
+    }
+    '/business/login': {
+      id: '/business/login'
+      path: '/login'
+      fullPath: '/business/login'
+      preLoaderRoute: typeof BusinessLoginRouteImport
+      parentRoute: typeof BusinessRoute
+    }
+    '/business/inventory': {
+      id: '/business/inventory'
+      path: '/inventory'
+      fullPath: '/business/inventory'
+      preLoaderRoute: typeof BusinessInventoryRouteImport
+      parentRoute: typeof BusinessRoute
+    }
+    '/business/dashboard': {
+      id: '/business/dashboard'
+      path: '/dashboard'
+      fullPath: '/business/dashboard'
+      preLoaderRoute: typeof BusinessDashboardRouteImport
+      parentRoute: typeof BusinessRoute
     }
     '/app/login': {
       id: '/app/login'
@@ -920,6 +939,38 @@ const AdminRouteChildren: AdminRouteChildren = {
 
 const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
 
+interface BusinessRouteChildren {
+  BusinessDashboardRoute: typeof BusinessDashboardRoute
+  BusinessInventoryRoute: typeof BusinessInventoryRoute
+  BusinessLoginRoute: typeof BusinessLoginRoute
+  BusinessOrdersRoute: typeof BusinessOrdersRoute
+  BusinessProductsRoute: typeof BusinessProductsRoute
+  BusinessProfileRoute: typeof BusinessProfileRoute
+  BusinessPromotionsRoute: typeof BusinessPromotionsRoute
+  BusinessRegisterRoute: typeof BusinessRegisterRoute
+  BusinessReviewsRoute: typeof BusinessReviewsRoute
+  BusinessSupportRoute: typeof BusinessSupportRoute
+  BusinessTraceabilityRoute: typeof BusinessTraceabilityRoute
+}
+
+const BusinessRouteChildren: BusinessRouteChildren = {
+  BusinessDashboardRoute: BusinessDashboardRoute,
+  BusinessInventoryRoute: BusinessInventoryRoute,
+  BusinessLoginRoute: BusinessLoginRoute,
+  BusinessOrdersRoute: BusinessOrdersRoute,
+  BusinessProductsRoute: BusinessProductsRoute,
+  BusinessProfileRoute: BusinessProfileRoute,
+  BusinessPromotionsRoute: BusinessPromotionsRoute,
+  BusinessRegisterRoute: BusinessRegisterRoute,
+  BusinessReviewsRoute: BusinessReviewsRoute,
+  BusinessSupportRoute: BusinessSupportRoute,
+  BusinessTraceabilityRoute: BusinessTraceabilityRoute,
+}
+
+const BusinessRouteWithChildren = BusinessRoute._addFileChildren(
+  BusinessRouteChildren,
+)
+
 interface KnowledgeRouteChildren {
   KnowledgeSlugRoute: typeof KnowledgeSlugRoute
 }
@@ -933,30 +984,10 @@ const KnowledgeRouteWithChildren = KnowledgeRoute._addFileChildren(
 )
 
 interface ShopRouteChildren {
-  ShopDashboardRoute: typeof ShopDashboardRoute
-  ShopInventoryRoute: typeof ShopInventoryRoute
-  ShopLoginRoute: typeof ShopLoginRoute
-  ShopOrdersRoute: typeof ShopOrdersRoute
-  ShopProductsRoute: typeof ShopProductsRoute
-  ShopProfileRoute: typeof ShopProfileRoute
-  ShopPromotionsRoute: typeof ShopPromotionsRoute
-  ShopReviewsRoute: typeof ShopReviewsRoute
-  ShopSupportRoute: typeof ShopSupportRoute
-  ShopTraceabilityRoute: typeof ShopTraceabilityRoute
   ShopIndexRoute: typeof ShopIndexRoute
 }
 
 const ShopRouteChildren: ShopRouteChildren = {
-  ShopDashboardRoute: ShopDashboardRoute,
-  ShopInventoryRoute: ShopInventoryRoute,
-  ShopLoginRoute: ShopLoginRoute,
-  ShopOrdersRoute: ShopOrdersRoute,
-  ShopProductsRoute: ShopProductsRoute,
-  ShopProfileRoute: ShopProfileRoute,
-  ShopPromotionsRoute: ShopPromotionsRoute,
-  ShopReviewsRoute: ShopReviewsRoute,
-  ShopSupportRoute: ShopSupportRoute,
-  ShopTraceabilityRoute: ShopTraceabilityRoute,
   ShopIndexRoute: ShopIndexRoute,
 }
 
@@ -966,10 +997,10 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AboutRoute: AboutRoute,
   AdminRoute: AdminRouteWithChildren,
+  BusinessRoute: BusinessRouteWithChildren,
   CartRoute: CartRoute,
   CompareRoute: CompareRoute,
   ContactRoute: ContactRoute,
-  ContentAdminRoute: ContentAdminRoute,
   DownloadRoute: DownloadRoute,
   HomeRoute: HomeRoute,
   KnowledgeRoute: KnowledgeRouteWithChildren,

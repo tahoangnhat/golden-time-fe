@@ -1,6 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { useState, type FormEvent } from "react";
 import { Shield, Eye, EyeOff } from "lucide-react";
+import { ApiError, api, logout } from "@/lib/api";
 
 export const Route = createFileRoute("/admin/login")({
   component: AdminLogin,
@@ -9,6 +10,27 @@ export const Route = createFileRoute("/admin/login")({
 function AdminLogin() {
   const nav = useNavigate();
   const [show, setShow] = useState(false);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [busy, setBusy] = useState(false);
+  async function submit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setBusy(true);
+    setError("");
+    try {
+      const auth = await api.login(email, password);
+      if (auth.user.role !== "ADMIN") {
+        await logout();
+        throw new Error("Tài khoản này không có quyền quản trị.");
+      }
+      nav({ to: "/admin/dashboard" });
+    } catch (cause) {
+      setError(cause instanceof ApiError || cause instanceof Error ? cause.message : "Đăng nhập chưa thành công.");
+    } finally {
+      setBusy(false);
+    }
+  }
   return (
     <div className="min-h-screen grid lg:grid-cols-2 bg-[oklch(0.98_0.02_100)]">
       <div className="hidden lg:flex flex-col justify-between p-12 gt-gradient text-white relative overflow-hidden">
@@ -31,30 +53,12 @@ function AdminLogin() {
             Theo dõi người dùng, cửa hàng đối tác, đơn hàng, dữ liệu AI và báo cáo kinh doanh
             của Golden Time tại một nơi duy nhất.
           </p>
-          <div className="grid grid-cols-3 gap-3 pt-4 max-w-md">
-            {[
-              { v: "128K+", l: "Người dùng" },
-              { v: "1.2K", l: "Cửa hàng" },
-              { v: "85K", l: "Lượt quét AI" },
-            ].map((s) => (
-              <div key={s.l} className="bg-white/15 rounded-xl p-3 backdrop-blur">
-                <p className="font-extrabold text-xl">{s.v}</p>
-                <p className="text-[11px] text-white/80">{s.l}</p>
-              </div>
-            ))}
-          </div>
         </div>
         <p className="relative text-xs text-white/70">© 2026 Golden Time JSC</p>
       </div>
 
       <div className="flex items-center justify-center p-6 lg:p-12">
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            nav({ to: "/admin/dashboard" });
-          }}
-          className="w-full max-w-md space-y-6"
-        >
+        <form onSubmit={submit} className="w-full max-w-md space-y-6">
           <div>
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[oklch(0.95_0.06_145)] text-[oklch(0.45_0.17_145)] text-xs font-semibold">
               <Shield className="h-3.5 w-3.5" /> Truy cập nội bộ
@@ -70,7 +74,9 @@ function AdminLogin() {
               <span className="text-xs font-semibold">Email</span>
               <input
                 type="email"
-                defaultValue="admin@goldentime.vn"
+                value={email}
+                onChange={(event) => setEmail(event.target.value)}
+                autoComplete="username"
                 className="mt-1 w-full h-11 px-3 rounded-xl border border-border bg-white outline-none focus:ring-2 focus:ring-[oklch(0.62_0.17_145)]"
               />
             </label>
@@ -79,7 +85,9 @@ function AdminLogin() {
               <div className="mt-1 relative">
                 <input
                   type={show ? "text" : "password"}
-                  defaultValue="goldentime2026"
+                value={password}
+                onChange={(event) => setPassword(event.target.value)}
+                autoComplete="current-password"
                   className="w-full h-11 px-3 pr-10 rounded-xl border border-border bg-white outline-none focus:ring-2 focus:ring-[oklch(0.62_0.17_145)]"
                 />
                 <button
@@ -106,20 +114,17 @@ function AdminLogin() {
             type="submit"
             className="w-full h-12 rounded-xl gt-gradient text-white font-bold gt-shadow hover:opacity-95 transition"
           >
-            Đăng nhập Admin
+            {busy ? "Đang đăng nhập…" : "Đăng nhập Admin"}
           </button>
+          {error && <p role="alert" className="rounded-xl bg-red-50 border border-red-200 text-red-700 text-sm px-3 py-2">{error}</p>}
 
           <p className="text-[11px] text-center text-muted-foreground">
             <Link to="/" className="text-[oklch(0.55_0.18_145)] font-semibold">
               Website
             </Link>
             {" • "}
-            <Link to="/app/login" className="text-[oklch(0.55_0.18_145)] font-semibold">
-              Ứng dụng
-            </Link>
-            {" • "}
-            <Link to="/shop/login" className="text-[oklch(0.55_0.18_145)] font-semibold">
-              Cửa hàng
+            <Link to="/business/login" className="text-[oklch(0.55_0.18_145)] font-semibold">
+              Doanh nghiệp
             </Link>
           </p>
         </form>

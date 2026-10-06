@@ -1,8 +1,9 @@
 import type { ReactNode } from "react";
 import { Link } from "@tanstack/react-router";
-import { Facebook, Music2, Mail, Download, Menu, X } from "lucide-react";
+import { Menu, X } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
+import { DownloadAppDialog } from "@/components/DownloadAppDialog";
 
 const NAV = [
   { to: "/", label: "Trang chủ" },
@@ -11,15 +12,6 @@ const NAV = [
   { to: "/about", label: "Về Golden Time" },
   { to: "/contact", label: "Liên hệ" },
 ] as const;
-
-export const SOCIAL = {
-  facebook: "https://facebook.com/goldentime",
-  tiktok: "https://tiktok.com/@goldentime",
-  appStore: "https://apps.apple.com/app/goldentime",
-  googlePlay: "https://play.google.com/store/apps/details?id=vn.goldentime",
-  apk: "https://goldentime.vn/download/goldentime.apk",
-  email: "hello@goldentime.vn",
-};
 
 export function Logo({ className }: { className?: string }) {
   return (
@@ -54,20 +46,13 @@ export function SiteHeader() {
             </Link>
           ))}
         </nav>
-        <div className="hidden lg:flex items-center gap-2">
-          <Link
-            to="/app/login"
-            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-cream text-primary text-sm font-semibold hover:bg-primary/10 transition"
-          >
-            Đăng nhập
-          </Link>
-          <Link
-            to="/download"
-            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl gt-gradient text-white text-sm font-semibold gt-shadow hover:opacity-95 transition"
-          >
-            <Download className="h-4 w-4" /> Tải ứng dụng
-          </Link>
-        </div>
+        <DownloadAppDialog
+          trigger={
+            <button className="hidden lg:inline-flex h-10 items-center justify-center gap-2 rounded-xl gt-gradient px-4 text-sm font-semibold text-white shadow-sm transition hover:brightness-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2">
+              Tải ứng dụng
+            </button>
+          }
+        />
         <button
           onClick={() => setOpen((v) => !v)}
           className="lg:hidden h-10 w-10 grid place-items-center rounded-xl bg-cream"
@@ -88,20 +73,13 @@ export function SiteHeader() {
               {n.label}
             </Link>
           ))}
-          <Link
-            to="/app/login"
-            onClick={() => setOpen(false)}
-            className="block px-3 py-2.5 rounded-xl text-sm font-medium text-primary bg-cream"
-          >
-            Đăng nhập ứng dụng
-          </Link>
-          <Link
-            to="/download"
-            onClick={() => setOpen(false)}
-            className="mt-2 flex items-center justify-center gap-2 px-5 py-3 rounded-xl gt-gradient text-white text-sm font-semibold"
-          >
-            <Download className="h-4 w-4" /> Tải ứng dụng
-          </Link>
+          <DownloadAppDialog
+            trigger={
+              <button onClick={() => setOpen(false)} className="mt-2 inline-flex w-full items-center justify-center rounded-xl gt-gradient px-4 py-3 text-sm font-semibold text-white shadow-sm">
+                Tải ứng dụng
+              </button>
+            }
+          />
         </div>
       )}
     </header>
@@ -111,14 +89,14 @@ export function SiteHeader() {
 export function SiteFooter() {
   return (
     <footer className="mt-24 bg-[oklch(0.22_0.04_150)] text-white/80">
-      <div className="mx-auto max-w-7xl px-5 lg:px-8 py-14 grid gap-10 md:grid-cols-4">
+      <div className="mx-auto max-w-7xl px-5 lg:px-8 py-14 grid gap-10 md:grid-cols-3">
         <div className="md:col-span-1">
           <div className="flex items-center gap-2 mb-4">
             <div className="h-10 w-10 rounded-2xl gt-gradient grid place-items-center text-white font-extrabold">G</div>
             <div className="font-extrabold text-white text-lg">Golden Time</div>
           </div>
           <p className="text-sm leading-relaxed">
-            Nền tảng FoodTech giúp người Việt chọn mua trái cây thông minh với AI, dinh dưỡng và truy xuất nguồn gốc.
+            Golden Time giúp bạn khám phá kiến thức trái cây, dinh dưỡng và thông tin từ các nguồn đã kết nối.
           </p>
         </div>
         <div>
@@ -127,24 +105,13 @@ export function SiteFooter() {
             {NAV.map((n) => (
               <li key={n.to}><Link to={n.to} className="hover:text-white transition-colors">{n.label}</Link></li>
             ))}
-            <li><Link to="/download" className="hover:text-white">Tải ứng dụng</Link></li>
-          </ul>
-        </div>
-        <div>
-          <h4 className="text-white font-semibold mb-4 text-sm">Mạng xã hội</h4>
-          <ul className="space-y-2 text-sm">
-            <li><a href={SOCIAL.facebook} className="inline-flex items-center gap-2 hover:text-white"><Facebook className="h-4 w-4" /> Facebook Fanpage</a></li>
-            <li><a href={SOCIAL.tiktok} className="inline-flex items-center gap-2 hover:text-white"><Music2 className="h-4 w-4" /> TikTok</a></li>
-            <li><a href={`mailto:${SOCIAL.email}`} className="inline-flex items-center gap-2 hover:text-white"><Mail className="h-4 w-4" /> {SOCIAL.email}</a></li>
           </ul>
         </div>
         <div>
           <h4 className="text-white font-semibold mb-4 text-sm">Trải nghiệm sản phẩm</h4>
           <ul className="space-y-2 text-sm">
-            <li><Link to="/app/login" className="hover:text-white">Ứng dụng người dùng</Link></li>
-            <li><Link to="/shop/login" className="hover:text-white">Đối tác cửa hàng</Link></li>
+            <li><Link to="/business/login" className="hover:text-white">Cổng doanh nghiệp</Link></li>
             <li><Link to="/admin/login" className="hover:text-white">Quản trị nội bộ</Link></li>
-            <li><Link to="/content-admin" className="hover:text-white">Quản lý nội dung</Link></li>
           </ul>
         </div>
       </div>

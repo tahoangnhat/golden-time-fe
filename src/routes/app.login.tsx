@@ -1,7 +1,8 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { useState, type FormEvent } from "react";
 import { Eye, EyeOff, Sparkles } from "lucide-react";
 import { PhoneShell, StatusBar } from "@/components/PhoneShell";
+import { ApiError, api, logout } from "@/lib/api";
 
 export const Route = createFileRoute("/app/login")({
   head: () => ({ meta: [{ title: "Đăng nhập — Golden Time" }] }),
@@ -11,6 +12,37 @@ export const Route = createFileRoute("/app/login")({
 function UserLogin() {
   const nav = useNavigate();
   const [show, setShow] = useState(false);
+  const [isRegistering, setIsRegistering] = useState(false);
+  const [fullName, setFullName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [identifier, setIdentifier] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [busy, setBusy] = useState(false);
+  async function submit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setBusy(true);
+    setError("");
+    try {
+      let role: string;
+      if (isRegistering) {
+        role = (await api.register({ email: identifier.trim(), fullName: fullName.trim(), password, phone: phone.trim() || undefined })).user.role;
+      } else {
+        role = (await api.login(identifier, password)).user.role;
+      }
+      if (role !== "USER") {
+        await logout();
+        throw new Error(role === "ADMIN"
+          ? "Đây là tài khoản quản trị. Vui lòng đăng nhập tại Cổng quản trị."
+          : "Đây là tài khoản doanh nghiệp. Vui lòng đăng nhập tại Cổng doanh nghiệp.");
+      }
+      nav({ to: "/home" });
+    } catch (cause) {
+      setError(cause instanceof ApiError ? cause.message : "Đăng nhập chưa thành công.");
+    } finally {
+      setBusy(false);
+    }
+  }
   return (
     <PhoneShell hideNav>
       <StatusBar title="Đăng nhập" />
@@ -26,27 +58,34 @@ function UserLogin() {
           </div>
         </div>
 
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            nav({ to: "/home" });
-          }}
-          className="mt-6 space-y-4"
-        >
+        <form onSubmit={submit} className="mt-6 space-y-4">
+          {isRegistering && <label className="block">
+            <span className="text-xs font-semibold text-foreground/80">Họ và tên</span>
+            <input type="text" value={fullName} onChange={(event) => setFullName(event.target.value)} autoComplete="name" required className="mt-1 w-full h-12 px-4 rounded-2xl border border-border bg-white outline-none focus:ring-2 focus:ring-[oklch(0.62_0.17_145)]/30" />
+          </label>}
           <label className="block">
-            <span className="text-xs font-semibold text-foreground/80">Số điện thoại hoặc email</span>
+            <span className="text-xs font-semibold text-foreground/80">{isRegistering ? "Email" : "Số điện thoại hoặc email"}</span>
             <input
-              type="text"
-              defaultValue="0912 345 678"
+              type={isRegistering ? "email" : "text"}
+              value={identifier}
+              onChange={(event) => setIdentifier(event.target.value)}
+              autoComplete="username"
+              required
               className="mt-1 w-full h-12 px-4 rounded-2xl border border-border bg-white outline-none focus:ring-2 focus:ring-[oklch(0.62_0.17_145)]/30"
             />
           </label>
+          {isRegistering && <label className="block">
+            <span className="text-xs font-semibold text-foreground/80">Số điện thoại (không bắt buộc)</span>
+            <input type="tel" value={phone} onChange={(event) => setPhone(event.target.value)} autoComplete="tel" className="mt-1 w-full h-12 px-4 rounded-2xl border border-border bg-white outline-none focus:ring-2 focus:ring-[oklch(0.62_0.17_145)]/30" />
+          </label>}
           <label className="block">
             <span className="text-xs font-semibold text-foreground/80">Mật khẩu</span>
             <div className="mt-1 relative">
               <input
                 type={show ? "text" : "password"}
-                defaultValue="goldentime"
+                value={password}
+                onChange={(event) => setPassword(event.target.value)}
+                autoComplete="current-password"
                 className="w-full h-12 px-4 pr-10 rounded-2xl border border-border bg-white outline-none focus:ring-2 focus:ring-[oklch(0.62_0.17_145)]/30"
               />
               <button
@@ -58,36 +97,19 @@ function UserLogin() {
               </button>
             </div>
           </label>
-          <div className="flex items-center justify-between text-xs">
-            <label className="flex items-center gap-2">
-              <input type="checkbox" defaultChecked className="accent-[oklch(0.62_0.17_145)]" />
-              Ghi nhớ đăng nhập
-            </label>
-            <a className="text-[oklch(0.45_0.17_145)] font-semibold">Quên mật khẩu?</a>
-          </div>
           <button
             type="submit"
             className="w-full h-12 rounded-2xl gt-gradient text-white font-bold gt-shadow"
           >
-            Đăng nhập
+            {busy ? (isRegistering ? "Đang tạo tài khoản…" : "Đang đăng nhập…") : (isRegistering ? "Tạo tài khoản" : "Đăng nhập")}
           </button>
+          {error && <p role="alert" className="rounded-xl bg-red-50 border border-red-200 text-red-700 text-sm px-3 py-2">{error}</p>}
         </form>
 
-        <div className="my-5 flex items-center gap-3 text-[11px] text-muted-foreground">
-          <span className="h-px flex-1 bg-border" /> hoặc đăng nhập bằng <span className="h-px flex-1 bg-border" />
-        </div>
-        <div className="grid grid-cols-3 gap-2">
-          {["Google", "Facebook", "Apple"].map((p) => (
-            <button key={p} className="h-11 rounded-2xl bg-white border border-border text-xs font-semibold">
-              {p}
-            </button>
-          ))}
-        </div>
-
         <p className="mt-6 text-center text-xs text-muted-foreground">
-          Chưa có tài khoản?{" "}
-          <button onClick={() => nav({ to: "/home" })} className="text-[oklch(0.45_0.17_145)] font-semibold">
-            Đăng ký ngay
+          {isRegistering ? "Đã có tài khoản?" : "Chưa có tài khoản?"}{" "}
+          <button type="button" onClick={() => { setIsRegistering((value) => !value); setError(""); }} className="text-[oklch(0.45_0.17_145)] font-semibold">
+            {isRegistering ? "Đăng nhập" : "Tạo tài khoản"}
           </button>
         </p>
 
@@ -95,8 +117,7 @@ function UserLogin() {
           <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-semibold">Cổng truy cập khác</p>
           <div className="flex flex-wrap justify-center gap-2 text-[11px]">
             <Link to="/" className="px-3 py-1.5 rounded-full bg-cream font-semibold">Website</Link>
-            <Link to="/shop/login" className="px-3 py-1.5 rounded-full bg-cream font-semibold">Cửa hàng</Link>
-            <Link to="/admin/login" className="px-3 py-1.5 rounded-full bg-cream font-semibold">Admin</Link>
+            <Link to="/business/login" className="px-3 py-1.5 rounded-full bg-cream font-semibold">Doanh nghiệp</Link>
           </div>
         </div>
         <div className="h-6" />

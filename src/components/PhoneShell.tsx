@@ -1,7 +1,8 @@
-import type { ReactNode } from "react";
-import { Link, useRouterState } from "@tanstack/react-router";
+import { useEffect, useState, type ReactNode } from "react";
+import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { Home, ScanLine, ShoppingBag, MapPin, User } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { api, hasAuth } from "@/lib/api";
 
 const tabs = [
   { to: "/home", label: "Trang chủ", icon: Home },
@@ -21,6 +22,27 @@ export function PhoneShell({
   bg?: string;
 }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const navigate = useNavigate();
+  const [checkingRole, setCheckingRole] = useState(() => hasAuth());
+  useEffect(() => {
+    let active = true;
+    if (!hasAuth()) {
+      setCheckingRole(false);
+      return () => { active = false; };
+    }
+    api.me().then((user) => {
+      if (!active) return;
+      if (user.role === "ADMIN") navigate({ to: "/admin/dashboard", replace: true });
+      else if (user.role === "SHOP_OWNER") navigate({ to: "/business/dashboard", replace: true });
+      else setCheckingRole(false);
+    }).catch(() => {
+      if (active) setCheckingRole(false);
+    });
+    return () => { active = false; };
+  }, [navigate]);
+  if (checkingRole) {
+    return <div className="min-h-screen grid place-items-center bg-cream text-sm text-muted-foreground">Đang xác thực tài khoản…</div>;
+  }
   return (
     <div className="min-h-screen w-full flex items-center justify-center bg-[radial-gradient(circle_at_top,_oklch(0.95_0.08_120),_oklch(0.97_0.04_95))] py-6 px-4">
       <div className={cn("relative w-full max-w-[420px] min-h-[860px] rounded-[2.5rem] overflow-hidden gt-shadow border border-border", bg)}>

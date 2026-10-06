@@ -1,5 +1,5 @@
-import { Link, useRouterState } from "@tanstack/react-router";
-import { useState } from "react";
+import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
 import {
   LayoutDashboard,
   Package,
@@ -16,20 +16,21 @@ import {
   Bell,
   Search,
 } from "lucide-react";
+import { api, logout, type ShopProfile } from "@/lib/api";
 
 const NAV = [
-  { to: "/shop/dashboard", label: "Tổng quan", icon: LayoutDashboard },
-  { to: "/shop/products", label: "Sản phẩm", icon: Package },
-  { to: "/shop/orders", label: "Đơn hàng", icon: ShoppingBag },
-  { to: "/shop/inventory", label: "Tồn kho", icon: Boxes },
-  { to: "/shop/traceability", label: "Truy xuất nguồn gốc", icon: QrCode },
-  { to: "/shop/promotions", label: "Khuyến mãi", icon: Tag },
-  { to: "/shop/reviews", label: "Đánh giá", icon: Star },
-  { to: "/shop/profile", label: "Hồ sơ cửa hàng", icon: Store },
-  { to: "/shop/support", label: "Hỗ trợ", icon: LifeBuoy },
+  { to: "/business/dashboard", label: "Tổng quan", icon: LayoutDashboard },
+  { to: "/business/products", label: "Sản phẩm", icon: Package },
+  { to: "/business/orders", label: "Đơn hàng", icon: ShoppingBag },
+  { to: "/business/inventory", label: "Tồn kho", icon: Boxes },
+  { to: "/business/traceability", label: "Truy xuất nguồn gốc", icon: QrCode },
+  { to: "/business/promotions", label: "Khuyến mãi", icon: Tag },
+  { to: "/business/reviews", label: "Đánh giá", icon: Star },
+  { to: "/business/profile", label: "Hồ sơ doanh nghiệp", icon: Store },
+  { to: "/business/support", label: "Hỗ trợ", icon: LifeBuoy },
 ];
 
-export function PartnerShell({
+export function BusinessShell({
   title,
   subtitle,
   actions,
@@ -41,7 +42,29 @@ export function PartnerShell({
   children: React.ReactNode;
 }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const navigate = useNavigate();
   const [open, setOpen] = useState(false);
+  const [shop, setShop] = useState<ShopProfile | null>(null);
+  const [authorized, setAuthorized] = useState(false);
+  useEffect(() => {
+    let active = true;
+    api.me().then(async (user) => {
+      if (!active) return;
+      if (user.role !== "SHOP_OWNER") {
+        navigate({ to: user.role === "ADMIN" ? "/admin/dashboard" : "/home", replace: true });
+        return;
+      }
+      try {
+        const profile = await api.shopProfile();
+        if (active) { setShop(profile); setAuthorized(true); }
+      } catch {
+        if (active) navigate({ to: "/business/login", replace: true });
+      }
+    }).catch(() => navigate({ to: "/business/login", replace: true }));
+    return () => { active = false; };
+  }, [navigate]);
+
+  if (!authorized) return <div className="min-h-screen grid place-items-center text-sm text-muted-foreground">Đang xác thực tài khoản doanh nghiệp…</div>;
 
   return (
     <div className="min-h-screen bg-[oklch(0.98_0.02_100)] text-foreground">
@@ -91,15 +114,14 @@ export function PartnerShell({
             </div>
             <button className="relative h-9 w-9 grid place-items-center rounded-lg hover:bg-muted">
               <Bell className="h-5 w-5" />
-              <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-orange-500" />
             </button>
             <div className="hidden sm:flex items-center gap-2 pl-3 border-l border-border">
               <div className="h-9 w-9 rounded-full gt-gradient grid place-items-center text-white font-bold text-sm">
-                TF
+                {(shop?.name ?? "").split(/\s+/).slice(0, 2).map((word) => word[0]).join("") || "—"}
               </div>
               <div className="text-xs leading-tight">
-                <p className="font-semibold">Trái Cây Tươi</p>
-                <p className="text-muted-foreground">Đối tác Vàng</p>
+                <p className="font-semibold">{shop?.name ?? "Chưa liên kết doanh nghiệp"}</p>
+                <p className="text-muted-foreground">{shop?.status ?? "Tài khoản doanh nghiệp"}</p>
               </div>
             </div>
           </div>
@@ -124,14 +146,14 @@ function SidebarInner({
   return (
     <>
       <div className="px-5 py-5 border-b border-border">
-        <Link to="/shop/dashboard" className="flex items-center gap-2.5" onClick={onNavigate}>
+        <Link to="/business/dashboard" className="flex items-center gap-2.5" onClick={onNavigate}>
           <div className="h-10 w-10 rounded-xl gt-gradient grid place-items-center text-white text-lg">
             🍊
           </div>
           <div className="leading-tight">
             <p className="font-extrabold text-sm">Golden Time</p>
             <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold">
-              Partner Shop
+              Golden Time Business
             </p>
           </div>
         </Link>
@@ -159,8 +181,8 @@ function SidebarInner({
       </nav>
       <div className="p-3 border-t border-border">
         <Link
-          to="/shop/login"
-          onClick={onNavigate}
+          to="/business/login"
+          onClick={() => { void logout(); onNavigate?.(); }}
           className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-foreground/70 hover:bg-muted"
         >
           <LogOut className="h-4 w-4" />

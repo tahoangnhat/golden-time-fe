@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
 import {
   Sparkles,
   Apple,
@@ -8,15 +9,14 @@ import {
   ScanLine,
   Star,
   ArrowRight,
-  Facebook,
-  Music2,
-  Download,
   BookOpen,
   Clock,
   CheckCircle2,
 } from "lucide-react";
-import { SiteShell, Section, SectionHeading, SOCIAL } from "@/components/SiteShell";
-import { ARTICLES, UPDATES } from "@/lib/site-data";
+import { SiteShell, Section, SectionHeading } from "@/components/SiteShell";
+import { DownloadAppDialog } from "@/components/DownloadAppDialog";
+import type { Article as ApiArticle, AppUpdate } from "@/lib/api";
+import { api, formatDate } from "@/lib/api";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -43,24 +43,30 @@ const HERO_BADGES = [
 ];
 
 const FEATURES = [
-  { icon: ScanLine, title: "Quét trái cây bằng AI", desc: "Đưa camera lên trái cây, AI nhận diện và đánh giá ngay tức thì." },
-  { icon: Star, title: "Xem điểm chất lượng", desc: "Chấm điểm độ tươi, ngọt và độ chín theo thang điểm 100." },
-  { icon: Apple, title: "Tra cứu dinh dưỡng", desc: "Bảng dinh dưỡng đầy đủ: calo, vitamin, khoáng chất, chất xơ." },
-  { icon: BarChart3, title: "So sánh giá thị trường", desc: "Cập nhật giá thực tế tại các siêu thị và cửa hàng uy tín." },
-  { icon: QrCode, title: "Truy xuất nguồn gốc", desc: "Theo dõi hành trình trái cây từ nông trại đến tay bạn." },
-  { icon: ShoppingBag, title: "Mua hàng từ cửa hàng uy tín", desc: "Đặt và thanh toán ngay với đối tác cửa hàng được kiểm duyệt." },
-  { icon: Sparkles, title: "Đánh giá cộng đồng", desc: "Tham khảo đánh giá thật của người dùng quanh khu vực." },
+  { icon: ScanLine, title: "Phân tích ảnh trái cây", desc: "Ảnh được gửi tới dịch vụ AI đã cấu hình. Chỉ hiển thị kết quả do dịch vụ trả về." },
+  { icon: Star, title: "Thông tin chất lượng", desc: "Hiển thị điểm số và nhận xét nếu được dịch vụ phân tích cung cấp." },
+  { icon: Apple, title: "Tra cứu dinh dưỡng", desc: "Đọc dữ liệu dinh dưỡng đã có trong hệ thống; không tạo số liệu thay thế." },
+  { icon: BarChart3, title: "So sánh giá", desc: "Hiển thị báo giá có nguồn và thời gian thu thập khi nguồn dữ liệu trả về kết quả." },
+  { icon: QrCode, title: "Truy xuất theo mã lô", desc: "Tra cứu lô hàng và các mốc hành trình đã được cửa hàng ghi nhận." },
+  { icon: ShoppingBag, title: "Đặt hàng một cửa hàng", desc: "Tạo đơn COD thử nghiệm từ sản phẩm và tồn kho đang có trong hệ thống." },
+  { icon: Sparkles, title: "Đánh giá có xác thực", desc: "Chỉ người đã quét sản phẩm hoặc đặt đơn mới đủ điều kiện gửi đánh giá." },
 ];
 
 function HomePage() {
+  const [recentArticles, setRecentArticles] = useState<ApiArticle[]>([]);
+  const [recentUpdates, setRecentUpdates] = useState<AppUpdate[]>([]);
+  useEffect(() => {
+    api.articles().then((items) => setRecentArticles(items.slice(0, 6))).catch(() => setRecentArticles([]));
+    api.updates().then((items) => setRecentUpdates(items.slice(0, 3))).catch(() => setRecentUpdates([]));
+  }, []);
   return (
     <SiteShell>
       {/* HERO */}
       <section className="relative overflow-hidden">
         <div className="absolute -top-32 -right-40 h-[480px] w-[480px] rounded-full bg-[oklch(0.92_0.18_120)] blur-3xl opacity-50" />
         <div className="absolute top-40 -left-32 h-[420px] w-[420px] rounded-full bg-[oklch(0.94_0.16_85)] blur-3xl opacity-60" />
-        <div className="relative mx-auto max-w-7xl px-5 lg:px-8 pt-16 lg:pt-24 pb-20 grid lg:grid-cols-2 gap-12 items-center">
-          <div>
+        <div className="relative mx-auto max-w-7xl px-5 lg:px-8 pt-16 lg:pt-24 pb-20">
+          <div className="max-w-3xl">
             <div className="inline-flex items-center gap-2 bg-white border border-border rounded-full px-3 py-1 text-xs font-semibold text-primary mb-6 gt-shadow-soft">
               <Sparkles className="h-3.5 w-3.5" /> AI Fruit Intelligence · Made in Vietnam
             </div>
@@ -73,12 +79,6 @@ function HomePage() {
               cây đáng tin cậy — tất cả trong một ứng dụng.
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
-              <Link
-                to="/download"
-                className="inline-flex items-center gap-2 px-6 py-3.5 rounded-2xl gt-gradient text-white font-semibold gt-shadow"
-              >
-                <Download className="h-5 w-5" /> Tải ứng dụng
-              </Link>
               <Link
                 to="/knowledge"
                 className="inline-flex items-center gap-2 px-6 py-3.5 rounded-2xl bg-white border border-border text-foreground font-semibold hover:bg-cream"
@@ -98,49 +98,6 @@ function HomePage() {
               ))}
             </div>
           </div>
-
-          {/* Phone mockup */}
-          <div className="relative grid place-items-center">
-            <div className="absolute inset-0 m-auto h-80 w-80 rounded-full gt-gradient opacity-20 blur-3xl" />
-            <div className="relative w-[300px] h-[600px] rounded-[3rem] bg-white border-[10px] border-foreground/90 gt-shadow overflow-hidden">
-              <div className="h-7 bg-foreground/90" />
-              <div className="p-5 bg-gradient-to-b from-cream to-white h-full">
-                <div className="flex items-center justify-between">
-                  <div className="text-xs font-bold">Golden Time</div>
-                  <div className="h-7 w-7 rounded-full gt-gradient grid place-items-center text-white text-xs">G</div>
-                </div>
-                <div className="mt-4 rounded-3xl gt-gradient p-5 text-white gt-shadow">
-                  <div className="text-xs opacity-80">Quét trái cây bằng AI</div>
-                  <div className="text-2xl font-extrabold mt-1">Táo Fuji 🍎</div>
-                  <div className="mt-4 flex items-end justify-between">
-                    <div>
-                      <div className="text-[10px] opacity-80">Điểm chất lượng</div>
-                      <div className="text-4xl font-black">92</div>
-                    </div>
-                    <div className="text-xs bg-white/20 px-2 py-1 rounded-full">Rất tươi</div>
-                  </div>
-                </div>
-                <div className="mt-4 grid grid-cols-3 gap-2">
-                  {[{ l: "Calo", v: "52" }, { l: "Vitamin C", v: "8%" }, { l: "Chất xơ", v: "2.4g" }].map((s) => (
-                    <div key={s.l} className="rounded-2xl bg-white border border-border p-2 text-center">
-                      <div className="text-[9px] text-muted-foreground">{s.l}</div>
-                      <div className="text-sm font-bold">{s.v}</div>
-                    </div>
-                  ))}
-                </div>
-                <div className="mt-3 rounded-2xl bg-white border border-border p-3">
-                  <div className="text-[10px] text-muted-foreground">Giá tốt nhất gần bạn</div>
-                  <div className="flex items-center justify-between mt-1">
-                    <div className="text-sm font-bold">WinMart Đống Đa</div>
-                    <div className="text-sm font-extrabold text-primary">62.000đ/kg</div>
-                  </div>
-                </div>
-                <button className="mt-3 w-full py-3 rounded-2xl gt-gradient text-white text-sm font-semibold">
-                  Mua ngay
-                </button>
-              </div>
-            </div>
-          </div>
         </div>
       </section>
 
@@ -148,8 +105,8 @@ function HomePage() {
       <Section>
         <SectionHeading
           eyebrow="Tính năng nổi bật"
-          title="Mọi thứ bạn cần để mua trái cây thông minh"
-          subtitle="Golden Time kết hợp AI, dữ liệu thị trường và cộng đồng người dùng để bạn ra quyết định tốt hơn."
+          title="Các luồng chính của MVP"
+          subtitle="Số liệu và nội dung lấy từ backend, nhà cung cấp AI hoặc nguồn giá đã kết nối."
         />
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
           {FEATURES.map(({ icon: Icon, title, desc }) => (
@@ -175,9 +132,10 @@ function HomePage() {
           subtitle="Tổng hợp bài viết giúp bạn chọn, bảo quản và sử dụng trái cây thông minh hơn mỗi ngày."
         />
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {ARTICLES.slice(0, 6).map((a) => (
+          {recentArticles.map((a) => (
             <ArticleCard key={a.slug} article={a} />
           ))}
+          {recentArticles.length === 0 && <p className="md:col-span-2 lg:col-span-3 text-center text-sm text-muted-foreground">Bài viết sẽ xuất hiện khi backend sẵn sàng.</p>}
         </div>
         <div className="mt-10 text-center">
           <Link
@@ -197,11 +155,11 @@ function HomePage() {
           subtitle="Theo dõi các tính năng mới và cải tiến gần đây của ứng dụng."
         />
         <div className="grid md:grid-cols-3 gap-5">
-          {UPDATES.map((u) => (
+          {recentUpdates.map((u) => (
             <div key={u.version} className="bg-white rounded-3xl border border-border p-6 hover:gt-shadow transition-all">
               <div className="flex items-center justify-between mb-3">
                 <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-cream text-primary">v{u.version}</span>
-                <span className="text-xs text-muted-foreground">{u.date}</span>
+                <span className="text-xs text-muted-foreground">{formatDate(u.date)}</span>
               </div>
               <h3 className="font-bold mb-2">{u.title}</h3>
               <ul className="space-y-1.5 text-sm text-muted-foreground mb-4">
@@ -214,93 +172,35 @@ function HomePage() {
               </Link>
             </div>
           ))}
+          {recentUpdates.length === 0 && <p className="md:col-span-3 text-center text-sm text-muted-foreground">Chưa có bản cập nhật được công bố.</p>}
         </div>
       </Section>
 
-      {/* SOCIAL */}
-      <Section>
-        <SectionHeading
-          eyebrow="Mạng xã hội"
-          title="Theo dõi Golden Time"
-          subtitle="Cập nhật mẹo chọn trái cây, dinh dưỡng và thông tin mới nhất từ Golden Time."
-        />
-        <div className="grid md:grid-cols-2 gap-6 max-w-4xl mx-auto">
-          <a
-            href={SOCIAL.facebook}
-            className="group flex items-start gap-5 p-7 rounded-3xl bg-white border border-border hover:gt-shadow transition-all"
-          >
-            <div className="h-14 w-14 rounded-2xl bg-[oklch(0.6_0.18_255)] grid place-items-center text-white">
-              <Facebook className="h-7 w-7" />
-            </div>
-            <div>
-              <h3 className="font-bold text-lg">Facebook Fanpage</h3>
-              <p className="text-sm text-muted-foreground mt-1 mb-3">
-                Theo dõi Fanpage để xem bài viết và thông báo mới.
-              </p>
-              <span className="inline-flex items-center gap-1 text-sm font-semibold text-primary">
-                Mở Fanpage <ArrowRight className="h-4 w-4" />
-              </span>
-            </div>
-          </a>
-          <a
-            href={SOCIAL.tiktok}
-            className="group flex items-start gap-5 p-7 rounded-3xl bg-white border border-border hover:gt-shadow transition-all"
-          >
-            <div className="h-14 w-14 rounded-2xl bg-foreground grid place-items-center text-white">
-              <Music2 className="h-7 w-7" />
-            </div>
-            <div>
-              <h3 className="font-bold text-lg">TikTok</h3>
-              <p className="text-sm text-muted-foreground mt-1 mb-3">
-                Xem video ngắn về cách chọn trái cây và mẹo dinh dưỡng.
-              </p>
-              <span className="inline-flex items-center gap-1 text-sm font-semibold text-primary">
-                Mở TikTok <ArrowRight className="h-4 w-4" />
-              </span>
-            </div>
-          </a>
-        </div>
-      </Section>
-
-      {/* DOWNLOAD */}
-      <Section>
-        <div className="rounded-[2.5rem] gt-gradient p-10 lg:p-16 text-white overflow-hidden relative">
-          <div className="absolute -top-20 -right-20 h-72 w-72 rounded-full bg-white/10 blur-3xl" />
-          <div className="absolute -bottom-20 -left-20 h-72 w-72 rounded-full bg-[oklch(0.95_0.15_85)]/30 blur-3xl" />
-          <div className="relative grid lg:grid-cols-2 gap-10 items-center">
-            <div>
-              <h2 className="text-3xl lg:text-5xl font-extrabold leading-tight">Tải ứng dụng Golden Time</h2>
-              <p className="mt-4 text-white/85 text-base lg:text-lg max-w-xl">
-                Trải nghiệm quét trái cây bằng AI, xem dinh dưỡng, so sánh giá và mua hàng thông minh ngay
-                trên điện thoại của bạn.
-              </p>
-              <div className="mt-8 flex flex-wrap gap-3">
-                <a href={SOCIAL.appStore} className="inline-flex items-center gap-2 px-5 py-3.5 rounded-2xl bg-white text-foreground font-semibold hover:bg-white/90">
-                  <Apple className="h-5 w-5" /> Tải trên App Store
-                </a>
-                <a href={SOCIAL.googlePlay} className="inline-flex items-center gap-2 px-5 py-3.5 rounded-2xl bg-foreground text-white font-semibold hover:bg-foreground/90">
-                  <Download className="h-5 w-5" /> Tải trên Google Play
-                </a>
-                <a href={SOCIAL.apk} className="inline-flex items-center gap-2 px-5 py-3.5 rounded-2xl bg-white/20 border border-white/30 text-white font-semibold hover:bg-white/30">
-                  <Download className="h-5 w-5" /> Tải file APK
-                </a>
-              </div>
-            </div>
-            <div className="flex justify-center">
-              <div className="bg-white rounded-3xl p-6 text-center text-foreground gt-shadow">
-                <div className="h-44 w-44 rounded-2xl bg-cream grid place-items-center text-6xl">📱</div>
-                <div className="mt-3 text-xs font-semibold text-muted-foreground">Quét QR để tải</div>
-                <div className="text-sm font-bold">goldentime.vn/app</div>
-              </div>
-            </div>
+      <section className="mx-auto max-w-7xl px-5 lg:px-8 pb-16">
+        <div className="rounded-[2rem] bg-cream px-6 py-9 text-center sm:px-10 sm:py-11">
+          <h2 className="text-2xl font-extrabold tracking-tight text-foreground sm:text-3xl">
+            Golden Time trên điện thoại
+          </h2>
+          <p className="mx-auto mt-3 max-w-2xl text-sm leading-relaxed text-muted-foreground sm:text-base">
+            Quét trái cây, kiểm tra chất lượng và mua trái cây đáng tin cậy ngay trên điện thoại.
+          </p>
+          <div className="mt-6">
+            <DownloadAppDialog
+              trigger={
+                <button className="inline-flex h-11 items-center justify-center rounded-xl gt-gradient px-5 text-sm font-semibold text-white shadow-sm transition hover:brightness-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2">
+                  Tải ứng dụng
+                </button>
+              }
+            />
           </div>
         </div>
-      </Section>
+      </section>
+
     </SiteShell>
   );
 }
 
-export function ArticleCard({ article }: { article: typeof ARTICLES[number] }) {
+export function ArticleCard({ article }: { article: Pick<ApiArticle, "slug" | "title" | "category" | "emoji" | "gradient" | "description" | "readingTime"> }) {
   return (
     <Link
       to="/knowledge/$slug"

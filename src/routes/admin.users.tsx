@@ -1,58 +1,121 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
-import { Search, Eye, Lock, Unlock, History, Download } from "lucide-react";
-import {
-  AdminShell,
-  AdminTable,
-  FilterBar,
-  StatusBadge,
-  SectionCard,
-  Drawer,
-} from "@/components/AdminShell";
+import { useEffect, useMemo, useState } from "react";
+import { Search } from "lucide-react";
+import { AdminShell, AdminTable, FilterBar, SectionCard, StatusBadge } from "@/components/AdminShell";
+import { api, type AdminUser } from "@/lib/api";
 
-export const Route = createFileRoute("/admin/users")({
-  component: AdminUsers,
-});
+export const Route = createFileRoute("/admin/users")({ component: AdminUsers });
 
-const USERS = [
-  { id: "U10241", name: "Nguyễn Thị Hồng", email: "hong.nguyen@gmail.com", orders: 28, scans: 142, status: "Hoạt động", joined: "12/03/2025" },
-  { id: "U10242", name: "Trần Văn Minh", email: "minh.tran@gmail.com", orders: 15, scans: 88, status: "Hoạt động", joined: "04/04/2025" },
-  { id: "U10243", name: "Lê Thị Mai", email: "mai.le@yahoo.com", orders: 42, scans: 201, status: "Hoạt động", joined: "21/01/2025" },
-  { id: "U10244", name: "Phạm Quốc Hùng", email: "hung.pham@gmail.com", orders: 3, scans: 12, status: "Tạm khóa", joined: "08/06/2025" },
-  { id: "U10245", name: "Võ Thị Lan", email: "lan.vo@outlook.com", orders: 64, scans: 312, status: "Hoạt động", joined: "15/11/2024" },
-  { id: "U10246", name: "Đặng Văn Phú", email: "phu.dang@gmail.com", orders: 9, scans: 47, status: "Đã khóa", joined: "02/02/2026" },
-  { id: "U10247", name: "Hoàng Thị Yến", email: "yen.hoang@gmail.com", orders: 22, scans: 95, status: "Hoạt động", joined: "30/05/2025" },
-  { id: "U10248", name: "Bùi Thanh Tùng", email: "tung.bui@gmail.com", orders: 11, scans: 64, status: "Hoạt động", joined: "18/12/2025" },
-];
+const ROLE_LABELS: Record<AdminUser["role"], string> = {
+  USER: "Người dùng",
+  SHOP_OWNER: "Doanh nghiệp",
+  ADMIN: "Quản trị viên",
+};
+
+const ROLE_STYLES: Record<AdminUser["role"], string> = {
+  USER: "bg-blue-50 text-blue-700",
+  SHOP_OWNER: "bg-emerald-50 text-emerald-700",
+  ADMIN: "bg-amber-50 text-amber-700",
+};
 
 function AdminUsers() {
-  const [filter, setFilter] = useState("Tất cả");
-  const [selected, setSelected] = useState<typeof USERS[number] | null>(null);
+  const [users, setUsers] = useState<AdminUser[]>([]);
+  const [query, setQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState("Tất cả");
+  const [roleFilter, setRoleFilter] = useState<"Tất cả" | AdminUser["role"]>("Tất cả");
+  const [minOrders, setMinOrders] = useState("");
+  const [minScans, setMinScans] = useState("");
+  const [error, setError] = useState("");
 
-  const filtered = USERS.filter((u) => filter === "Tất cả" || u.status === filter);
+  useEffect(() => {
+    api.adminUsers()
+      .then(setUsers)
+      .catch((cause) => setError(cause instanceof Error ? cause.message : "Không tải được người dùng."));
+  }, []);
+
+  const filtered = useMemo(() => {
+    const normalizedQuery = query.trim().toLowerCase();
+    const orderThreshold = minOrders === "" ? null : Number(minOrders);
+    const scanThreshold = minScans === "" ? null : Number(minScans);
+
+    return users.filter((user) => {
+      const status = user.enabled ? "Hoạt động" : "Đã khóa";
+      const matchesQuery = `${user.name} ${user.email} ${user.id}`.toLowerCase().includes(normalizedQuery);
+      const matchesOrders = orderThreshold === null || user.orders >= orderThreshold;
+      const matchesScans = scanThreshold === null || user.scans >= scanThreshold;
+
+      return (statusFilter === "Tất cả" || status === statusFilter)
+        && (roleFilter === "Tất cả" || user.role === roleFilter)
+        && matchesQuery
+        && matchesOrders
+        && matchesScans;
+    });
+  }, [users, query, statusFilter, roleFilter, minOrders, minScans]);
 
   return (
-    <AdminShell title="Quản lý người dùng" subtitle={`Tổng cộng ${USERS.length} người dùng`}>
+    <AdminShell title="Quản lý người dùng" subtitle={`Tổng cộng ${users.length} người dùng`}>
       <FilterBar>
-        <div className="flex items-center gap-2 bg-[oklch(0.97_0.04_95)] px-3 h-9 rounded-lg flex-1 min-w-[200px]">
+        <div className="flex h-9 min-w-[200px] flex-1 items-center gap-2 rounded-lg bg-[oklch(0.97_0.04_95)] px-3">
           <Search className="h-4 w-4 text-muted-foreground" />
-          <input placeholder="Tìm theo tên, email, ID..." className="flex-1 bg-transparent outline-none text-sm" />
+          <input
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+            placeholder="Tìm theo tên, email, ID..."
+            aria-label="Tìm người dùng theo tên, email hoặc ID"
+            className="flex-1 bg-transparent text-sm outline-none"
+          />
         </div>
-        {["Tất cả", "Hoạt động", "Tạm khóa", "Đã khóa"].map((s) => (
+        <select
+          value={roleFilter}
+          onChange={(event) => setRoleFilter(event.target.value as typeof roleFilter)}
+          aria-label="Lọc theo vai trò"
+          className="h-9 rounded-lg border border-border bg-white px-3 text-sm"
+        >
+          <option value="Tất cả">Tất cả vai trò</option>
+          <option value="USER">Người dùng</option>
+          <option value="SHOP_OWNER">Doanh nghiệp</option>
+          <option value="ADMIN">Quản trị viên</option>
+        </select>
+        <label className="flex h-9 items-center gap-2 rounded-lg border border-border bg-white px-3 text-sm">
+          <span className="whitespace-nowrap text-muted-foreground">Đơn từ</span>
+          <input
+            type="number"
+            min="0"
+            step="1"
+            inputMode="numeric"
+            value={minOrders}
+            onChange={(event) => setMinOrders(event.target.value)}
+            aria-label="Lọc theo số đơn tối thiểu"
+            placeholder="Tối thiểu"
+            className="w-20 bg-transparent outline-none placeholder:text-muted-foreground/70"
+          />
+        </label>
+        <label className="flex h-9 items-center gap-2 rounded-lg border border-border bg-white px-3 text-sm">
+          <span className="whitespace-nowrap text-muted-foreground">Quét AI từ</span>
+          <input
+            type="number"
+            min="0"
+            step="1"
+            inputMode="numeric"
+            value={minScans}
+            onChange={(event) => setMinScans(event.target.value)}
+            aria-label="Lọc theo số lượt quét AI tối thiểu"
+            placeholder="Tối thiểu"
+            className="w-20 bg-transparent outline-none placeholder:text-muted-foreground/70"
+          />
+        </label>
+        {["Tất cả", "Hoạt động", "Đã khóa"].map((status) => (
           <button
-            key={s}
-            onClick={() => setFilter(s)}
-            className={`h-9 px-3 rounded-lg text-sm font-semibold ${
-              filter === s ? "gt-gradient text-white" : "bg-muted text-foreground/70 hover:bg-muted/70"
-            }`}
+            key={status}
+            onClick={() => setStatusFilter(status)}
+            className={`h-9 rounded-lg px-3 text-sm font-semibold ${statusFilter === status ? "gt-gradient text-white" : "bg-muted text-foreground/70 hover:bg-muted/70"}`}
           >
-            {s}
+            {status}
           </button>
         ))}
-        <button className="h-9 px-3 rounded-lg text-sm font-semibold bg-white border border-border flex items-center gap-1.5">
-          <Download className="h-4 w-4" /> Xuất CSV
-        </button>
       </FilterBar>
+
+      {error && <p role="alert" className="mb-3 rounded-xl bg-red-50 p-3 text-sm text-red-700">{error}</p>}
 
       <SectionCard title={`Danh sách người dùng (${filtered.length})`}>
         <AdminTable
@@ -61,101 +124,35 @@ function AdminUsers() {
               <th className="py-2 pr-3">ID</th>
               <th className="py-2 pr-3">Tên người dùng</th>
               <th className="py-2 pr-3">Email</th>
+              <th className="py-2 pr-3">Vai trò</th>
               <th className="py-2 pr-3 text-right">Đơn</th>
               <th className="py-2 pr-3 text-right">Quét AI</th>
               <th className="py-2 pr-3">Trạng thái</th>
               <th className="py-2 pr-3">Ngày tham gia</th>
-              <th className="py-2 pr-3 text-right">Hành động</th>
             </>
           }
         >
-          {filtered.map((u) => (
-            <tr key={u.id} className="hover:bg-muted/30">
-              <td className="py-3 pr-3 font-mono text-xs">{u.id}</td>
+          {filtered.map((user) => (
+            <tr key={user.id} className="hover:bg-muted/30">
+              <td className="py-3 pr-3 font-mono text-xs">{user.id}</td>
+              <td className="py-3 pr-3 font-semibold">{user.name}</td>
+              <td className="py-3 pr-3 text-muted-foreground">{user.email}</td>
               <td className="py-3 pr-3">
-                <div className="flex items-center gap-2.5">
-                  <div className="h-8 w-8 rounded-full gt-gradient grid place-items-center text-white text-xs font-bold">
-                    {u.name.split(" ").slice(-1)[0][0]}
-                  </div>
-                  <span className="font-semibold">{u.name}</span>
-                </div>
+                <span className={`inline-flex whitespace-nowrap rounded-full px-2.5 py-1 text-xs font-semibold ${ROLE_STYLES[user.role]}`}>
+                  {ROLE_LABELS[user.role]}
+                </span>
               </td>
-              <td className="py-3 pr-3 text-muted-foreground">{u.email}</td>
-              <td className="py-3 pr-3 text-right font-semibold">{u.orders}</td>
-              <td className="py-3 pr-3 text-right font-semibold">{u.scans}</td>
-              <td className="py-3 pr-3"><StatusBadge status={u.status} /></td>
-              <td className="py-3 pr-3 text-xs text-muted-foreground">{u.joined}</td>
-              <td className="py-3 pr-3">
-                <div className="flex items-center justify-end gap-1">
-                  <button onClick={() => setSelected(u)} className="h-8 w-8 grid place-items-center rounded-lg hover:bg-muted" title="Xem chi tiết">
-                    <Eye className="h-4 w-4" />
-                  </button>
-                  {u.status === "Hoạt động" ? (
-                    <button className="h-8 w-8 grid place-items-center rounded-lg hover:bg-red-50 text-red-600" title="Khóa tài khoản">
-                      <Lock className="h-4 w-4" />
-                    </button>
-                  ) : (
-                    <button className="h-8 w-8 grid place-items-center rounded-lg hover:bg-green-50 text-green-600" title="Mở khóa">
-                      <Unlock className="h-4 w-4" />
-                    </button>
-                  )}
-                  <button className="h-8 w-8 grid place-items-center rounded-lg hover:bg-muted" title="Lịch sử mua hàng">
-                    <History className="h-4 w-4" />
-                  </button>
-                </div>
-              </td>
+              <td className="py-3 pr-3 text-right tabular-nums">{user.orders}</td>
+              <td className="py-3 pr-3 text-right tabular-nums">{user.scans}</td>
+              <td className="py-3 pr-3"><StatusBadge status={user.enabled ? "Hoạt động" : "Đã khóa"} /></td>
+              <td className="py-3 pr-3 text-xs text-muted-foreground">{new Date(user.joined).toLocaleDateString("vi-VN")}</td>
             </tr>
           ))}
+          {!error && filtered.length === 0 && (
+            <tr><td colSpan={8} className="p-10 text-center text-muted-foreground">Chưa có người dùng phù hợp.</td></tr>
+          )}
         </AdminTable>
       </SectionCard>
-
-      <Drawer open={!!selected} onClose={() => setSelected(null)} title="Chi tiết người dùng">
-        {selected && (
-          <div className="space-y-5">
-            <div className="flex items-center gap-3">
-              <div className="h-14 w-14 rounded-full gt-gradient grid place-items-center text-white text-xl font-extrabold">
-                {selected.name.split(" ").slice(-1)[0][0]}
-              </div>
-              <div>
-                <p className="font-extrabold text-lg">{selected.name}</p>
-                <p className="text-sm text-muted-foreground">{selected.email}</p>
-                <div className="mt-1"><StatusBadge status={selected.status} /></div>
-              </div>
-            </div>
-            <div className="grid grid-cols-3 gap-2">
-              <div className="bg-muted/50 rounded-xl p-3 text-center">
-                <p className="text-xs text-muted-foreground">Đơn hàng</p>
-                <p className="text-lg font-extrabold">{selected.orders}</p>
-              </div>
-              <div className="bg-muted/50 rounded-xl p-3 text-center">
-                <p className="text-xs text-muted-foreground">Quét AI</p>
-                <p className="text-lg font-extrabold">{selected.scans}</p>
-              </div>
-              <div className="bg-muted/50 rounded-xl p-3 text-center">
-                <p className="text-xs text-muted-foreground">Đánh giá</p>
-                <p className="text-lg font-extrabold">{Math.floor(selected.orders * 0.6)}</p>
-              </div>
-            </div>
-            <div>
-              <p className="text-xs font-semibold uppercase text-muted-foreground mb-2">Thông tin</p>
-              <dl className="text-sm space-y-1.5">
-                <div className="flex justify-between"><dt className="text-muted-foreground">ID</dt><dd className="font-mono">{selected.id}</dd></div>
-                <div className="flex justify-between"><dt className="text-muted-foreground">Ngày tham gia</dt><dd>{selected.joined}</dd></div>
-                <div className="flex justify-between"><dt className="text-muted-foreground">SĐT</dt><dd>0987 123 456</dd></div>
-                <div className="flex justify-between"><dt className="text-muted-foreground">Khu vực</dt><dd>Hà Nội</dd></div>
-              </dl>
-            </div>
-            <div className="flex gap-2">
-              <button className="flex-1 h-10 rounded-xl gt-gradient text-white font-semibold text-sm">
-                Xem lịch sử mua hàng
-              </button>
-              <button className="h-10 px-4 rounded-xl border border-red-200 text-red-600 font-semibold text-sm">
-                Khóa tài khoản
-              </button>
-            </div>
-          </div>
-        )}
-      </Drawer>
     </AdminShell>
   );
 }

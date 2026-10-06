@@ -15,11 +15,11 @@ const PROBLEMS = [
 ];
 
 const SOLUTIONS = [
-  { icon: Sparkles, t: "AI đánh giá chất lượng", d: "Quét nhanh và nhận điểm chất lượng theo thời gian thực." },
-  { icon: Apple, t: "Dinh dưỡng tức thời", d: "Hiển thị thành phần dinh dưỡng và gợi ý sử dụng phù hợp." },
-  { icon: BarChart3, t: "So sánh giá", d: "So sánh giá giữa các cửa hàng và siêu thị uy tín gần bạn." },
-  { icon: QrCode, t: "Truy xuất nguồn gốc", d: "Quét mã để xem hành trình từ nông trại đến cửa hàng." },
-  { icon: ShoppingBag, t: "Mua hàng thông minh", d: "Đặt hàng từ đối tác được Golden Time kiểm duyệt chất lượng." },
+  { icon: Sparkles, t: "Phân tích ảnh", d: "Gửi ảnh tới dịch vụ AI được cấu hình và hiển thị kết quả dịch vụ trả về." },
+  { icon: Apple, t: "Tra cứu dinh dưỡng", d: "Hiển thị bản ghi dinh dưỡng đã được quản trị viên nhập vào hệ thống." },
+  { icon: BarChart3, t: "Tham khảo giá", d: "Hiển thị giá crawl được cùng nguồn và thời điểm cập nhật." },
+  { icon: QrCode, t: "Truy xuất nguồn gốc", d: "Tra cứu thông tin lô và hành trình do cửa hàng cập nhật." },
+  { icon: ShoppingBag, t: "Đặt hàng thử nghiệm", d: "Tạo đơn COD từ sản phẩm đang bán của một cửa hàng." },
 ];
 
 function AboutPage() {
@@ -43,12 +43,12 @@ function AboutPage() {
           <div className="rounded-3xl bg-white border border-border p-8">
             <div className="h-12 w-12 rounded-2xl gt-gradient grid place-items-center text-white mb-4"><Target className="h-6 w-6" /></div>
             <h3 className="font-extrabold text-xl mb-2">Sứ mệnh</h3>
-            <p className="text-muted-foreground">Giúp 10 triệu người Việt mua trái cây thông minh, an toàn và đúng giá trị hơn mỗi ngày.</p>
+            <p className="text-muted-foreground">Cung cấp thêm thông tin về chất lượng, giá và nguồn gốc để người mua có cơ sở lựa chọn trái cây.</p>
           </div>
           <div className="rounded-3xl gt-gradient text-white p-8">
             <div className="h-12 w-12 rounded-2xl bg-white/20 grid place-items-center mb-4"><Eye className="h-6 w-6" /></div>
             <h3 className="font-extrabold text-xl mb-2">Tầm nhìn</h3>
-            <p className="text-white/90">Trở thành nền tảng FoodTech hỗ trợ người tiêu dùng lựa chọn thực phẩm thông minh tại Việt Nam.</p>
+            <p className="text-white/90">Phát triển một nền tảng giúp tra cứu dữ liệu trái cây minh bạch và thuận tiện hơn.</p>
           </div>
         </div>
       </Section>

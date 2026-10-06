@@ -1,19 +1,14 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { Search, ScanLine, BarChart3, ShoppingBag, MapPin, Bell, Star } from "lucide-react";
+import { useEffect, useState, type FormEvent } from "react";
 import { PhoneShell, StatusBar } from "@/components/PhoneShell";
 import { FruitThumb } from "@/components/FruitThumb";
+import { api, type Product } from "@/lib/api";
 
 export const Route = createFileRoute("/home")({
   head: () => ({ meta: [{ title: "Trang chủ — Golden Time" }] }),
   component: Home,
 });
-
-const products = [
-  { emoji: "🍎", name: "Táo Fuji", score: 92, price: "49.000đ", store: "Bách Hóa Xanh" },
-  { emoji: "🍊", name: "Cam sành", score: 88, price: "35.000đ", store: "WinMart" },
-  { emoji: "🥭", name: "Xoài cát", score: 90, price: "65.000đ", store: "GrabMart" },
-  { emoji: "🍌", name: "Chuối già", score: 85, price: "28.000đ", store: "Cửa hàng Trái Cây Tươi" },
-];
 
 const quickActions = [
   { to: "/scan", icon: ScanLine, label: "Quét AI", color: "gt-gradient text-white" },
@@ -23,6 +18,16 @@ const quickActions = [
 ] as const;
 
 function Home() {
+  const nav = useNavigate();
+  const [products, setProducts] = useState<Product[]>([]);
+  const [search, setSearch] = useState("");
+  useEffect(() => { api.products().then((items) => setProducts(items.slice(0, 4))).catch(() => setProducts([])); }, []);
+  function searchShop(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const params = new URLSearchParams();
+    if (search.trim()) params.set("q", search.trim());
+    window.location.assign(`/shop?${params.toString()}`);
+  }
   return (
     <PhoneShell>
       <StatusBar title="Golden Time" right={<Bell className="h-4 w-4" />} />
@@ -30,17 +35,18 @@ function Home() {
         <p className="text-xs text-muted-foreground">Xin chào,</p>
         <h1 className="text-xl font-extrabold leading-tight">Hôm nay bạn muốn mua trái cây gì?</h1>
 
-        <div className="mt-4 flex items-center gap-2 bg-white rounded-2xl px-4 py-3 gt-shadow-soft border border-border">
+        <form onSubmit={searchShop} className="mt-4 flex items-center gap-2 bg-white rounded-2xl px-4 py-3 gt-shadow-soft border border-border">
           <Search className="h-4 w-4 text-muted-foreground" />
-          <input placeholder="Tìm táo, cam, xoài, chuối..." className="flex-1 bg-transparent outline-none text-sm" />
-        </div>
+          <input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Tìm táo, cam, xoài, chuối..." className="flex-1 bg-transparent outline-none text-sm" />
+          <button className="text-xs text-primary font-bold">Tìm</button>
+        </form>
 
         <Link to="/scan" className="mt-5 block rounded-3xl gt-gradient p-5 text-white gt-shadow relative overflow-hidden">
           <div className="absolute -right-4 -bottom-4 text-8xl opacity-30">🍎</div>
           <div className="relative">
             <span className="text-[11px] bg-white/20 px-2 py-1 rounded-full font-medium">✨ Tính năng nổi bật</span>
             <h2 className="text-xl font-extrabold mt-2 leading-tight">Quét trái cây<br />bằng AI</h2>
-            <p className="text-xs text-white/85 mt-1 max-w-[200px]">Đánh giá độ tươi, độ chín và chất lượng tức thì</p>
+            <p className="text-xs text-white/85 mt-1 max-w-[200px]">Kết quả hiển thị khi dịch vụ AI đã được kết nối</p>
             <span className="mt-3 inline-flex items-center gap-1 bg-white text-primary px-3 py-1.5 rounded-full text-xs font-semibold">
               Quét ngay <ScanLine className="h-3.5 w-3.5" />
             </span>
@@ -59,26 +65,25 @@ function Home() {
         </div>
 
         <div className="mt-6 flex items-center justify-between">
-          <h3 className="font-bold text-base">Gợi ý hôm nay</h3>
+          <h3 className="font-bold text-base">Sản phẩm đang bán</h3>
           <Link to="/shop" className="text-xs text-primary font-semibold">Xem tất cả</Link>
         </div>
         <div className="mt-3 space-y-3">
           {products.map((p) => (
-            <div key={p.name} className="bg-white rounded-2xl p-3 flex items-center gap-3 gt-shadow-soft border border-border">
+            <div key={p.id} className="bg-white rounded-2xl p-3 flex items-center gap-3 gt-shadow-soft border border-border">
               <FruitThumb emoji={p.emoji} size="md" />
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
-                  <h4 className="font-bold text-sm truncate">{p.name}</h4>
-                  <span className="text-[10px] bg-primary/10 text-primary px-1.5 py-0.5 rounded-md font-bold flex items-center gap-0.5">
-                    <Star className="h-2.5 w-2.5 fill-current" /> {p.score}
-                  </span>
+                  <h4 className="font-bold text-sm truncate">{p.displayName}</h4>
+                  {p.aiScore != null && <span className="text-[10px] bg-primary/10 text-primary px-1.5 py-0.5 rounded-md font-bold flex items-center gap-0.5"><Star className="h-2.5 w-2.5 fill-current" /> {p.aiScore}</span>}
                 </div>
-                <p className="text-[11px] text-muted-foreground truncate">{p.store}</p>
-                <p className="text-sm font-extrabold text-primary mt-0.5">{p.price}<span className="text-[10px] text-muted-foreground font-medium">/kg</span></p>
+                <p className="text-[11px] text-muted-foreground truncate">{p.shopName}</p>
+                <p className="text-sm font-extrabold text-primary mt-0.5">{p.pricePerKg.toLocaleString("vi-VN")}đ<span className="text-[10px] text-muted-foreground font-medium">/kg</span></p>
               </div>
-              <Link to="/result" className="shrink-0 text-[11px] font-semibold bg-cream text-foreground px-3 py-2 rounded-xl border border-border">Chi tiết</Link>
+              <Link to="/shop" className="shrink-0 text-[11px] font-semibold bg-cream text-foreground px-3 py-2 rounded-xl border border-border">Xem</Link>
             </div>
           ))}
+          {products.length === 0 && <p className="text-xs text-muted-foreground">Chưa có sản phẩm đang bán trong dữ liệu.</p>}
         </div>
       </div>
     </PhoneShell>

@@ -1,4 +1,4 @@
-import { Toaster as Sonner } from "src/components/ui/sonner";
+import { Toaster as Sonner } from "sonner";
 
 type ToasterProps = React.ComponentProps<typeof Sonner>;
 

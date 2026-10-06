@@ -1,109 +1,62 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
 import { AdminShell, SectionCard } from "@/components/AdminShell";
+import { api, type AdminPriceSource } from "@/lib/api";
 
-export const Route = createFileRoute("/admin/settings")({
-  component: AdminSettings,
-});
+export const Route = createFileRoute("/admin/settings")({ component: AdminSettings });
 
 function AdminSettings() {
-  return (
-    <AdminShell title="Cài đặt hệ thống" subtitle="Thiết lập nền tảng Golden Time">
-      <div className="grid lg:grid-cols-2 gap-4">
-        <SectionCard title="Phí nền tảng & Hoa hồng">
-          <div className="space-y-4">
-            <Row label="Phí nền tảng cố định">
-              <input defaultValue="5,000" className="h-10 w-32 px-3 rounded-xl border border-border text-right" /> <span className="text-sm text-muted-foreground ml-2">₫/đơn</span>
-            </Row>
-            <Row label="Hoa hồng (%)">
-              <input defaultValue="8" className="h-10 w-32 px-3 rounded-xl border border-border text-right" /> <span className="text-sm text-muted-foreground ml-2">%</span>
-            </Row>
-            <Row label="Hoa hồng cửa hàng Vàng">
-              <input defaultValue="6" className="h-10 w-32 px-3 rounded-xl border border-border text-right" /> <span className="text-sm text-muted-foreground ml-2">%</span>
-            </Row>
-            <Row label="Phí giao hàng tối thiểu">
-              <input defaultValue="15,000" className="h-10 w-32 px-3 rounded-xl border border-border text-right" /> <span className="text-sm text-muted-foreground ml-2">₫</span>
-            </Row>
-          </div>
-        </SectionCard>
+  const [sources, setSources] = useState<AdminPriceSource[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [error, setError] = useState("");
+  const [refreshMessage, setRefreshMessage] = useState("");
 
-        <SectionCard title="Nội dung AI Disclaimer">
-          <label className="block">
-            <span className="text-xs font-semibold">Văn bản hiển thị dưới mọi kết quả AI</span>
-            <textarea
-              rows={5}
-              defaultValue="Kết quả AI chỉ mang tính hỗ trợ tham khảo. Quyết định mua hàng cuối cùng thuộc về người dùng. Golden Time không chịu trách nhiệm về thiệt hại phát sinh từ việc dựa hoàn toàn vào kết quả phân tích AI."
-              className="mt-1 w-full p-3 rounded-xl border border-border outline-none focus:ring-2 focus:ring-[oklch(0.62_0.17_145)] text-sm"
-            />
-          </label>
-        </SectionCard>
+  async function loadSources() {
+    setLoading(true);
+    try { setSources(await api.adminPriceSources()); setError(""); }
+    catch (cause) { setError(cause instanceof Error ? cause.message : "Không tải được nguồn giá."); }
+    finally { setLoading(false); }
+  }
 
-        <SectionCard title="Phương thức thanh toán">
-          <div className="space-y-2">
-            {[
-              { n: "MoMo", on: true }, { n: "VNPay", on: true }, { n: "ZaloPay", on: true },
-              { n: "Apple Pay", on: false }, { n: "Thẻ ngân hàng (Napas)", on: true }, { n: "COD", on: true },
-            ].map((p) => (
-              <label key={p.n} className="flex items-center justify-between p-3 rounded-xl bg-muted/40">
-                <span className="font-semibold text-sm">{p.n}</span>
-                <input type="checkbox" defaultChecked={p.on} className="h-5 w-9 appearance-none rounded-full bg-muted checked:bg-[oklch(0.62_0.17_145)] relative cursor-pointer transition before:absolute before:top-0.5 before:left-0.5 before:h-4 before:w-4 before:rounded-full before:bg-white checked:before:translate-x-4 before:transition" />
-              </label>
-            ))}
-          </div>
-        </SectionCard>
+  useEffect(() => { void loadSources(); }, []);
 
-        <SectionCard title="Cài đặt thông báo">
-          <div className="space-y-2">
-            {[
-              "Email cảnh báo khi có đơn bị hủy",
-              "Push thông báo khi shop mới đăng ký",
-              "Email báo cáo doanh thu hàng ngày",
-              "Cảnh báo khi tỷ lệ AI sai vượt 1%",
-              "Thông báo Slack cho team kỹ thuật",
-            ].map((n, i) => (
-              <label key={n} className="flex items-center justify-between p-3 rounded-xl bg-muted/40">
-                <span className="text-sm">{n}</span>
-                <input type="checkbox" defaultChecked={i % 2 === 0} className="h-5 w-9 appearance-none rounded-full bg-muted checked:bg-[oklch(0.62_0.17_145)] relative cursor-pointer transition before:absolute before:top-0.5 before:left-0.5 before:h-4 before:w-4 before:rounded-full before:bg-white checked:before:translate-x-4 before:transition" />
-              </label>
-            ))}
-          </div>
-        </SectionCard>
+  async function refreshSources() {
+    setRefreshing(true); setError(""); setRefreshMessage("");
+    try {
+      const result = await api.refreshPrices();
+      setRefreshMessage(`Đã xử lý ${result.sources} nguồn: cập nhật ${result.updated}, lỗi ${result.failed}.`);
+      await loadSources();
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : "Không làm mới được dữ liệu giá.");
+    } finally { setRefreshing(false); }
+  }
 
-        <SectionCard title="Tài khoản Admin" className="lg:col-span-2">
-          <div className="grid sm:grid-cols-2 gap-4">
-            <Field label="Tên Admin" defaultValue="Nguyễn Quản Trị" />
-            <Field label="Email" defaultValue="admin@goldentime.vn" />
-            <Field label="SĐT" defaultValue="0901 234 567" />
-            <Field label="Vai trò" defaultValue="Super Admin" disabled />
-            <Field label="Mật khẩu mới" type="password" placeholder="••••••••" />
-            <Field label="Xác nhận mật khẩu" type="password" placeholder="••••••••" />
-          </div>
-          <div className="mt-4 flex justify-end gap-2">
-            <button className="h-10 px-4 rounded-xl border border-border font-semibold text-sm">Hủy</button>
-            <button className="h-10 px-4 rounded-xl gt-gradient text-white font-semibold text-sm">Lưu thay đổi</button>
-          </div>
-        </SectionCard>
+  return <AdminShell title="Cài đặt hệ thống" subtitle="Trạng thái các nguồn dữ liệu và dịch vụ MVP">
+    <div className="grid lg:grid-cols-2 gap-4">
+      <SectionCard title="Nguồn giá">
+        <p className="text-sm text-muted-foreground">Giá chỉ được hiển thị sau khi lấy thành công từ trang bán lẻ. Mỗi báo giá lưu kèm đường dẫn và thời điểm lấy.</p>
+        {error && <p role="alert" className="mt-4 rounded-xl bg-red-50 p-3 text-sm text-red-700">{error}</p>}
+        {refreshMessage && <p className="mt-4 rounded-xl bg-green-50 p-3 text-sm text-green-800">{refreshMessage}</p>}
+        <button type="button" disabled={refreshing} onClick={() => void refreshSources()} className="mt-4 rounded-xl gt-gradient px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-60">
+          {refreshing ? "Đang cập nhật…" : "Cập nhật giá từ nguồn thật"}
+        </button>
+        <div className="mt-5 space-y-3">
+          {sources.map((source) => <article key={source.id} className="rounded-2xl border border-border p-4">
+            <div className="flex items-start justify-between gap-3"><div><h3 className="font-semibold text-sm">{source.retailer} · {source.fruit}</h3><p className="mt-1 text-xs text-muted-foreground">{source.productName}</p></div><span className={`rounded-full px-2 py-1 text-[11px] font-semibold ${source.enabled ? "bg-green-50 text-green-700" : "bg-gray-100 text-gray-600"}`}>{source.enabled ? "Đang bật" : "Đã tắt"}</span></div>
+            <a href={source.sourceUrl} target="_blank" rel="noreferrer" className="mt-2 block break-all text-xs text-primary underline">Trang nguồn</a>
+            <p className="mt-2 text-xs text-muted-foreground">Crawl thành công gần nhất: {source.lastSuccessAt ? new Date(source.lastSuccessAt).toLocaleString("vi-VN") : "Chưa có"}</p>
+            {source.lastError && <p className="mt-1 text-xs text-red-700">Lỗi gần nhất: {source.lastError}</p>}
+          </article>)}
+          {!loading && sources.length === 0 && <p className="rounded-2xl border border-dashed border-border p-5 text-center text-sm text-muted-foreground">Chưa cấu hình nguồn giá.</p>}
+          {loading && <p className="text-sm text-muted-foreground">Đang tải trạng thái nguồn…</p>}
+        </div>
+      </SectionCard>
+      <div className="space-y-4">
+        <SectionCard title="Dịch vụ AI"><p className="text-sm text-muted-foreground">Phân tích ảnh chỉ hoạt động khi cấu hình AI_SERVICE_URL. Kết quả không được tự tạo khi dịch vụ chưa có.</p></SectionCard>
+        <SectionCard title="Thanh toán"><p className="text-sm text-muted-foreground">MVP hiện chỉ ghi nhận đơn COD; cổng thanh toán chưa được tích hợp.</p></SectionCard>
+        <SectionCard title="Thiết lập nền tảng"><p className="text-sm text-muted-foreground">Phí, chính sách đối tác, nội dung thông báo và quản lý tài khoản quản trị chưa có API lưu cấu hình.</p></SectionCard>
       </div>
-    </AdminShell>
-  );
-}
-
-function Row({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <div className="flex items-center justify-between gap-4">
-      <span className="text-sm font-semibold">{label}</span>
-      <div className="flex items-center">{children}</div>
     </div>
-  );
-}
-
-function Field({ label, ...rest }: { label: string } & React.InputHTMLAttributes<HTMLInputElement>) {
-  return (
-    <label className="block">
-      <span className="text-xs font-semibold">{label}</span>
-      <input
-        {...rest}
-        className="mt-1 w-full h-10 px-3 rounded-xl border border-border outline-none focus:ring-2 focus:ring-[oklch(0.62_0.17_145)] disabled:bg-muted/50"
-      />
-    </label>
-  );
+  </AdminShell>;
 }
