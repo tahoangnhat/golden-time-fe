@@ -260,6 +260,7 @@ export const api = {
   adminBusinessApplications: () => request<BusinessApplication[]>("/admin/business-applications"),
   adminBusinessLicense: (id: number) => requestBlob(`/admin/business-applications/${id}/license`),
   decideBusinessApplication: (id: number, approved: boolean, reason?: string) => request<BusinessApplication>(`/admin/business-applications/${id}/decision`, { method: "POST", body: JSON.stringify({ approved, reason }) }),
+  resendBusinessApplicationNotification: (id: number) => request<BusinessApplication>(`/admin/business-applications/${id}/notification`, { method: "POST" }),
   adminProducts: () => request<AdminProduct[]>("/admin/products"),
   adminOrders: () => request<AdminOrder[]>("/admin/orders"),
   adminReviews: () => request<AdminReview[]>("/admin/reviews"),

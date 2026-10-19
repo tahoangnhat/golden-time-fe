@@ -52,11 +52,30 @@ function AdminShops() {
       const updated = await api.decideBusinessApplication(application.id, approved, reason || undefined);
       setApplications((current) => current.map((item) => item.id === updated.id ? updated : item));
       if (updated.notificationSent === false) {
-        setApplicationNotice("Quyết định đã được lưu, nhưng email thông báo chưa gửi được. Bạn có thể cấu hình MAIL_FROM và SMTP sau.");
+        setApplicationNotice("Quyết định đã được lưu nhưng email chưa gửi được. Sau khi cấu hình Gmail API, hãy bấm Gửi lại email.");
+      } else {
+        setApplicationNotice("Quyết định đã được lưu và email thông báo đã gửi.");
       }
       if (approved) setShops(await api.adminShops());
     } catch (cause) {
       setApplicationError(cause instanceof Error ? cause.message : "Không xử lý được hồ sơ doanh nghiệp.");
+    } finally {
+      setBusyId(null);
+    }
+  }
+
+  async function resendNotification(application: BusinessApplication) {
+    setApplicationError("");
+    setApplicationNotice("");
+    setBusyId(application.id);
+    try {
+      const updated = await api.resendBusinessApplicationNotification(application.id);
+      setApplications((current) => current.map((item) => item.id === updated.id ? updated : item));
+      setApplicationNotice(updated.notificationSent
+        ? "Email thông báo đã được gửi lại."
+        : "Chưa gửi được email. Kiểm tra cấu hình Gmail API và nhật ký backend trên Render.");
+    } catch (cause) {
+      setApplicationError(cause instanceof Error ? cause.message : "Không gửi lại được email thông báo.");
     } finally {
       setBusyId(null);
     }
@@ -73,7 +92,12 @@ function AdminShops() {
               <h3 className="font-bold">{application.businessName}</h3>
               <p className="mt-1 text-xs text-muted-foreground">Mã số đăng ký: {application.registrationNumber} · Gửi {new Date(application.createdAt).toLocaleString("vi-VN")}</p>
             </div>
-            <StatusBadge status={application.status === "PENDING" ? "Chờ duyệt" : application.status === "APPROVED" ? "Đã duyệt" : "Từ chối"} />
+            <div className="flex flex-wrap items-center gap-2">
+              <StatusBadge status={application.status === "PENDING" ? "Chờ duyệt" : application.status === "APPROVED" ? "Đã duyệt" : "Từ chối"} />
+              {application.status !== "PENDING" && <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${application.notificationSent ? "bg-green-50 text-green-700" : "bg-amber-50 text-amber-800"}`}>
+                {application.notificationSent ? "Đã gửi email" : "Email chưa gửi"}
+              </span>}
+            </div>
           </div>
           <div className="mt-3 grid gap-x-6 gap-y-1 text-sm sm:grid-cols-2">
             <p><span className="text-muted-foreground">Người liên hệ:</span> {application.contactName}</p>
@@ -82,6 +106,7 @@ function AdminShops() {
             <p className="sm:col-span-2"><span className="text-muted-foreground">Địa chỉ:</span> {application.address}</p>
           </div>
           <button onClick={() => void openLicense(application)} className="mt-3 rounded-lg border border-border px-3 py-2 text-xs font-semibold text-primary hover:bg-cream">Tải giấy phép: {application.licenseOriginalName}</button>
+          {application.status !== "PENDING" && application.notificationSent !== true && <button disabled={busyId === application.id} onClick={() => void resendNotification(application)} className="ml-2 mt-3 rounded-lg border border-border px-3 py-2 text-xs font-semibold text-primary hover:bg-cream disabled:opacity-50">{busyId === application.id ? "Đang gửi…" : "Gửi lại email"}</button>}
           {application.status === "PENDING" ? <>
             <label className="mt-4 block"><span className="text-xs font-semibold">Lý do từ chối (bắt buộc khi từ chối)</span><textarea value={reasons[application.id] ?? ""} onChange={(event) => setReasons((current) => ({ ...current, [application.id]: event.target.value }))} rows={2} maxLength={1000} className="mt-1 w-full rounded-xl border border-border px-3 py-2 text-sm" /></label>
             <div className="mt-3 flex flex-wrap justify-end gap-2">
