@@ -177,6 +177,18 @@ function HomePage() {
       </Section>
 
       <section className="mx-auto max-w-7xl px-5 lg:px-8 pb-16">
+        <div className="rounded-3xl border border-border bg-white p-6 sm:p-8">
+          <h2 className="text-xl font-extrabold tracking-tight text-foreground">Golden Time và quyền truy cập Google</h2>
+          <p className="mt-3 max-w-4xl text-sm leading-7 text-muted-foreground">
+            Golden Time giúp người dùng phân tích ảnh trái cây bằng AI, tra cứu dinh dưỡng, tìm cửa hàng và đặt hàng; doanh nghiệp có thể đăng ký cửa hàng qua cổng đối tác. Khi tích hợp Gmail API được bật, Golden Time chỉ dùng quyền gửi thư để thông báo kết quả xét duyệt hồ sơ đến email doanh nghiệp đã đăng ký, không đọc hộp thư.
+          </p>
+          <Link to="/privacy" className="mt-4 inline-flex text-sm font-semibold text-primary underline underline-offset-4 hover:text-primary/80">
+            Đọc Chính sách quyền riêng tư
+          </Link>
+        </div>
+      </section>
+
+      <section className="mx-auto max-w-7xl px-5 lg:px-8 pb-16">
         <div className="rounded-[2rem] bg-cream px-6 py-9 text-center sm:px-10 sm:py-11">
           <h2 className="text-2xl font-extrabold tracking-tight text-foreground sm:text-3xl">
             Golden Time trên điện thoại

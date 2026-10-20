@@ -114,8 +114,8 @@ function MapScreen() {
   }, [visibleShops, location]);
 
   const selectedShop = shops.find((shop) => shop.id === selectedShopId) || null;
-  const canReviewSelectedShop = proof !== null
-    && (!proof.shopId || proof.shopId === selectedShopId);
+  const canReviewSelectedShop = Boolean(proof)
+    && (!proof?.shopId || proof.shopId === selectedShopId);
 
   useEffect(() => {
     if (!near || !location || !hasGoogleMapsApiKey() || !mapContainerRef.current) {
