@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Search, Star } from "lucide-react";
 import { AdminShell, AdminTable, FilterBar, SectionCard, StatusBadge } from "@/components/AdminShell";
 import { api, type AdminShop, type BusinessApplication } from "@/lib/api";
+import { geocodeAddress } from "@/lib/googleMaps";
 
 export const Route = createFileRoute("/admin/shops")({ component: AdminShops });
 
@@ -49,7 +50,11 @@ function AdminShops() {
     setApplicationNotice("");
     setBusyId(application.id);
     try {
-      const updated = await api.decideBusinessApplication(application.id, approved, reason || undefined);
+      const location = approved ? await geocodeAddress(application.address) : undefined;
+      const updated = await api.decideBusinessApplication(application.id, approved, reason || undefined, location && {
+        latitude: location.lat,
+        longitude: location.lng,
+      });
       setApplications((current) => current.map((item) => item.id === updated.id ? updated : item));
       if (updated.notificationSent === false) {
         setApplicationNotice("Quyết định đã được lưu nhưng email chưa gửi được. Sau khi cấu hình Gmail API, hãy bấm Gửi lại email.");
@@ -85,6 +90,7 @@ function AdminShops() {
     <SectionCard title={`Hồ sơ đăng ký doanh nghiệp (${pendingApplications.length} chờ duyệt)`}>
       {applicationError && <p role="alert" className="mb-3 rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">{applicationError}</p>}
       {applicationNotice && <p role="status" className="mb-3 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">{applicationNotice}</p>}
+      <p className="mb-3 text-xs text-muted-foreground">Khi chấp nhận hồ sơ, GoldenTime xác định tọa độ cửa hàng từ địa chỉ doanh nghiệp đã đăng ký trên Google Maps.</p>
       <div className="space-y-4">
         {applications.map((application) => <article key={application.id} className="rounded-2xl border border-border p-4">
           <div className="flex flex-wrap items-start justify-between gap-3">

@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Info, Store } from "lucide-react";
+import { Mail, Store } from "lucide-react";
 import { SiteShell, Section, SectionHeading } from "@/components/SiteShell";
 
 export const Route = createFileRoute("/contact")({
@@ -14,14 +14,15 @@ function ContactPage() {
         <SectionHeading
           eyebrow="Liên hệ"
           title="Thông tin liên hệ"
-          subtitle="Các kênh liên hệ và biểu mẫu sẽ xuất hiện sau khi được cấu hình cho dự án."
+          subtitle="Liên hệ Golden Time về tài khoản, đơn hàng, hồ sơ doanh nghiệp hoặc quyền riêng tư."
         />
         <div className="max-w-3xl mx-auto rounded-3xl bg-white border border-border p-6 lg:p-8">
           <div className="flex items-start gap-4">
-            <div className="h-12 w-12 shrink-0 rounded-2xl bg-cream text-primary grid place-items-center"><Info className="h-6 w-6" /></div>
+            <div className="h-12 w-12 shrink-0 rounded-2xl bg-cream text-primary grid place-items-center"><Mail className="h-6 w-6" /></div>
             <div>
-              <h2 className="font-extrabold text-lg">Chưa có kênh liên hệ được cấu hình</h2>
-              <p className="mt-2 text-sm text-muted-foreground">Phiên bản MVP hiện chưa kết nối email, mạng xã hội hoặc API nhận yêu cầu liên hệ. Biểu mẫu gửi tin nhắn chưa khả dụng.</p>
+              <h2 className="font-extrabold text-lg">Email hỗ trợ</h2>
+              <p className="mt-2 text-sm text-muted-foreground">Gửi yêu cầu đến địa chỉ bên dưới. Với yêu cầu về dữ liệu cá nhân, hãy ghi rõ email tài khoản để chúng tôi xác minh.</p>
+              <a href="mailto:nhatdeveloper04@gmail.com" className="mt-3 inline-flex font-semibold text-primary hover:underline">nhatdeveloper04@gmail.com</a>
             </div>
           </div>
           <div className="mt-6 border-t border-border pt-6">
