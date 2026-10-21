@@ -196,14 +196,14 @@ async function request<T>(path: string, init: RequestInit = {}, canRefresh = tru
   } catch {
     throw new ApiError(0, "Không kết nối được máy chủ. Hãy kiểm tra backend đang chạy ở localhost:8081.");
   }
-  if (response.status === 401 && canRefresh && !isAuthOperation && await refreshAccessToken()) {
-    return request<T>(path, init, false);
+  if (response.status === 401 && canRefresh && !isAuthOperation) {
+    if (await refreshAccessToken()) return request<T>(path, init, false);
+    if (typeof window !== "undefined") clearAuth();
   }
   if (response.status === 204) return undefined as T;
   const body = await response.json().catch(() => null) as ApiErrorBody | T | null;
   if (!response.ok) {
     const errorBody = body as ApiErrorBody | null;
-    if (response.status === 401 && !isAuthOperation && typeof window !== "undefined") clearAuth();
     throw new ApiError(response.status, errorBody?.message || `Yêu cầu thất bại (${response.status}).`);
   }
   return body as T;
@@ -219,10 +219,12 @@ async function requestBlob(path: string, canRefresh = true): Promise<Blob> {
   } catch {
     throw new ApiError(0, "Không kết nối được máy chủ.");
   }
-  if (response.status === 401 && canRefresh && await refreshAccessToken()) return requestBlob(path, false);
+  if (response.status === 401 && canRefresh) {
+    if (await refreshAccessToken()) return requestBlob(path, false);
+    clearAuth();
+  }
   if (!response.ok) {
     const body = await response.json().catch(() => null) as ApiErrorBody | null;
-    if (response.status === 401) clearAuth();
     throw new ApiError(response.status, body?.message || `Yêu cầu thất bại (${response.status}).`);
   }
   return response.blob();
