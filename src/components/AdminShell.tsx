@@ -12,6 +12,7 @@ import {
   Star,
   BarChart3,
   Settings,
+  FileText,
   LogOut,
   Menu,
   X,
@@ -31,6 +32,7 @@ export const ADMIN_NAV = [
   { to: "/admin/nutrition", label: "Dinh dưỡng", icon: Apple },
   { to: "/admin/traceability", label: "Truy xuất nguồn gốc", icon: QrCode },
   { to: "/admin/reviews", label: "Đánh giá", icon: Star },
+  { to: "/admin/articles", label: "Bài viết", icon: FileText },
   { to: "/admin/reports", label: "Báo cáo", icon: BarChart3 },
   { to: "/admin/settings", label: "Cài đặt", icon: Settings },
 ];

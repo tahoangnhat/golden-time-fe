@@ -212,15 +212,15 @@ function HomePage() {
   );
 }
 
-export function ArticleCard({ article }: { article: Pick<ApiArticle, "slug" | "title" | "category" | "emoji" | "gradient" | "description" | "readingTime"> }) {
+export function ArticleCard({ article }: { article: Pick<ApiArticle, "slug" | "title" | "category" | "emoji" | "gradient" | "description" | "readingTime" | "coverUrl" | "coverAlt"> }) {
   return (
     <Link
       to="/knowledge/$slug"
       params={{ slug: article.slug }}
       className="group bg-white rounded-3xl border border-border overflow-hidden hover:gt-shadow transition-all hover:-translate-y-0.5 flex flex-col"
     >
-      <div className={`h-44 bg-gradient-to-br ${article.gradient} grid place-items-center text-7xl`}>
-        <span className="group-hover:scale-110 transition-transform">{article.emoji}</span>
+      <div className={`h-44 bg-gradient-to-br ${article.gradient} grid place-items-center text-7xl overflow-hidden`}>
+        {article.coverUrl ? <img src={article.coverUrl} alt={article.coverAlt || article.title} loading="lazy" className="h-full w-full object-cover group-hover:scale-105 transition-transform" /> : <span className="group-hover:scale-110 transition-transform">{article.emoji}</span>}
       </div>
       <div className="p-5 flex-1 flex flex-col">
         <div className="flex items-center gap-2 mb-2">

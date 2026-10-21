@@ -30,6 +30,7 @@ import { Route as TraceRouteImport } from './routes/trace'
 import { Route as UpdatesRouteImport } from './routes/updates'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as AdminAiScansRouteImport } from './routes/admin.ai-scans'
+import { Route as AdminArticlesRouteImport } from './routes/admin.articles'
 import { Route as AdminDashboardRouteImport } from './routes/admin.dashboard'
 import { Route as AdminLoginRouteImport } from './routes/admin.login'
 import { Route as AdminNutritionRouteImport } from './routes/admin.nutrition'
@@ -159,6 +160,11 @@ const AdminIndexRoute = AdminIndexRouteImport.update({
 const AdminAiScansRoute = AdminAiScansRouteImport.update({
   id: '/ai-scans',
   path: '/ai-scans',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminArticlesRoute = AdminArticlesRouteImport.update({
+  id: '/articles',
+  path: '/articles',
   getParentRoute: () => AdminRoute,
 } as any)
 const AdminDashboardRoute = AdminDashboardRouteImport.update({
@@ -308,6 +314,7 @@ export interface FileRoutesByFullPath {
   '/trace': typeof TraceRoute
   '/updates': typeof UpdatesRoute
   '/admin/ai-scans': typeof AdminAiScansRoute
+  '/admin/articles': typeof AdminArticlesRoute
   '/admin/dashboard': typeof AdminDashboardRoute
   '/admin/login': typeof AdminLoginRoute
   '/admin/nutrition': typeof AdminNutritionRoute
@@ -354,6 +361,7 @@ export interface FileRoutesByTo {
   '/trace': typeof TraceRoute
   '/updates': typeof UpdatesRoute
   '/admin/ai-scans': typeof AdminAiScansRoute
+  '/admin/articles': typeof AdminArticlesRoute
   '/admin/dashboard': typeof AdminDashboardRoute
   '/admin/login': typeof AdminLoginRoute
   '/admin/nutrition': typeof AdminNutritionRoute
@@ -403,6 +411,7 @@ export interface FileRoutesById {
   '/trace': typeof TraceRoute
   '/updates': typeof UpdatesRoute
   '/admin/ai-scans': typeof AdminAiScansRoute
+  '/admin/articles': typeof AdminArticlesRoute
   '/admin/dashboard': typeof AdminDashboardRoute
   '/admin/login': typeof AdminLoginRoute
   '/admin/nutrition': typeof AdminNutritionRoute
@@ -453,6 +462,7 @@ export interface FileRouteTypes {
     | '/trace'
     | '/updates'
     | '/admin/ai-scans'
+    | '/admin/articles'
     | '/admin/dashboard'
     | '/admin/login'
     | '/admin/nutrition'
@@ -499,6 +509,7 @@ export interface FileRouteTypes {
     | '/trace'
     | '/updates'
     | '/admin/ai-scans'
+    | '/admin/articles'
     | '/admin/dashboard'
     | '/admin/login'
     | '/admin/nutrition'
@@ -547,6 +558,7 @@ export interface FileRouteTypes {
     | '/trace'
     | '/updates'
     | '/admin/ai-scans'
+    | '/admin/articles'
     | '/admin/dashboard'
     | '/admin/login'
     | '/admin/nutrition'
@@ -747,6 +759,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminAiScansRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/articles': {
+      id: '/admin/articles'
+      path: '/articles'
+      fullPath: '/admin/articles'
+      preLoaderRoute: typeof AdminArticlesRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/dashboard': {
       id: '/admin/dashboard'
       path: '/dashboard'
@@ -927,6 +946,7 @@ declare module '@tanstack/react-router' {
 
 interface AdminRouteChildren {
   AdminAiScansRoute: typeof AdminAiScansRoute
+  AdminArticlesRoute: typeof AdminArticlesRoute
   AdminDashboardRoute: typeof AdminDashboardRoute
   AdminLoginRoute: typeof AdminLoginRoute
   AdminNutritionRoute: typeof AdminNutritionRoute
@@ -943,6 +963,7 @@ interface AdminRouteChildren {
 
 const AdminRouteChildren: AdminRouteChildren = {
   AdminAiScansRoute: AdminAiScansRoute,
+  AdminArticlesRoute: AdminArticlesRoute,
   AdminDashboardRoute: AdminDashboardRoute,
   AdminLoginRoute: AdminLoginRoute,
   AdminNutritionRoute: AdminNutritionRoute,

@@ -23,6 +23,21 @@ function ArticlePage() {
     }).catch((cause) => setError(cause instanceof Error ? cause.message : "Không tải được bài viết."))
       .finally(() => setLoading(false));
   }, [slug]);
+  useEffect(() => {
+    if (!article || typeof document === "undefined") return;
+    const previousTitle = document.title;
+    document.title = article.seoTitle || `${article.title} — Golden Time`;
+    const description = article.seoDescription || article.description || "Kiến thức trái cây và dinh dưỡng từ Golden Time.";
+    let meta = document.querySelector<HTMLMetaElement>('meta[name="description"]');
+    const created = !meta;
+    if (!meta) { meta = document.createElement("meta"); meta.name = "description"; document.head.append(meta); }
+    const oldDescription = meta.content;
+    meta.content = description;
+    return () => {
+      document.title = previousTitle;
+      if (meta) { if (created) meta.remove(); else meta.content = oldDescription; }
+    };
+  }, [article]);
   return (
     <SiteShell>
       <Section className="pt-10 lg:pt-14 pb-8 max-w-4xl">
@@ -31,9 +46,11 @@ function ArticlePage() {
           <span className="inline-block text-xs font-bold uppercase tracking-wider text-primary bg-cream px-3 py-1 rounded-full mb-4">{article.category}</span>
           <h1 className="text-3xl lg:text-5xl font-extrabold tracking-tight leading-tight mb-6">{article.title}</h1>
           <div className="flex flex-wrap items-center gap-5 text-sm text-muted-foreground mb-8"><span className="inline-flex items-center gap-1.5"><User className="h-4 w-4" /> {article.author}</span><span className="inline-flex items-center gap-1.5"><Calendar className="h-4 w-4" /> {formatDate(article.publishedAt)}</span><span className="inline-flex items-center gap-1.5"><Clock className="h-4 w-4" /> {article.readingTime}</span></div>
-          <div className={`h-72 lg:h-96 rounded-3xl bg-gradient-to-br ${article.gradient} grid place-items-center text-9xl mb-10`}>{article.emoji}</div>
+          <div className={`h-72 lg:h-96 rounded-3xl bg-gradient-to-br ${article.gradient} grid place-items-center overflow-hidden text-9xl mb-10`}>
+            {article.coverUrl ? <img src={article.coverUrl} alt={article.coverAlt || article.title} className="h-full w-full object-cover" /> : article.emoji}
+          </div>
           {article.description && <p className="text-lg font-semibold leading-relaxed mb-6">{article.description}</p>}
-          <article className="prose max-w-none"><p className="text-foreground/80 leading-relaxed whitespace-pre-line">{article.body}</p><div className="mt-10 p-5 rounded-2xl bg-cream border border-border text-sm text-muted-foreground"><strong className="text-foreground">Lưu ý:</strong> Thông tin trong bài viết chỉ mang tính tham khảo, không thay thế tư vấn chuyên môn về dinh dưỡng hoặc sức khỏe.</div>
+          <article className="max-w-none"><div className="article-content" dangerouslySetInnerHTML={{ __html: article.body }} /><div className="mt-10 p-5 rounded-2xl bg-cream border border-border text-sm text-muted-foreground"><strong className="text-foreground">Lưu ý:</strong> Thông tin trong bài viết chỉ mang tính tham khảo, không thay thế tư vấn chuyên môn về dinh dưỡng hoặc sức khỏe.</div>
             <div className="mt-8 flex items-center gap-3"><span className="text-sm font-semibold">Chia sẻ:</span><a href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(typeof window === "undefined" ? "" : window.location.href)}`} target="_blank" rel="noreferrer" className="h-10 px-4 inline-flex items-center gap-2 rounded-xl bg-[oklch(0.6_0.18_255)] text-white text-sm"><Facebook className="h-4 w-4" /> Facebook</a><button onClick={() => navigator.clipboard?.writeText(window.location.href)} className="h-10 px-4 inline-flex items-center gap-2 rounded-xl bg-white border border-border text-sm font-semibold"><LinkIcon className="h-4 w-4" /> Copy link</button></div>
           </article>
         </>}

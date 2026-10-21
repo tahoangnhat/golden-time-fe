@@ -62,8 +62,11 @@ export type Review = { id: number; shopId: number; shopName: string; userId: num
 export type Article = {
   id: number; slug: string; title: string; category: string; emoji: string; gradient: string;
   description?: string | null; body: string; author: string; publishedAt?: string | null;
-  readingTime: string; published: boolean; coverUrl?: string | null;
+  readingTime: string; published: boolean; coverUrl?: string | null; coverAlt?: string | null;
+  featured?: boolean; seoTitle?: string | null; seoDescription?: string | null;
 };
+export type AdminArticle = Article & { createdAt: string; updatedAt: string };
+export type ArticleWritePayload = Omit<Article, "id" | "readingTime"> & { publishedAt?: string | null };
 
 export type AdminUser = { id: number; name: string; email: string; role: "USER" | "SHOP_OWNER" | "ADMIN"; phone?: string | null; enabled: boolean; joined: string; orders: number; scans: number; reviews: number };
 export type AdminShop = { id: number; name: string; address?: string | null; latitude: number; longitude: number; status: string; rating: number; reviewCount: number; owner?: string | null; products: number; orderValue: number };
@@ -254,6 +257,16 @@ export const api = {
   reviews: (shopId: number) => request<Review[]>(`/shops/${shopId}/reviews`),
   articles: (filters: { q?: string; category?: string } = {}) => request<Article[]>(`/articles?${query(filters)}`),
   article: (slug: string) => request<Article>(`/articles/${encodeURIComponent(slug)}`),
+  adminArticles: (filters: { q?: string; status?: string } = {}) => request<AdminArticle[]>(`/admin/articles?${query(filters)}`),
+  createArticle: (payload: ArticleWritePayload) => request<AdminArticle>("/admin/articles", { method: "POST", body: JSON.stringify(payload) }),
+  updateArticle: (id: number, payload: ArticleWritePayload) => request<AdminArticle>(`/admin/articles/${id}`, { method: "PUT", body: JSON.stringify(payload) }),
+  deleteArticle: (id: number) => request<void>(`/admin/articles/${id}`, { method: "DELETE" }),
+  uploadArticleImage: async (file: File) => {
+    const form = new FormData();
+    form.set("file", file);
+    const image = await request<{ url: string; contentType: string }>("/admin/articles/images", { method: "POST", body: form });
+    return { ...image, url: image.url.startsWith("http") ? image.url : `${API_ORIGIN}${image.url}` };
+  },
   adminOverview: () => request<AdminOverview>("/admin/overview"),
   adminUsers: () => request<AdminUser[]>("/admin/users"),
   adminShops: () => request<AdminShop[]>("/admin/shops"),

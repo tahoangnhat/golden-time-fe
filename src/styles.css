@@ -170,3 +170,62 @@
 @utility gt-shadow-soft {
   box-shadow: 0 6px 20px -10px color-mix(in oklab, oklch(0.4 0.08 140) 18%, transparent);
 }
+
+.article-content,
+.article-editor {
+  color: oklch(0.34 0.035 145);
+  font-size: 1.05rem;
+  line-height: 1.9;
+  overflow-wrap: anywhere;
+}
+
+.article-editor:empty::before {
+  content: "Bắt đầu viết nội dung bài đăng ở đây…";
+  color: oklch(0.58 0.025 145);
+  pointer-events: none;
+}
+
+.article-content p,
+.article-editor p { margin: 0 0 1.15rem; }
+.article-content h2,
+.article-editor h2 { margin: 2.25rem 0 0.85rem; color: oklch(0.28 0.08 145); font-size: 1.65rem; font-weight: 800; line-height: 1.35; }
+.article-content h3,
+.article-editor h3 { margin: 1.8rem 0 0.7rem; color: oklch(0.3 0.07 145); font-size: 1.3rem; font-weight: 750; line-height: 1.4; }
+.article-content h4,
+.article-editor h4 { margin: 1.5rem 0 0.6rem; font-size: 1.1rem; font-weight: 700; }
+.article-content ul,
+.article-editor ul { margin: 0 0 1.2rem; list-style: disc; padding-left: 1.5rem; }
+.article-content ol,
+.article-editor ol { margin: 0 0 1.2rem; list-style: decimal; padding-left: 1.5rem; }
+.article-content li,
+.article-editor li { margin: 0.3rem 0; padding-left: 0.15rem; }
+.article-content blockquote,
+.article-editor blockquote { margin: 1.5rem 0; border-left: 4px solid oklch(0.62 0.17 145); border-radius: 0 0.85rem 0.85rem 0; background: oklch(0.97 0.04 95); padding: 1rem 1.25rem; color: oklch(0.36 0.06 145); font-weight: 550; }
+.article-content figure,
+.article-editor figure { margin: 1.75rem 0; }
+.article-content figure img,
+.article-editor figure img { display: block; max-width: 100%; max-height: 42rem; margin: 0 auto; border-radius: 1.25rem; object-fit: contain; }
+.article-content a,
+.article-editor a { color: oklch(0.48 0.17 145); font-weight: 650; text-decoration: underline; text-underline-offset: 3px; }
+.article-content table,
+.article-editor table { width: 100%; margin: 1.5rem 0; border-collapse: collapse; font-size: 0.94rem; }
+.article-content th,
+.article-editor th,
+.article-content td,
+.article-editor td { border: 1px solid oklch(0.88 0.025 140); padding: 0.65rem 0.75rem; text-align: left; }
+.article-content th,
+.article-editor th { background: oklch(0.97 0.04 95); font-weight: 700; }
+.article-content hr,
+.article-editor hr { margin: 2rem 0; border: 0; border-top: 1px solid oklch(0.88 0.025 140); }
+.article-font-serif { font-family: Georgia, "Times New Roman", serif; }
+.article-font-sans { font-family: var(--font-sans); }
+.article-size-small { font-size: 0.88em; }
+.article-size-normal { font-size: 1em; }
+.article-size-large { font-size: 1.2em; }
+.article-size-xl { font-size: 1.45em; }
+.article-color-green { color: oklch(0.43 0.16 145); }
+.article-color-orange { color: oklch(0.57 0.18 50); }
+.article-color-muted { color: oklch(0.5 0.03 140); }
+.article-align-left { text-align: left; }
+.article-align-center { text-align: center; }
+.article-align-right { text-align: right; }
