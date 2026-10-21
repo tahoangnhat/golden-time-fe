@@ -2,7 +2,7 @@ import { useEffect, useState, type ReactNode } from "react";
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { Home, ScanLine, ShoppingBag, MapPin, User } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { api, hasAuth } from "@/lib/api";
+import { api, clearAuth, hasAuth } from "@/lib/api";
 
 const tabs = [
   { to: "/home", label: "Trang chủ", icon: Home },
@@ -16,10 +16,12 @@ export function PhoneShell({
   children,
   hideNav = false,
   bg = "bg-cream",
+  requireAuth = true,
 }: {
   children: ReactNode;
   hideNav?: boolean;
   bg?: string;
+  requireAuth?: boolean;
 }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const navigate = useNavigate();
@@ -29,7 +31,8 @@ export function PhoneShell({
   useEffect(() => {
     let active = true;
     if (!hasAuth()) {
-      setCheckingRole(false);
+      if (requireAuth) navigate({ to: "/app/login", replace: true });
+      else setCheckingRole(false);
       return () => { active = false; };
     }
     api.me().then((user) => {
@@ -38,10 +41,13 @@ export function PhoneShell({
       else if (user.role === "SHOP_OWNER") navigate({ to: "/business/dashboard", replace: true });
       else setCheckingRole(false);
     }).catch(() => {
-      if (active) setCheckingRole(false);
+      if (!active) return;
+      clearAuth();
+      if (requireAuth) navigate({ to: "/app/login", replace: true });
+      else setCheckingRole(false);
     });
     return () => { active = false; };
-  }, [navigate]);
+  }, [navigate, requireAuth]);
   if (checkingRole) {
     return <div className="min-h-screen grid place-items-center bg-cream text-sm text-muted-foreground">Đang xác thực tài khoản…</div>;
   }

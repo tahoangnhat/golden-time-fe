@@ -44,7 +44,7 @@ function UserLogin() {
     }
   }
   return (
-    <PhoneShell hideNav>
+    <PhoneShell hideNav requireAuth={false}>
       <StatusBar title="Đăng nhập" />
       <div className="px-6 pt-4">
         <div className="mt-2 rounded-3xl gt-gradient text-white p-6 gt-shadow relative overflow-hidden">
