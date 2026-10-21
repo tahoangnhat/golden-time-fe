@@ -23,7 +23,9 @@ export function PhoneShell({
 }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const navigate = useNavigate();
-  const [checkingRole, setCheckingRole] = useState(() => hasAuth());
+  // Keep the first server/client render identical. Checking localStorage here
+  // would make authenticated clients hydrate a different tree than the server.
+  const [checkingRole, setCheckingRole] = useState(true);
   useEffect(() => {
     let active = true;
     if (!hasAuth()) {

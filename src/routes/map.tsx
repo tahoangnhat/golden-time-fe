@@ -44,7 +44,7 @@ function MapScreen() {
   const [error, setError] = useState("");
   const [leafletMapError, setLeafletMapError] = useState("");
   const [busy, setBusy] = useState(false);
-  const mapContainerRef = useRef<HTMLDivElement>(null);
+  const [mapContainer, setMapContainer] = useState<HTMLDivElement | null>(null);
   const mapInstanceRef = useRef<LeafletMap | null>(null);
   const leafletRef = useRef<typeof import("leaflet") | null>(null);
   const markersLayerRef = useRef<LayerGroup | null>(null);
@@ -81,7 +81,7 @@ function MapScreen() {
     && (!proof?.shopId || proof.shopId === selectedShopId);
 
   useEffect(() => {
-    const container = mapContainerRef.current;
+    const container = mapContainer;
     if (!container) return;
 
     let cancelled = false;
@@ -111,7 +111,7 @@ function MapScreen() {
       leafletRef.current = null;
       setLeafletMapReady(false);
     };
-  }, []);
+  }, [mapContainer]);
 
   useEffect(() => {
     const map = mapInstanceRef.current;
@@ -241,7 +241,7 @@ function MapScreen() {
         </div>
 
         <div className="relative h-64 overflow-hidden rounded-3xl border border-border bg-[oklch(0.95_0.04_140)] gt-shadow-soft">
-          <div ref={mapContainerRef} className="absolute inset-0 h-full w-full" aria-label="Bản đồ OpenStreetMap của cửa hàng đối tác GoldenTime" />
+          <div ref={setMapContainer} className="absolute inset-0 h-full w-full" aria-label="Bản đồ OpenStreetMap của cửa hàng đối tác GoldenTime" />
           {!leafletMapReady && !leafletMapError && <div className="absolute inset-0 z-[500] grid place-items-center bg-white/70"><LoaderCircle className="h-5 w-5 animate-spin text-primary" /></div>}
           {leafletMapError && <div className="absolute inset-0 z-[500] grid place-items-center bg-white/90 p-4 text-center text-xs text-red-700">{leafletMapError}</div>}
           {leafletMapReady && visibleShops.every((shop) => !hasRegisteredCoordinates(shop)) && !location && <div className="absolute left-1/2 top-3 z-[500] -translate-x-1/2 rounded-xl bg-white/95 px-3 py-2 text-center text-[11px] text-muted-foreground">Chưa có cửa hàng đối tác nào được ghim tọa độ.</div>}
