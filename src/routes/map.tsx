@@ -1,6 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { LoaderCircle, MapPin, Navigation, Send, Star } from "lucide-react";
+import { LoaderCircle, Navigation, Send, Star } from "lucide-react";
 import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
+import type { LayerGroup, Map as LeafletMap } from "leaflet";
+import "leaflet/dist/leaflet.css";
 import { toast } from "sonner";
 import { PhoneShell, StatusBar } from "@/components/PhoneShell";
 import {
@@ -13,17 +15,7 @@ import {
   type ScanResult,
   type Shop,
 } from "@/lib/api";
-import {
-  distanceKm,
-  geocodeAddress,
-  getGoogleMapsMapId,
-  hasGoogleMapsApiKey,
-  loadGoogleMapsLibraries,
-  type Coordinates,
-  type GoogleMapInstance,
-  type GoogleMapsLibraries,
-  type GoogleMarkerInstance,
-} from "@/lib/googleMaps";
+import { distanceKm, type Coordinates } from "@/lib/geo";
 
 export const Route = createFileRoute("/map")({
   head: () => ({ meta: [{ title: "Bản đồ trái cây — Golden Time" }] }),
@@ -31,8 +23,6 @@ export const Route = createFileRoute("/map")({
 });
 
 type ReviewProof = { orderId?: number; scanId?: number; shopId?: number };
-type MapPin = { id: string; name: string; location: Coordinates; shop?: Shop; isUser?: boolean };
-type PositionedMapPin = MapPin & { top: number; left: number };
 
 function hasRegisteredCoordinates(shop: Shop) {
   return Number.isFinite(shop.latitude) && shop.latitude >= -90 && shop.latitude <= 90
@@ -50,16 +40,14 @@ function MapScreen() {
   const [rating, setRating] = useState(0);
   const [comment, setComment] = useState("");
   const [loading, setLoading] = useState(true);
-  const [locationLookupLoading, setLocationLookupLoading] = useState(false);
-  const [googleMapReady, setGoogleMapReady] = useState(false);
+  const [leafletMapReady, setLeafletMapReady] = useState(false);
   const [error, setError] = useState("");
-  const [locationLookupError, setLocationLookupError] = useState("");
-  const [googleMapError, setGoogleMapError] = useState("");
+  const [leafletMapError, setLeafletMapError] = useState("");
   const [busy, setBusy] = useState(false);
   const mapContainerRef = useRef<HTMLDivElement>(null);
-  const mapInstanceRef = useRef<GoogleMapInstance | null>(null);
-  const googleLibrariesRef = useRef<GoogleMapsLibraries | null>(null);
-  const markerInstancesRef = useRef<GoogleMarkerInstance[]>([]);
+  const mapInstanceRef = useRef<LeafletMap | null>(null);
+  const leafletRef = useRef<typeof import("leaflet") | null>(null);
+  const markersLayerRef = useRef<LayerGroup | null>(null);
 
   useEffect(() => {
     let savedOrder: { orderId: number; shopId: number } | null = null;
@@ -88,96 +76,91 @@ function MapScreen() {
       .map(({ shop }) => shop);
   }, [near, location, shops]);
 
-  const fallbackPins = useMemo<PositionedMapPin[]>(() => {
-    const pins: MapPin[] = [
-      ...visibleShops.filter(hasRegisteredCoordinates).map((shop) => ({
-        id: `shop-${shop.id}`,
-        name: shop.name,
-        location: { lat: shop.latitude, lng: shop.longitude },
-        shop,
-      })),
-      ...(location ? [{ id: "user", name: "Vị trí của bạn", location, isUser: true }] : []),
-    ];
-    if (pins.length === 0) return [];
-
-    const latitudes = pins.map((pin) => pin.location.lat);
-    const longitudes = pins.map((pin) => pin.location.lng);
-    const minLat = Math.min(...latitudes);
-    const maxLat = Math.max(...latitudes);
-    const minLng = Math.min(...longitudes);
-    const maxLng = Math.max(...longitudes);
-    return pins.map((pin) => ({
-      ...pin,
-      top: maxLat === minLat ? 50 : 15 + (1 - (pin.location.lat - minLat) / (maxLat - minLat)) * 70,
-      left: maxLng === minLng ? 50 : 15 + ((pin.location.lng - minLng) / (maxLng - minLng)) * 70,
-    }));
-  }, [visibleShops, location]);
-
   const selectedShop = shops.find((shop) => shop.id === selectedShopId) || null;
   const canReviewSelectedShop = Boolean(proof)
     && (!proof?.shopId || proof.shopId === selectedShopId);
 
   useEffect(() => {
-    if (!near || !location || !hasGoogleMapsApiKey() || !mapContainerRef.current) {
-      setGoogleMapReady(false);
-      return;
-    }
+    const container = mapContainerRef.current;
+    if (!container) return;
 
     let cancelled = false;
-    setGoogleMapReady(false);
-    setGoogleMapError("");
-    void loadGoogleMapsLibraries().then((libraries) => {
-      if (cancelled || !mapContainerRef.current) return;
-      googleLibrariesRef.current = libraries;
-      mapInstanceRef.current = new libraries.maps.Map(mapContainerRef.current, {
-        center: location,
-        zoom: 14,
-        mapId: getGoogleMapsMapId(),
-        disableDefaultUI: true,
-        zoomControl: true,
-        clickableIcons: false,
-      });
-      setGoogleMapReady(true);
-    }).catch((cause) => {
-      if (!cancelled) setGoogleMapError(cause instanceof Error ? cause.message : "Không tải được Google Maps.");
-    });
+    let map: LeafletMap | null = null;
+    void import("leaflet").then((leaflet) => {
+      if (cancelled || !container.isConnected) return;
+      leafletRef.current = leaflet;
+      map = leaflet.map(container, { zoomControl: true, scrollWheelZoom: false })
+        .setView([16.047079, 108.20623], 5);
+      leaflet.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        maxZoom: 19,
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap contributors</a>',
+      }).addTo(map);
+      mapInstanceRef.current = map;
+      markersLayerRef.current = leaflet.layerGroup().addTo(map);
+      map.invalidateSize();
+      setLeafletMapError("");
+      setLeafletMapReady(true);
+    }).catch(() => setLeafletMapError("Không tải được bản đồ. Hãy kiểm tra kết nối mạng rồi thử lại."));
 
     return () => {
       cancelled = true;
-      markerInstancesRef.current.forEach((marker) => { marker.map = null; });
-      markerInstancesRef.current = [];
+      markersLayerRef.current?.clearLayers();
+      markersLayerRef.current = null;
+      mapInstanceRef.current?.remove();
       mapInstanceRef.current = null;
-      googleLibrariesRef.current = null;
+      leafletRef.current = null;
+      setLeafletMapReady(false);
     };
-  }, [near, location]);
+  }, []);
 
   useEffect(() => {
     const map = mapInstanceRef.current;
-    const libraries = googleLibrariesRef.current;
-    if (!googleMapReady || !map || !libraries || !location) return;
+    const leaflet = leafletRef.current;
+    const layer = markersLayerRef.current;
+    if (!leafletMapReady || !map || !leaflet || !layer) return;
 
-    markerInstancesRef.current.forEach((marker) => { marker.map = null; });
-    markerInstancesRef.current = [];
-    const addMarker = (pin: MapPin, label: string, color: string) => {
-      const content = document.createElement("div");
-      content.textContent = label;
-      content.style.cssText = `display:grid;place-items:center;width:34px;height:34px;border:2px solid white;border-radius:50%;background:${color};color:white;font-size:16px;font-weight:700;box-shadow:0 2px 8px #0004`;
-      markerInstancesRef.current.push(new libraries.marker.AdvancedMarkerElement({
-        map,
-        position: pin.location,
-        title: pin.name,
-        content,
-      }));
-    };
+    layer.clearLayers();
+    const points: [number, number][] = [];
+    visibleShops.filter(hasRegisteredCoordinates).forEach((shop) => {
+      const point: [number, number] = [shop.latitude, shop.longitude];
+      points.push(point);
+      const popup = document.createElement("div");
+      const name = document.createElement("strong");
+      name.textContent = shop.name;
+      popup.appendChild(name);
+      if (shop.address) {
+        const address = document.createElement("div");
+        address.textContent = shop.address;
+        popup.appendChild(address);
+      }
+      if (location) {
+        const distance = document.createElement("div");
+        distance.textContent = `${distanceKm(location, { lat: shop.latitude, lng: shop.longitude }).toFixed(1)} km`;
+        popup.appendChild(distance);
+      }
+      leaflet.marker(point, {
+        icon: leaflet.divIcon({ className: "", html: '<div style="display:grid;place-items:center;width:36px;height:36px;border:3px solid white;border-radius:50%;background:#e47d24;color:white;font-size:18px;box-shadow:0 2px 8px #0005">🍎</div>', iconSize: [36, 36], iconAnchor: [18, 18] }),
+        title: shop.name,
+      }).bindPopup(popup).on("click", () => setSelectedShopId(shop.id)).addTo(layer);
+    });
 
-    addMarker({ id: "user", name: "Vị trí của bạn", location, isUser: true }, "Bạn", "#2563eb");
-    visibleShops.forEach((shop) => addMarker({
-      id: `shop-${shop.id}`,
-      name: shop.name,
-      location: { lat: shop.latitude, lng: shop.longitude },
-      shop,
-    }, "🍎", "#e47d24"));
-  }, [googleMapReady, location, visibleShops]);
+    if (location) {
+      const point: [number, number] = [location.lat, location.lng];
+      points.push(point);
+      leaflet.marker(point, {
+        icon: leaflet.divIcon({ className: "", html: '<div style="display:grid;place-items:center;width:36px;height:36px;border:3px solid white;border-radius:50%;background:#2563eb;color:white;font-size:12px;font-weight:700;box-shadow:0 2px 8px #0005">Bạn</div>', iconSize: [36, 36], iconAnchor: [18, 18] }),
+        title: "Vị trí của bạn",
+      }).bindPopup("Vị trí của bạn").addTo(layer);
+    }
+
+    if (points.length > 1) {
+      map.fitBounds(leaflet.latLngBounds(points), { padding: [24, 24], maxZoom: 14 });
+    } else if (points.length === 1) {
+      map.setView(points[0], 13);
+    } else {
+      map.setView([16.047079, 108.20623], 5);
+    }
+  }, [leafletMapReady, location, visibleShops]);
 
   useEffect(() => {
     if (!selectedShopId) return;
@@ -208,37 +191,9 @@ function MapScreen() {
     }
   }
 
-  async function resolveRegisteredShopLocations(partnerShops: Shop[]) {
-    const missingLocations = partnerShops.filter((shop) => !hasRegisteredCoordinates(shop));
-    if (!missingLocations.length) return partnerShops;
-    if (!hasGoogleMapsApiKey()) {
-      setLocationLookupError("Một số hồ sơ chưa có tọa độ. Cần cấu hình khóa Google Maps để xác định vị trí từ địa chỉ đã đăng ký.");
-      return partnerShops;
-    }
-
-    setLocationLookupLoading(true);
-    const resolved = await Promise.allSettled(missingLocations.map((shop) => geocodeAddress(shop.address ?? "")));
-    setLocationLookupLoading(false);
-    let unresolvedCount = 0;
-    let resultIndex = 0;
-    const updatedShops = partnerShops.map((shop) => {
-      if (hasRegisteredCoordinates(shop)) return shop;
-      const outcome = resolved[resultIndex++];
-      if (outcome?.status === "fulfilled") return { ...shop, latitude: outcome.value.lat, longitude: outcome.value.lng };
-      unresolvedCount++;
-      return shop;
-    });
-    if (unresolvedCount) {
-      setLocationLookupError(`Google Maps chưa xác định được vị trí của ${unresolvedCount} cửa hàng từ địa chỉ đăng ký.`);
-    }
-    return updatedShops;
-  }
-
   async function toggleNear() {
     if (near) {
       setNear(false);
-      setLocationLookupError("");
-      setGoogleMapError("");
       setLoading(true);
       try {
         setShops(await api.shops());
@@ -251,17 +206,15 @@ function MapScreen() {
     }
 
     setError("");
-    setLocationLookupError("");
     try {
       const currentLocation = await getCurrentLocation();
       setLocation(currentLocation);
       setNear(true);
       setLoading(true);
       const partnerShops = await api.shops();
-      const locatedShops = await resolveRegisteredShopLocations(partnerShops);
-      const orderedShops = [...locatedShops].sort((first, second) => {
-        const firstDistance = distanceKm(currentLocation, { lat: first.latitude, lng: first.longitude });
-        const secondDistance = distanceKm(currentLocation, { lat: second.latitude, lng: second.longitude });
+      const orderedShops = [...partnerShops].sort((first, second) => {
+        const firstDistance = hasRegisteredCoordinates(first) ? distanceKm(currentLocation, { lat: first.latitude, lng: first.longitude }) : Infinity;
+        const secondDistance = hasRegisteredCoordinates(second) ? distanceKm(currentLocation, { lat: second.latitude, lng: second.longitude }) : Infinity;
         return firstDistance - secondDistance;
       });
       setShops(orderedShops);
@@ -270,11 +223,8 @@ function MapScreen() {
       setError(cause instanceof Error ? cause.message : "Không lấy được vị trí hiện tại.");
     } finally {
       setLoading(false);
-      setLocationLookupLoading(false);
     }
   }
-
-  const showGoogleMap = near && Boolean(location) && hasGoogleMapsApiKey() && !googleMapError;
 
   return (
     <PhoneShell>
@@ -291,32 +241,10 @@ function MapScreen() {
         </div>
 
         <div className="relative h-64 overflow-hidden rounded-3xl border border-border bg-[oklch(0.95_0.04_140)] gt-shadow-soft">
-          {showGoogleMap ? (
-            <div ref={mapContainerRef} className="absolute inset-0 h-full w-full" aria-label="Bản đồ Google Maps của cửa hàng đối tác GoldenTime" />
-          ) : (
-            <>
-              <svg className="absolute inset-0 h-full w-full opacity-60" xmlns="http://www.w3.org/2000/svg">
-                <defs><pattern id="gt-map-grid" width="32" height="32" patternUnits="userSpaceOnUse"><path d="M 32 0 L 0 0 0 32" fill="none" stroke="oklch(0.85 0.04 140)" strokeWidth="1" /></pattern></defs>
-                <rect width="100%" height="100%" fill="url(#gt-map-grid)" />
-              </svg>
-              {fallbackPins.map((pin) => (
-                <button
-                  key={pin.id}
-                  onClick={() => { if (pin.shop) setSelectedShopId(pin.shop.id); }}
-                  title={pin.name}
-                  className={`absolute -translate-x-1/2 -translate-y-1/2 grid h-10 w-10 place-items-center rounded-full border-2 bg-white text-xl ${pin.isUser ? "border-blue-500" : pin.shop?.id === selectedShopId ? "border-primary gt-shadow" : "border-white shadow"}`}
-                  style={{ top: `${pin.top}%`, left: `${pin.left}%` }}
-                >
-                  {pin.isUser ? <MapPin className="h-5 w-5 text-blue-600" /> : "🍎"}
-                </button>
-              ))}
-              {!fallbackPins.length && <div className="absolute inset-0 grid place-items-center"><p className="rounded-xl bg-white/90 p-3 text-xs text-muted-foreground">Chưa có cửa hàng đối tác có tọa độ.</p></div>}
-            </>
-          )}
-          {showGoogleMap && !googleMapReady && <div className="absolute inset-0 grid place-items-center bg-white/50"><LoaderCircle className="h-5 w-5 animate-spin text-primary" /></div>}
-          <div className="absolute bottom-3 right-3 rounded-full bg-white/95 px-3 py-1.5 text-[10px] text-muted-foreground">
-            {showGoogleMap ? "Google Maps" : googleMapError ? "Không tải được Google Maps" : "Vị trí cửa hàng đối tác"}
-          </div>
+          <div ref={mapContainerRef} className="absolute inset-0 h-full w-full" aria-label="Bản đồ OpenStreetMap của cửa hàng đối tác GoldenTime" />
+          {!leafletMapReady && !leafletMapError && <div className="absolute inset-0 z-[500] grid place-items-center bg-white/70"><LoaderCircle className="h-5 w-5 animate-spin text-primary" /></div>}
+          {leafletMapError && <div className="absolute inset-0 z-[500] grid place-items-center bg-white/90 p-4 text-center text-xs text-red-700">{leafletMapError}</div>}
+          {leafletMapReady && visibleShops.every((shop) => !hasRegisteredCoordinates(shop)) && !location && <div className="absolute left-1/2 top-3 z-[500] -translate-x-1/2 rounded-xl bg-white/95 px-3 py-2 text-center text-[11px] text-muted-foreground">Chưa có cửa hàng đối tác nào được ghim tọa độ.</div>}
         </div>
 
         <div className="mt-5 flex items-center justify-between">
@@ -324,11 +252,9 @@ function MapScreen() {
             <h3 className="font-bold">Cửa hàng đối tác ({visibleShops.length})</h3>
             {near && <p className="mt-0.5 text-[10px] text-muted-foreground">Gần bạn nhất trước · trong phạm vi 5 km</p>}
           </div>
-          {(loading || locationLookupLoading) && <LoaderCircle className="h-4 w-4 animate-spin text-primary" />}
+          {loading && <LoaderCircle className="h-4 w-4 animate-spin text-primary" />}
         </div>
         {error && <p className="mt-3 rounded-xl bg-red-50 p-3 text-xs text-red-700">{error}</p>}
-        {locationLookupError && <p className="mt-3 rounded-xl bg-amber-50 p-3 text-xs text-amber-800">{locationLookupError}</p>}
-        {!hasGoogleMapsApiKey() && near && <p className="mt-3 rounded-xl bg-amber-50 p-3 text-xs text-amber-800">Cần cấu hình Google Maps API key để xem bản đồ đường phố.</p>}
         <div className="mt-3 space-y-3">
           {visibleShops.map((shop) => (
             <button key={shop.id} onClick={() => setSelectedShopId(shop.id)} className={`w-full rounded-2xl border bg-white p-4 text-left gt-shadow-soft ${selectedShopId === shop.id ? "border-primary" : "border-border"}`}>

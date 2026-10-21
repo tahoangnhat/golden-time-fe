@@ -61,7 +61,7 @@ function PrivacyPage() {
                   Golden Time chỉ lấy vị trí hiện tại khi bạn chủ động bật tính năng như “Gần tôi” và cho phép trình duyệt truy cập vị trí. Tọa độ được dùng để lọc, sắp xếp cửa hàng hoặc sản phẩm gần bạn; khi tìm sản phẩm gần đây, tọa độ được gửi đến máy chủ Golden Time để trả về kết quả phù hợp. Bạn có thể tắt quyền vị trí trong cài đặt trình duyệt hoặc tắt tính năng này trong ứng dụng.
                 </p>
                 <p className="mt-3 text-sm leading-7 text-muted-foreground">
-                  Nếu bản đồ Google Maps được bật, tọa độ có thể được dùng làm tâm bản đồ trên trình duyệt. Google có thể nhận thông tin kết nối và dữ liệu cần thiết để tải bản đồ. Google Maps cũng có thể được dùng để xác định tọa độ từ địa chỉ cửa hàng đối tác. Việc xử lý của Google tuân theo <a className="font-semibold text-primary underline underline-offset-4" href="https://policies.google.com/privacy" target="_blank" rel="noreferrer">Chính sách quyền riêng tư của Google</a>.
+                  Bản đồ sử dụng thư viện Leaflet và dữ liệu bản đồ OpenStreetMap. Khi bản đồ hiển thị, trình duyệt tải các ô bản đồ cần thiết từ máy chủ OpenStreetMap; nhà cung cấp có thể nhận thông tin kết nối như địa chỉ IP và khu vực bản đồ được tải. Golden Time lưu tọa độ cửa hàng đối tác để hiển thị ghim và sắp xếp theo khoảng cách. Xem <a className="font-semibold text-primary underline underline-offset-4" href="https://osmfoundation.org/wiki/Privacy_Policy" target="_blank" rel="noreferrer">Chính sách quyền riêng tư OpenStreetMap</a>.
                 </p>
               </div>
             </div>

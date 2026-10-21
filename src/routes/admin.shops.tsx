@@ -1,9 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { MapPin, Search, Star } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
-import { Search, Star } from "lucide-react";
 import { AdminShell, AdminTable, FilterBar, SectionCard, StatusBadge } from "@/components/AdminShell";
+import { LocationPicker } from "@/components/LocationPicker";
 import { api, type AdminShop, type BusinessApplication } from "@/lib/api";
-import { geocodeAddress } from "@/lib/googleMaps";
+import type { Coordinates } from "@/lib/geo";
 
 export const Route = createFileRoute("/admin/shops")({ component: AdminShops });
 
@@ -15,6 +16,8 @@ function AdminShops() {
   const [applicationError, setApplicationError] = useState("");
   const [applicationNotice, setApplicationNotice] = useState("");
   const [reasons, setReasons] = useState<Record<number, string>>({});
+  const [applicationLocations, setApplicationLocations] = useState<Record<number, Coordinates | null>>({});
+  const [locationPickerApplicationId, setLocationPickerApplicationId] = useState<number | null>(null);
   const [busyId, setBusyId] = useState<number | null>(null);
   useEffect(() => {
     api.adminShops().then(setShops).catch((cause) => setError(cause instanceof Error ? cause.message : "Không tải được cửa hàng."));
@@ -46,11 +49,16 @@ function AdminShops() {
       setApplicationError("Lý do từ chối là bắt buộc.");
       return;
     }
+    const location = applicationLocations[application.id] ?? null;
+    if (approved && !location) {
+      setApplicationError("Hãy chọn vị trí cửa hàng trên bản đồ trước khi chấp nhận hồ sơ.");
+      setLocationPickerApplicationId(application.id);
+      return;
+    }
     setApplicationError("");
     setApplicationNotice("");
     setBusyId(application.id);
     try {
-      const location = approved ? await geocodeAddress(application.address) : undefined;
       const updated = await api.decideBusinessApplication(application.id, approved, reason || undefined, location && {
         latitude: location.lat,
         longitude: location.lng,
@@ -61,7 +69,11 @@ function AdminShops() {
       } else {
         setApplicationNotice("Quyết định đã được lưu và email thông báo đã gửi.");
       }
-      if (approved) setShops(await api.adminShops());
+      if (approved) {
+        setApplicationLocations((current) => ({ ...current, [application.id]: null }));
+        setLocationPickerApplicationId(null);
+        setShops(await api.adminShops());
+      }
     } catch (cause) {
       setApplicationError(cause instanceof Error ? cause.message : "Không xử lý được hồ sơ doanh nghiệp.");
     } finally {
@@ -90,7 +102,7 @@ function AdminShops() {
     <SectionCard title={`Hồ sơ đăng ký doanh nghiệp (${pendingApplications.length} chờ duyệt)`}>
       {applicationError && <p role="alert" className="mb-3 rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">{applicationError}</p>}
       {applicationNotice && <p role="status" className="mb-3 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">{applicationNotice}</p>}
-      <p className="mb-3 text-xs text-muted-foreground">Khi chấp nhận hồ sơ, GoldenTime xác định tọa độ cửa hàng từ địa chỉ doanh nghiệp đã đăng ký trên Google Maps.</p>
+      <p className="mb-3 text-xs text-muted-foreground">Khi chấp nhận hồ sơ, hãy ghim vị trí chính xác của cửa hàng trên OpenStreetMap. Tọa độ được lưu để sắp xếp cửa hàng gần người dùng.</p>
       <div className="space-y-4">
         {applications.map((application) => <article key={application.id} className="rounded-2xl border border-border p-4">
           <div className="flex flex-wrap items-start justify-between gap-3">
@@ -114,6 +126,17 @@ function AdminShops() {
           <button onClick={() => void openLicense(application)} className="mt-3 rounded-lg border border-border px-3 py-2 text-xs font-semibold text-primary hover:bg-cream">Tải giấy phép: {application.licenseOriginalName}</button>
           {application.status !== "PENDING" && application.notificationSent !== true && <button disabled={busyId === application.id} onClick={() => void resendNotification(application)} className="ml-2 mt-3 rounded-lg border border-border px-3 py-2 text-xs font-semibold text-primary hover:bg-cream disabled:opacity-50">{busyId === application.id ? "Đang gửi…" : "Gửi lại email"}</button>}
           {application.status === "PENDING" ? <>
+            <div className="mt-4 rounded-xl bg-cream/70 p-3">
+              <p className="text-xs font-semibold">Vị trí cửa hàng bắt buộc khi chấp nhận</p>
+              <button type="button" onClick={() => setLocationPickerApplicationId((current) => current === application.id ? null : application.id)} className="mt-2 inline-flex items-center gap-2 rounded-lg border border-border bg-white px-3 py-2 text-xs font-semibold text-primary hover:bg-cream">
+                <MapPin className="h-4 w-4" />{locationPickerApplicationId === application.id ? "Đóng chọn vị trí" : applicationLocations[application.id] ? "Sửa vị trí đã ghim" : "Chọn vị trí trên bản đồ"}
+              </button>
+              {locationPickerApplicationId === application.id && <LocationPicker
+                address={application.address}
+                value={applicationLocations[application.id] ?? null}
+                onChange={(value) => setApplicationLocations((current) => ({ ...current, [application.id]: value }))}
+              />}
+            </div>
             <label className="mt-4 block"><span className="text-xs font-semibold">Lý do từ chối (bắt buộc khi từ chối)</span><textarea value={reasons[application.id] ?? ""} onChange={(event) => setReasons((current) => ({ ...current, [application.id]: event.target.value }))} rows={2} maxLength={1000} className="mt-1 w-full rounded-xl border border-border px-3 py-2 text-sm" /></label>
             <div className="mt-3 flex flex-wrap justify-end gap-2">
               <button disabled={busyId === application.id} onClick={() => void decide(application, false)} className="rounded-xl border border-red-200 px-4 py-2 text-sm font-semibold text-red-700 disabled:opacity-50">Từ chối</button>
