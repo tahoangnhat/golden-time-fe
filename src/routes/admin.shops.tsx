@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { MapPin, Search, Star } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { AdminShell, AdminTable, FilterBar, SectionCard, StatusBadge } from "@/components/AdminShell";
-import { GoogleAddressPicker } from "@/components/GoogleAddressPicker";
+import { LocationPicker } from "@/components/LocationPicker";
 import { api, type AdminShop, type BusinessApplication } from "@/lib/api";
 import type { Coordinates } from "@/lib/geo";
 
@@ -18,7 +18,6 @@ function AdminShops() {
   const [reasons, setReasons] = useState<Record<number, string>>({});
   const [applicationLocations, setApplicationLocations] = useState<Record<number, Coordinates | null>>({});
   const [applicationAddresses, setApplicationAddresses] = useState<Record<number, string>>({});
-  const [applicationPlaceIds, setApplicationPlaceIds] = useState<Record<number, string | null>>({});
   const [locationPickerApplicationId, setLocationPickerApplicationId] = useState<number | null>(null);
   const [busyId, setBusyId] = useState<number | null>(null);
   useEffect(() => {
@@ -32,10 +31,6 @@ function AdminShops() {
     if (Object.hasOwn(applicationLocations, application.id)) return applicationLocations[application.id];
     if (application.latitude == null || application.longitude == null) return null;
     return { lat: application.latitude, lng: application.longitude };
-  }
-
-  function applicationPlaceId(application: BusinessApplication) {
-    return Object.hasOwn(applicationPlaceIds, application.id) ? applicationPlaceIds[application.id] : application.googlePlaceId;
   }
 
   async function openLicense(application: BusinessApplication) {
@@ -75,7 +70,6 @@ function AdminShops() {
         latitude: location.lat,
         longitude: location.lng,
         address: applicationAddresses[application.id] ?? application.address,
-        googlePlaceId: applicationPlaceId(application),
       });
       setApplications((current) => current.map((item) => item.id === updated.id ? updated : item));
       if (updated.notificationSent === false) {
@@ -116,7 +110,7 @@ function AdminShops() {
     <SectionCard title={`Hồ sơ đăng ký doanh nghiệp (${pendingApplications.length} chờ duyệt)`}>
       {applicationError && <p role="alert" className="mb-3 rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">{applicationError}</p>}
       {applicationNotice && <p role="status" className="mb-3 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">{applicationNotice}</p>}
-      <p className="mb-3 text-xs text-muted-foreground">Địa chỉ và ghim vị trí được lấy từ Google Maps trong hồ sơ đăng ký. Admin có thể kiểm tra hoặc chỉnh lại trước khi chấp nhận.</p>
+      <p className="mb-3 text-xs text-muted-foreground">Địa chỉ và ghim vị trí được tìm bằng OpenStreetMap. Admin có thể kiểm tra hoặc chỉnh lại trước khi chấp nhận.</p>
       <div className="space-y-4">
         {applications.map((application) => <article key={application.id} className="rounded-2xl border border-border p-4">
           <div className="flex flex-wrap items-start justify-between gap-3">
@@ -145,13 +139,11 @@ function AdminShops() {
               <button type="button" onClick={() => setLocationPickerApplicationId((current) => current === application.id ? null : application.id)} className="mt-2 inline-flex items-center gap-2 rounded-lg border border-border bg-white px-3 py-2 text-xs font-semibold text-primary hover:bg-cream">
                 <MapPin className="h-4 w-4" />{locationPickerApplicationId === application.id ? "Đóng chọn vị trí" : applicationLocation(application) ? "Sửa địa chỉ / vị trí" : "Chọn địa chỉ / vị trí"}
               </button>
-              {locationPickerApplicationId === application.id && <GoogleAddressPicker
+              {locationPickerApplicationId === application.id && <LocationPicker
                 address={applicationAddresses[application.id] ?? application.address}
                 value={applicationLocation(application)}
-                googlePlaceId={applicationPlaceId(application)}
                 onAddressChange={(value) => setApplicationAddresses((current) => ({ ...current, [application.id]: value }))}
                 onChange={(value) => setApplicationLocations((current) => ({ ...current, [application.id]: value }))}
-                onPlaceIdChange={(value) => setApplicationPlaceIds((current) => ({ ...current, [application.id]: value }))}
               />}
             </div>
             <label className="mt-4 block"><span className="text-xs font-semibold">Lý do từ chối (bắt buộc khi từ chối)</span><textarea value={reasons[application.id] ?? ""} onChange={(event) => setReasons((current) => ({ ...current, [application.id]: event.target.value }))} rows={2} maxLength={1000} className="mt-1 w-full rounded-xl border border-border px-3 py-2 text-sm" /></label>

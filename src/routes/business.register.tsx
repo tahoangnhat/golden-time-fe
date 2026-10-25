@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowLeft, Building2, FileCheck2, LoaderCircle, Upload } from "lucide-react";
 import { useState, type FormEvent } from "react";
-import { GoogleAddressPicker } from "@/components/GoogleAddressPicker";
+import { LocationPicker } from "@/components/LocationPicker";
 import { ApiError, api } from "@/lib/api";
 import type { Coordinates } from "@/lib/geo";
 
@@ -18,7 +18,6 @@ function BusinessRegister() {
   const [phone, setPhone] = useState("");
   const [address, setAddress] = useState("");
   const [location, setLocation] = useState<Coordinates | null>(null);
-  const [googlePlaceId, setGooglePlaceId] = useState<string | null>(null);
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [licenseFile, setLicenseFile] = useState<File | null>(null);
@@ -37,7 +36,7 @@ function BusinessRegister() {
     setBusy(true);
     try {
       await api.submitBusinessApplication({ businessName, registrationNumber, contactName, email, phone, address, password, licenseFile,
-        latitude: location.lat, longitude: location.lng, googlePlaceId: googlePlaceId ?? undefined });
+        latitude: location.lat, longitude: location.lng });
       setSubmitted(true);
     } catch (cause) {
       setError(cause instanceof ApiError || cause instanceof Error ? cause.message : "Không gửi được hồ sơ lúc này.");
@@ -72,7 +71,7 @@ function BusinessRegister() {
           <label className="block"><span className="text-xs font-semibold">Người đại diện / liên hệ</span><input required maxLength={255} value={contactName} onChange={(event) => setContactName(event.target.value)} className="mt-1 h-11 w-full rounded-xl border border-border px-3" /></label>
           <label className="block"><span className="text-xs font-semibold">Email doanh nghiệp</span><input required type="email" maxLength={255} autoComplete="email" value={email} onChange={(event) => setEmail(event.target.value)} className="mt-1 h-11 w-full rounded-xl border border-border px-3" /></label>
           <label className="block"><span className="text-xs font-semibold">Số điện thoại</span><input required type="tel" maxLength={32} autoComplete="tel" value={phone} onChange={(event) => setPhone(event.target.value)} className="mt-1 h-11 w-full rounded-xl border border-border px-3" /></label>
-          <div className="md:col-span-2"><GoogleAddressPicker address={address} value={location} googlePlaceId={googlePlaceId} onAddressChange={setAddress} onChange={setLocation} onPlaceIdChange={setGooglePlaceId} /></div>
+          <div className="md:col-span-2"><LocationPicker address={address} value={location} onAddressChange={setAddress} onChange={setLocation} /></div>
           <label className="block"><span className="text-xs font-semibold">Mật khẩu</span><input required type="password" minLength={8} maxLength={128} autoComplete="new-password" value={password} onChange={(event) => setPassword(event.target.value)} className="mt-1 h-11 w-full rounded-xl border border-border px-3" /></label>
           <label className="block"><span className="text-xs font-semibold">Nhập lại mật khẩu</span><input required type="password" minLength={8} maxLength={128} autoComplete="new-password" value={confirmPassword} onChange={(event) => setConfirmPassword(event.target.value)} className="mt-1 h-11 w-full rounded-xl border border-border px-3" /></label>
           <label className="block md:col-span-2"><span className="text-xs font-semibold">Giấy phép kinh doanh</span><span className="mt-1 flex min-h-12 cursor-pointer items-center gap-3 rounded-xl border border-dashed border-border px-4 py-3 text-sm hover:bg-cream"><Upload className="h-4 w-4 shrink-0 text-primary" /><span className="truncate">{licenseFile?.name || "Tải tệp PDF, PNG hoặc JPG lên (tối đa 10 MB)"}</span><input required type="file" accept="application/pdf,image/png,image/jpeg,.pdf,.png,.jpg,.jpeg" onChange={(event) => setLicenseFile(event.target.files?.[0] ?? null)} className="sr-only" /></span></label>
