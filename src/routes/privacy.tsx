@@ -36,7 +36,7 @@ function PrivacyPage() {
             Chính sách này giải thích cách Golden Time thu thập và sử dụng thông tin khi bạn truy cập website,
             ứng dụng, bản đồ cửa hàng và cổng doanh nghiệp.
           </p>
-          <p className="mt-4 text-xs font-medium text-muted-foreground">Cập nhật lần cuối: 20/10/2026</p>
+          <p className="mt-4 text-xs font-medium text-muted-foreground">Cập nhật lần cuối: 26/10/2026</p>
         </header>
 
         <div className="space-y-5">
@@ -61,7 +61,7 @@ function PrivacyPage() {
                   Golden Time chỉ lấy vị trí hiện tại khi bạn chủ động bật tính năng như “Gần tôi” và cho phép trình duyệt truy cập vị trí. Tọa độ được dùng để lọc, sắp xếp cửa hàng hoặc sản phẩm gần bạn; khi tìm sản phẩm gần đây, tọa độ được gửi đến máy chủ Golden Time để trả về kết quả phù hợp. Bạn có thể tắt quyền vị trí trong cài đặt trình duyệt hoặc tắt tính năng này trong ứng dụng.
                 </p>
                 <p className="mt-3 text-sm leading-7 text-muted-foreground">
-                  Bản đồ sử dụng thư viện Leaflet và dữ liệu bản đồ OpenStreetMap. Khi bản đồ hiển thị, trình duyệt tải các ô bản đồ cần thiết từ máy chủ OpenStreetMap; nhà cung cấp có thể nhận thông tin kết nối như địa chỉ IP và khu vực bản đồ được tải. Golden Time lưu tọa độ cửa hàng đối tác để hiển thị ghim và sắp xếp theo khoảng cách. Xem <a className="font-semibold text-primary underline underline-offset-4" href="https://osmfoundation.org/wiki/Privacy_Policy" target="_blank" rel="noreferrer">Chính sách quyền riêng tư OpenStreetMap</a>.
+                  Trang tìm cửa hàng quanh bạn dùng Leaflet và dữ liệu bản đồ OpenStreetMap. Khi bản đồ hiển thị, trình duyệt tải các ô bản đồ cần thiết từ máy chủ OpenStreetMap; nhà cung cấp có thể nhận thông tin kết nối như địa chỉ IP và khu vực bản đồ được tải. Khi đăng ký, duyệt hoặc sửa hồ sơ cửa hàng, Google Maps JavaScript API và Places API gợi ý địa chỉ; nội dung tìm kiếm được gửi đến Google và kết quả được hiển thị trên Google Maps. Golden Time lưu địa chỉ và tọa độ đã xác nhận trong hồ sơ cửa hàng để hiển thị ghim và sắp xếp theo khoảng cách. Xem <a className="font-semibold text-primary underline underline-offset-4" href="https://osmfoundation.org/wiki/Privacy_Policy" target="_blank" rel="noreferrer">Chính sách quyền riêng tư OpenStreetMap</a>, <a className="font-semibold text-primary underline underline-offset-4" href="https://policies.google.com/privacy" target="_blank" rel="noreferrer">Chính sách quyền riêng tư Google</a> và <a className="font-semibold text-primary underline underline-offset-4" href="https://cloud.google.com/maps-platform/terms" target="_blank" rel="noreferrer">Điều khoản Google Maps Platform</a>.
                 </p>
               </div>
             </div>

@@ -74,6 +74,7 @@ export type BusinessApplication = {
   id: number; businessName: string; registrationNumber: string; contactName: string; email: string; phone: string;
   address: string; licenseOriginalName: string; licenseContentType: string; status: "PENDING" | "APPROVED" | "REJECTED";
   rejectionReason?: string | null; createdAt: string; reviewedAt?: string | null; shopId?: number | null; notificationSent?: boolean | null;
+  latitude?: number | null; longitude?: number | null; googlePlaceId?: string | null;
 };
 export type AdminProduct = { id: number; emoji: string; name: string; shop: string; price: number; stock: number; score?: number | null; status: string; category?: string | null };
 export type AdminOrder = { id: number; customer: string; shop: string; total: number; subtotal: number; shippingFee: number; status: string; payment: string; note?: string | null; deliveryName?: string | null; deliveryPhone?: string | null; deliveryAddress?: string | null; createdAt: string; itemCount: number };
@@ -83,7 +84,7 @@ export type AdminNutrition = { id: number; slug: string; name: string; emoji: st
 export type AdminTrace = { batchCode: string; product: string; shop?: string | null; supplier?: string | null; area?: string | null; harvestDate?: string | null; intakeDate?: string | null; certificates?: string | null; certified: boolean };
 export type AdminPriceSource = { id: number; retailer: string; fruit: string; productName: string; sourceUrl: string; enabled: boolean; lastAttemptAt?: string | null; lastSuccessAt?: string | null; lastError?: string | null };
 export type AdminOverview = { users: number; shops: number; orders: number; orderValueToday: number; scansToday: number; confirmedPercent: number; topFruits: { name: string; scans: number }[]; topShops: { name: string; orders: number; orderValue: number }[]; pendingOrders: number; daily: { date: string; orderValue: number; scans: number }[] };
-export type ShopProfile = { id: number; name: string; address?: string | null; latitude: number; longitude: number; status: string; description?: string | null; rating: number; reviewCount: number };
+export type ShopProfile = { id: number; name: string; address?: string | null; latitude: number; longitude: number; googlePlaceId?: string | null; status: string; description?: string | null; rating: number; reviewCount: number };
 export type ShopProduct = { id: number; fruitId: number; fruitName: string; emoji: string; category?: string | null; displayName: string; pricePerKg: number; stockKg: number; aiScore?: number | null; status: string; batchCode?: string | null };
 export type ShopOrder = { id: number; customer: string; total: number; subtotal: number; shippingFee: number; status: string; payment: string; deliveryName?: string | null; deliveryPhone?: string | null; deliveryAddress?: string | null; note?: string | null; createdAt: string; items: { name: string; emoji: string; quantityKg: number; unitPrice: number; lineTotal: number }[] };
 export type ShopReview = { id: number; author: string; rating: number; comment: string; createdAt: string; purchased: boolean };
@@ -274,7 +275,7 @@ export const api = {
   adminShops: () => request<AdminShop[]>("/admin/shops"),
   adminBusinessApplications: () => request<BusinessApplication[]>("/admin/business-applications"),
   adminBusinessLicense: (id: number) => requestBlob(`/admin/business-applications/${id}/license`),
-  decideBusinessApplication: (id: number, approved: boolean, reason?: string, location?: { latitude: number; longitude: number }) => request<BusinessApplication>(`/admin/business-applications/${id}/decision`, { method: "POST", body: JSON.stringify({ approved, reason, ...location }) }),
+  decideBusinessApplication: (id: number, approved: boolean, reason?: string, location?: { latitude: number; longitude: number; address?: string; googlePlaceId?: string | null }) => request<BusinessApplication>(`/admin/business-applications/${id}/decision`, { method: "POST", body: JSON.stringify({ approved, reason, ...location }) }),
   resendBusinessApplicationNotification: (id: number) => request<BusinessApplication>(`/admin/business-applications/${id}/notification`, { method: "POST" }),
   adminProducts: () => request<AdminProduct[]>("/admin/products"),
   adminOrders: () => request<AdminOrder[]>("/admin/orders"),
@@ -285,12 +286,13 @@ export const api = {
   adminPriceSources: () => request<AdminPriceSource[]>("/admin/prices/sources"),
   refreshPrices: () => request<{ sources: number; updated: number; failed: number; completedAt: string }>("/admin/prices/refresh", { method: "POST" }),
   shopProfile: () => request<ShopProfile>("/shop/profile"),
+  updateShopProfile: (payload: { address: string; latitude: number; longitude: number; googlePlaceId?: string | null }) => request<ShopProfile>("/shop/profile", { method: "PUT", body: JSON.stringify(payload) }),
   shopProducts: () => request<ShopProduct[]>("/shop/products"),
   shopOrders: () => request<ShopOrder[]>("/shop/orders"),
   shopReviews: () => request<ShopReview[]>("/shop/reviews"),
   shopTraceability: () => request<ShopTrace[]>("/shop/traceability"),
   shopOverview: () => request<ShopOverview>("/shop/overview"),
-  submitBusinessApplication: (payload: { businessName: string; registrationNumber: string; contactName: string; email: string; phone: string; address: string; password: string; licenseFile: File }) => {
+  submitBusinessApplication: (payload: { businessName: string; registrationNumber: string; contactName: string; email: string; phone: string; address: string; password: string; licenseFile: File; latitude: number; longitude: number; googlePlaceId?: string }) => {
     const form = new FormData();
     form.set("businessName", payload.businessName);
     form.set("registrationNumber", payload.registrationNumber);
@@ -298,6 +300,9 @@ export const api = {
     form.set("email", payload.email);
     form.set("phone", payload.phone);
     form.set("address", payload.address);
+    form.set("latitude", String(payload.latitude));
+    form.set("longitude", String(payload.longitude));
+    if (payload.googlePlaceId) form.set("googlePlaceId", payload.googlePlaceId);
     form.set("password", payload.password);
     form.set("licenseFile", payload.licenseFile);
     return request<{ id: number; status: string; createdAt: string }>("/business/applications", { method: "POST", body: form });

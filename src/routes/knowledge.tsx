@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Outlet, useRouterState } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { Search, LoaderCircle } from "lucide-react";
 import { SiteShell, Section, SectionHeading } from "@/components/SiteShell";
@@ -12,6 +12,13 @@ export const Route = createFileRoute("/knowledge")({
 });
 
 function KnowledgePage() {
+  const pathname = useRouterState({ select: (state) => state.location.pathname });
+  const isKnowledgeIndex = pathname === "/knowledge" || pathname === "/knowledge/";
+
+  return isKnowledgeIndex ? <KnowledgeIndexPage /> : <Outlet />;
+}
+
+function KnowledgeIndexPage() {
   const [q, setQ] = useState("");
   const [cat, setCat] = useState<string>("Tất cả");
   const [visible, setVisible] = useState(6);

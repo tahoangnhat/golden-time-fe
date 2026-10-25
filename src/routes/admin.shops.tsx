@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { MapPin, Search, Star } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { AdminShell, AdminTable, FilterBar, SectionCard, StatusBadge } from "@/components/AdminShell";
-import { LocationPicker } from "@/components/LocationPicker";
+import { GoogleAddressPicker } from "@/components/GoogleAddressPicker";
 import { api, type AdminShop, type BusinessApplication } from "@/lib/api";
 import type { Coordinates } from "@/lib/geo";
 
@@ -17,6 +17,8 @@ function AdminShops() {
   const [applicationNotice, setApplicationNotice] = useState("");
   const [reasons, setReasons] = useState<Record<number, string>>({});
   const [applicationLocations, setApplicationLocations] = useState<Record<number, Coordinates | null>>({});
+  const [applicationAddresses, setApplicationAddresses] = useState<Record<number, string>>({});
+  const [applicationPlaceIds, setApplicationPlaceIds] = useState<Record<number, string | null>>({});
   const [locationPickerApplicationId, setLocationPickerApplicationId] = useState<number | null>(null);
   const [busyId, setBusyId] = useState<number | null>(null);
   useEffect(() => {
@@ -25,6 +27,16 @@ function AdminShops() {
   }, []);
   const filtered = useMemo(() => shops.filter((shop) => `${shop.name} ${shop.owner ?? ""} ${shop.address ?? ""}`.toLowerCase().includes(query.toLowerCase())), [shops, query]);
   const pendingApplications = applications.filter((application) => application.status === "PENDING");
+
+  function applicationLocation(application: BusinessApplication): Coordinates | null {
+    if (Object.hasOwn(applicationLocations, application.id)) return applicationLocations[application.id];
+    if (application.latitude == null || application.longitude == null) return null;
+    return { lat: application.latitude, lng: application.longitude };
+  }
+
+  function applicationPlaceId(application: BusinessApplication) {
+    return Object.hasOwn(applicationPlaceIds, application.id) ? applicationPlaceIds[application.id] : application.googlePlaceId;
+  }
 
   async function openLicense(application: BusinessApplication) {
     setApplicationError("");
@@ -49,7 +61,7 @@ function AdminShops() {
       setApplicationError("Lý do từ chối là bắt buộc.");
       return;
     }
-    const location = applicationLocations[application.id] ?? null;
+    const location = applicationLocation(application);
     if (approved && !location) {
       setApplicationError("Hãy chọn vị trí cửa hàng trên bản đồ trước khi chấp nhận hồ sơ.");
       setLocationPickerApplicationId(application.id);
@@ -62,6 +74,8 @@ function AdminShops() {
       const updated = await api.decideBusinessApplication(application.id, approved, reason || undefined, location && {
         latitude: location.lat,
         longitude: location.lng,
+        address: applicationAddresses[application.id] ?? application.address,
+        googlePlaceId: applicationPlaceId(application),
       });
       setApplications((current) => current.map((item) => item.id === updated.id ? updated : item));
       if (updated.notificationSent === false) {
@@ -102,7 +116,7 @@ function AdminShops() {
     <SectionCard title={`Hồ sơ đăng ký doanh nghiệp (${pendingApplications.length} chờ duyệt)`}>
       {applicationError && <p role="alert" className="mb-3 rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">{applicationError}</p>}
       {applicationNotice && <p role="status" className="mb-3 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">{applicationNotice}</p>}
-      <p className="mb-3 text-xs text-muted-foreground">Khi chấp nhận hồ sơ, hãy ghim vị trí chính xác của cửa hàng trên OpenStreetMap. Tọa độ được lưu để sắp xếp cửa hàng gần người dùng.</p>
+      <p className="mb-3 text-xs text-muted-foreground">Địa chỉ và ghim vị trí được lấy từ Google Maps trong hồ sơ đăng ký. Admin có thể kiểm tra hoặc chỉnh lại trước khi chấp nhận.</p>
       <div className="space-y-4">
         {applications.map((application) => <article key={application.id} className="rounded-2xl border border-border p-4">
           <div className="flex flex-wrap items-start justify-between gap-3">
@@ -121,20 +135,23 @@ function AdminShops() {
             <p><span className="text-muted-foreground">Người liên hệ:</span> {application.contactName}</p>
             <p><span className="text-muted-foreground">Email:</span> {application.email}</p>
             <p><span className="text-muted-foreground">Điện thoại:</span> {application.phone}</p>
-            <p className="sm:col-span-2"><span className="text-muted-foreground">Địa chỉ:</span> {application.address}</p>
+            <p className="sm:col-span-2"><span className="text-muted-foreground">Địa chỉ:</span> {applicationAddresses[application.id] ?? application.address}</p>
           </div>
           <button onClick={() => void openLicense(application)} className="mt-3 rounded-lg border border-border px-3 py-2 text-xs font-semibold text-primary hover:bg-cream">Tải giấy phép: {application.licenseOriginalName}</button>
           {application.status !== "PENDING" && application.notificationSent !== true && <button disabled={busyId === application.id} onClick={() => void resendNotification(application)} className="ml-2 mt-3 rounded-lg border border-border px-3 py-2 text-xs font-semibold text-primary hover:bg-cream disabled:opacity-50">{busyId === application.id ? "Đang gửi…" : "Gửi lại email"}</button>}
           {application.status === "PENDING" ? <>
             <div className="mt-4 rounded-xl bg-cream/70 p-3">
-              <p className="text-xs font-semibold">Vị trí cửa hàng bắt buộc khi chấp nhận</p>
+              <p className="text-xs font-semibold">Vị trí cửa hàng</p>
               <button type="button" onClick={() => setLocationPickerApplicationId((current) => current === application.id ? null : application.id)} className="mt-2 inline-flex items-center gap-2 rounded-lg border border-border bg-white px-3 py-2 text-xs font-semibold text-primary hover:bg-cream">
-                <MapPin className="h-4 w-4" />{locationPickerApplicationId === application.id ? "Đóng chọn vị trí" : applicationLocations[application.id] ? "Sửa vị trí đã ghim" : "Chọn vị trí trên bản đồ"}
+                <MapPin className="h-4 w-4" />{locationPickerApplicationId === application.id ? "Đóng chọn vị trí" : applicationLocation(application) ? "Sửa địa chỉ / vị trí" : "Chọn địa chỉ / vị trí"}
               </button>
-              {locationPickerApplicationId === application.id && <LocationPicker
-                address={application.address}
-                value={applicationLocations[application.id] ?? null}
+              {locationPickerApplicationId === application.id && <GoogleAddressPicker
+                address={applicationAddresses[application.id] ?? application.address}
+                value={applicationLocation(application)}
+                googlePlaceId={applicationPlaceId(application)}
+                onAddressChange={(value) => setApplicationAddresses((current) => ({ ...current, [application.id]: value }))}
                 onChange={(value) => setApplicationLocations((current) => ({ ...current, [application.id]: value }))}
+                onPlaceIdChange={(value) => setApplicationPlaceIds((current) => ({ ...current, [application.id]: value }))}
               />}
             </div>
             <label className="mt-4 block"><span className="text-xs font-semibold">Lý do từ chối (bắt buộc khi từ chối)</span><textarea value={reasons[application.id] ?? ""} onChange={(event) => setReasons((current) => ({ ...current, [application.id]: event.target.value }))} rows={2} maxLength={1000} className="mt-1 w-full rounded-xl border border-border px-3 py-2 text-sm" /></label>
