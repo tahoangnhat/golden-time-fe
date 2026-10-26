@@ -25,7 +25,7 @@ export type Product = {
   id: number; shopId: number; shopName: string; fruitId: number; fruitSlug: string;
   fruitName: string; emoji: string; category?: string | null; displayName: string;
   pricePerKg: number; stockKg: number; aiScore?: number | null; batchCode?: string | null;
-  distanceKm?: number | null;
+  distanceKm?: number | null; imageUrl?: string | null;
 };
 export type Shop = {
   id: number; name: string; address?: string | null; latitude: number; longitude: number;
@@ -86,7 +86,7 @@ export type AdminTrace = { batchCode: string; product: string; shop?: string | n
 export type AdminPriceSource = { id: number; retailer: string; fruit: string; productName: string; sourceUrl: string; enabled: boolean; lastAttemptAt?: string | null; lastSuccessAt?: string | null; lastError?: string | null };
 export type AdminOverview = { users: number; shops: number; orders: number; orderValueToday: number; scansToday: number; confirmedPercent: number; topFruits: { name: string; scans: number }[]; topShops: { name: string; orders: number; orderValue: number }[]; pendingOrders: number; daily: { date: string; orderValue: number; scans: number }[] };
 export type ShopProfile = { id: number; name: string; address?: string | null; latitude: number; longitude: number; status: string; description?: string | null; rating: number; reviewCount: number };
-export type ShopProduct = { id: number; fruitId: number; fruitName: string; emoji: string; category?: string | null; displayName: string; pricePerKg: number; stockKg: number; aiScore?: number | null; status: string; batchCode?: string | null };
+export type ShopProduct = { id: number; fruitId: number; fruitName: string; emoji: string; category?: string | null; displayName: string; pricePerKg: number; stockKg: number; aiScore?: number | null; status: string; batchCode?: string | null; imageUrl?: string | null };
 export type ShopOrder = { id: number; customer: string; total: number; subtotal: number; shippingFee: number; status: string; payment: string; deliveryName?: string | null; deliveryPhone?: string | null; deliveryAddress?: string | null; note?: string | null; createdAt: string; items: { name: string; emoji: string; quantityKg: number; unitPrice: number; lineTotal: number }[] };
 export type ShopReview = { id: number; author: string; rating: number; comment: string; createdAt: string; purchased: boolean };
 export type ShopTrace = { batchCode: string; product: string; origin?: string | null; supplier?: string | null; certified: boolean; harvestDate?: string | null; intakeDate?: string | null; certificates?: string | null; storageTemperature?: string | null; storageHumidity?: string | null; publicNote?: string | null };
@@ -271,6 +271,12 @@ export const api = {
     const image = await request<{ url: string; contentType: string }>("/admin/articles/images", { method: "POST", body: form });
     return { ...image, url: image.url.startsWith("http") ? image.url : `${API_ORIGIN}${image.url}` };
   },
+  uploadShopProductImage: async (file: File) => {
+    const form = new FormData();
+    form.set("file", file);
+    const image = await request<{ url: string; contentType: string }>("/shop/products/images", { method: "POST", body: form });
+    return { ...image, url: image.url.startsWith("http") ? image.url : `${API_ORIGIN}${image.url}` };
+  },
   adminOverview: () => request<AdminOverview>("/admin/overview"),
   adminUsers: () => request<AdminUser[]>("/admin/users"),
   adminShops: () => request<AdminShop[]>("/admin/shops"),
@@ -292,6 +298,8 @@ export const api = {
   mapAddressReverse: (point: { lat: number; lng: number }) => request<{ display_name?: string | null }>(`/map/geocoding/reverse?lat=${point.lat}&lon=${point.lng}`),
   nearbyChainShops: (point: { lat: number; lng: number }) => request<NearbyChainShop[]>(`/map/nearby-chain-stores?lat=${point.lat}&lon=${point.lng}`),
   shopProducts: () => request<ShopProduct[]>("/shop/products"),
+  createShopProduct: (payload: { fruitId: number; displayName: string; pricePerKg: number; stockKg: number; onSale: boolean; imageUrl: string }) => request<ShopProduct>("/shop/products", { method: "POST", body: JSON.stringify(payload) }),
+  updateShopProduct: (id: number, payload: { fruitId: number; displayName: string; pricePerKg: number; stockKg: number; onSale: boolean; imageUrl: string }) => request<ShopProduct>(`/shop/products/${id}`, { method: "PUT", body: JSON.stringify(payload) }),
   shopOrders: () => request<ShopOrder[]>("/shop/orders"),
   shopReviews: () => request<ShopReview[]>("/shop/reviews"),
   shopTraceability: () => request<ShopTrace[]>("/shop/traceability"),

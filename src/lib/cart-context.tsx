@@ -4,7 +4,7 @@ import { AUTH_CHANGED_EVENT, getAuthUserId, userStorageKey, type Product } from 
 const STORAGE_KEY = "golden-time-cart";
 export type CartLine = {
   productId: number; shopId: number; shopName: string; fruitName: string; displayName: string;
-  emoji: string; pricePerKg: number; stockKg: number; quantityKg: number;
+  emoji: string; imageUrl?: string | null; pricePerKg: number; stockKg: number; quantityKg: number;
 };
 type CartContextValue = {
   items: CartLine[]; add: (product: Product) => boolean; setQuantity: (productId: number, quantityKg: number) => void;
@@ -58,7 +58,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
           ? { ...line, quantityKg: Math.min(line.quantityKg + 1, line.stockKg) } : line);
         return [...current, { productId: product.id, shopId: product.shopId, shopName: product.shopName,
           fruitName: product.fruitName, displayName: product.displayName, emoji: product.emoji,
-          pricePerKg: product.pricePerKg, stockKg: product.stockKg, quantityKg: Math.min(1, product.stockKg) }];
+          imageUrl: product.imageUrl, pricePerKg: product.pricePerKg, stockKg: product.stockKg, quantityKg: Math.min(1, product.stockKg) }];
       });
       return true;
     },

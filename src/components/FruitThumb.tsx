@@ -1,4 +1,5 @@
 import { cn } from "@/lib/utils";
+import { useEffect, useState } from "react";
 
 const palette: Record<string, string> = {
   "🍎": "from-rose-200 to-rose-100",
@@ -39,4 +40,31 @@ export function FruitThumb({
       <span>{emoji}</span>
     </div>
   );
+}
+
+export function ProductThumb({
+  emoji,
+  imageUrl,
+  size = "md",
+  className,
+  alt = "",
+}: {
+  emoji: string;
+  imageUrl?: string | null;
+  size?: "sm" | "md" | "lg" | "xl";
+  className?: string;
+  alt?: string;
+}) {
+  const [imageFailed, setImageFailed] = useState(false);
+  useEffect(() => setImageFailed(false), [imageUrl]);
+  if (imageUrl && !imageFailed) {
+    const sizes = {
+      sm: "h-12 w-12 rounded-2xl",
+      md: "h-16 w-16 rounded-2xl",
+      lg: "h-24 w-24 rounded-3xl",
+      xl: "h-40 w-40 rounded-[2rem]",
+    };
+    return <img src={imageUrl} alt={alt} onError={() => setImageFailed(true)} className={cn("shrink-0 object-cover", sizes[size], className)} />;
+  }
+  return <FruitThumb emoji={emoji} size={size} className={className} />;
 }

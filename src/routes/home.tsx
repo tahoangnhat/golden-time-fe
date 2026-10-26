@@ -2,7 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { Search, ScanLine, BarChart3, ShoppingBag, MapPin, Bell, Star } from "lucide-react";
 import { useEffect, useState, type FormEvent } from "react";
 import { PhoneShell, StatusBar } from "@/components/PhoneShell";
-import { FruitThumb } from "@/components/FruitThumb";
+import { ProductThumb } from "@/components/FruitThumb";
 import { api, type Product } from "@/lib/api";
 
 export const Route = createFileRoute("/home")({
@@ -71,7 +71,7 @@ function Home() {
         <div className="mt-3 space-y-3">
           {products.map((p) => (
             <div key={p.id} className="bg-white rounded-2xl p-3 flex items-center gap-3 gt-shadow-soft border border-border">
-              <FruitThumb emoji={p.emoji} size="md" />
+              <ProductThumb emoji={p.emoji} imageUrl={p.imageUrl} alt={p.displayName} size="md" />
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
                   <h4 className="font-bold text-sm truncate">{p.displayName}</h4>

@@ -3,7 +3,7 @@ import { Search, Star, MapPin, Plus, ShoppingCart, LoaderCircle } from "lucide-r
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { PhoneShell, StatusBar } from "@/components/PhoneShell";
-import { FruitThumb } from "@/components/FruitThumb";
+import { ProductThumb } from "@/components/FruitThumb";
 import { api, getCurrentLocation, type Product } from "@/lib/api";
 import { useCart } from "@/lib/cart-context";
 
@@ -37,7 +37,7 @@ function Shop() {
   const categories = ["Tất cả", "Trái cây nội địa", "Trái cây nhập khẩu"];
   const visible = useMemo(() => category === "Tất cả" ? products : products.filter((product) => product.category === category), [category, products]);
   function add(product: Product) {
-    if (!cart.add(product)) return toast.error("Đơn demo chỉ nhận sản phẩm từ một cửa hàng. Hãy xóa giỏ hàng trước khi đổi shop.");
+    if (!cart.add(product)) return toast.error("Giỏ hàng chỉ nhận sản phẩm từ một cửa hàng. Hãy xóa giỏ hàng trước khi đổi cửa hàng.");
     toast.success(`${product.displayName} đã được thêm vào giỏ.`);
   }
   async function toggleNear() {
@@ -53,7 +53,7 @@ function Shop() {
         <div className="mt-3 flex items-center justify-between gap-2"><div className="flex gap-2 overflow-x-auto pb-1">{categories.map((item) => <button key={item} onClick={() => setCategory(item)} className={`shrink-0 text-xs font-semibold px-3 py-1.5 rounded-full ${category === item ? "gt-gradient text-white" : "bg-white border border-border"}`}>{item}</button>)}</div><button onClick={toggleNear} className={`shrink-0 text-[10px] font-semibold px-2.5 py-1.5 rounded-full border ${near ? "bg-primary text-white border-primary" : "bg-white border-border"}`}>{near ? "Gần tôi: bật" : "Gần tôi"}</button></div>
         {loading ? <div className="py-16 grid place-items-center"><LoaderCircle className="animate-spin text-primary" /></div> : error ? <p className="mt-5 rounded-xl bg-red-50 p-4 text-sm text-red-700">{error}</p> : visible.length === 0 ? <div className="py-12 text-center text-sm text-muted-foreground">Chưa có sản phẩm phù hợp.</div> :
           <div className="mt-4 grid grid-cols-2 gap-3">{visible.map((product) => <div key={product.id} className="bg-white rounded-2xl p-3 gt-shadow-soft border border-border flex flex-col">
-            <div className="relative"><FruitThumb emoji={product.emoji} size="lg" className="!h-28 !w-full !rounded-2xl !text-6xl" />{product.aiScore != null && <span className="absolute top-2 left-2 text-[10px] bg-white/95 px-1.5 py-0.5 rounded-md font-bold flex items-center gap-0.5"><Star className="h-2.5 w-2.5 text-primary fill-primary" /> {product.aiScore}</span>}</div>
+            <div className="relative"><ProductThumb emoji={product.emoji} imageUrl={product.imageUrl} alt={product.displayName} size="lg" className="!h-28 !w-full !rounded-2xl !text-6xl" />{product.aiScore != null && <span className="absolute top-2 left-2 text-[10px] bg-white/95 px-1.5 py-0.5 rounded-md font-bold flex items-center gap-0.5"><Star className="h-2.5 w-2.5 text-primary fill-primary" /> {product.aiScore}</span>}</div>
             <h4 className="font-bold text-sm mt-2 truncate">{product.displayName}</h4><p className="text-[10px] text-muted-foreground truncate">{product.shopName}</p>
             <div className="flex items-center gap-1 text-[10px] text-muted-foreground mt-0.5"><MapPin className="h-2.5 w-2.5" />{product.distanceKm == null ? "Vị trí cửa hàng" : `${product.distanceKm.toFixed(1)} km`}</div>
             <p className="text-[10px] text-muted-foreground mt-0.5">Còn {Number(product.stockKg).toLocaleString("vi-VN")} kg</p>
