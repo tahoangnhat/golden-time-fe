@@ -59,7 +59,7 @@ export function PhoneShell({
           <nav className="absolute bottom-0 inset-x-0 bg-white/95 backdrop-blur border-t border-border px-2 pt-2 pb-3">
             <ul className="flex items-center justify-between">
               {tabs.map(({ to, label, icon: Icon }) => {
-                const active = pathname === to;
+                const active = pathname === to || pathname.startsWith(`${to}/`);
                 return (
                   <li key={to} className="flex-1">
                     <Link

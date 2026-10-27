@@ -27,7 +27,7 @@ function AdminNutrition() {
         {rows.map((fruit) => <tr key={fruit.id}><td className="py-3 pr-3 font-semibold">{fruit.emoji} {fruit.name}</td><td className="py-3 pr-3 text-right">{fruit.calories ?? "—"}</td><td className="py-3 pr-3 text-right">{fruit.vitaminC ?? "—"}</td><td className="py-3 pr-3 text-right">{fruit.fiber ?? "—"}</td><td className="py-3 pr-3 text-right">{fruit.sugar ?? "—"}</td><td className="py-3 pr-3 text-right">{fruit.potassium ?? "—"}</td><td className="py-3 pr-3 text-right">{fruit.water ?? "—"}</td></tr>)}
       </AdminTable>
       </SectionCard>)}
-      {!error && fruits.length === 0 && <p className="rounded-xl border border-border p-10 text-center text-sm text-muted-foreground">Chưa có loại trái cây trong cơ sở dữ liệu.</p>}
+      {!error && fruits.length === 0 && <p className="rounded-xl border border-border p-10 text-center text-sm text-muted-foreground">Chưa có dữ liệu dinh dưỡng để hiển thị.</p>}
       </div>
     </SectionCard>
   </AdminShell>;

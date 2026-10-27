@@ -58,6 +58,7 @@ import { Route as BusinessSupportRouteImport } from './routes/business.support'
 import { Route as BusinessTraceabilityRouteImport } from './routes/business.traceability'
 import { Route as KnowledgeSlugRouteImport } from './routes/knowledge.$slug'
 import { Route as ShopIndexRouteImport } from './routes/shop.index'
+import { Route as ShopProductIdRouteImport } from './routes/shop.$productId'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -304,6 +305,11 @@ const ShopIndexRoute = ShopIndexRouteImport.update({
   path: '/',
   getParentRoute: () => ShopRoute,
 } as any)
+const ShopProductIdRoute = ShopProductIdRouteImport.update({
+  id: '/$productId',
+  path: '/$productId',
+  getParentRoute: () => ShopRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -353,6 +359,7 @@ export interface FileRoutesByFullPath {
   '/business/support': typeof BusinessSupportRoute
   '/business/traceability': typeof BusinessTraceabilityRoute
   '/knowledge/$slug': typeof KnowledgeSlugRoute
+  '/shop/$productId': typeof ShopProductIdRoute
   '/admin/': typeof AdminIndexRoute
   '/shop/': typeof ShopIndexRoute
 }
@@ -402,6 +409,7 @@ export interface FileRoutesByTo {
   '/business/support': typeof BusinessSupportRoute
   '/business/traceability': typeof BusinessTraceabilityRoute
   '/knowledge/$slug': typeof KnowledgeSlugRoute
+  '/shop/$productId': typeof ShopProductIdRoute
   '/admin': typeof AdminIndexRoute
   '/shop': typeof ShopIndexRoute
 }
@@ -454,6 +462,7 @@ export interface FileRoutesById {
   '/business/support': typeof BusinessSupportRoute
   '/business/traceability': typeof BusinessTraceabilityRoute
   '/knowledge/$slug': typeof KnowledgeSlugRoute
+  '/shop/$productId': typeof ShopProductIdRoute
   '/admin/': typeof AdminIndexRoute
   '/shop/': typeof ShopIndexRoute
 }
@@ -507,6 +516,7 @@ export interface FileRouteTypes {
     | '/business/support'
     | '/business/traceability'
     | '/knowledge/$slug'
+    | '/shop/$productId'
     | '/admin/'
     | '/shop/'
   fileRoutesByTo: FileRoutesByTo
@@ -556,6 +566,7 @@ export interface FileRouteTypes {
     | '/business/support'
     | '/business/traceability'
     | '/knowledge/$slug'
+    | '/shop/$productId'
     | '/admin'
     | '/shop'
   id:
@@ -607,6 +618,7 @@ export interface FileRouteTypes {
     | '/business/support'
     | '/business/traceability'
     | '/knowledge/$slug'
+    | '/shop/$productId'
     | '/admin/'
     | '/shop/'
   fileRoutesById: FileRoutesById
@@ -979,6 +991,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ShopIndexRouteImport
       parentRoute: typeof ShopRoute
     }
+    '/shop/$productId': {
+      id: '/shop/$productId'
+      path: '/$productId'
+      fullPath: '/shop/$productId'
+      preLoaderRoute: typeof ShopProductIdRouteImport
+      parentRoute: typeof ShopRoute
+    }
   }
 }
 
@@ -1067,10 +1086,12 @@ const KnowledgeRouteWithChildren = KnowledgeRoute._addFileChildren(
 )
 
 interface ShopRouteChildren {
+  ShopProductIdRoute: typeof ShopProductIdRoute
   ShopIndexRoute: typeof ShopIndexRoute
 }
 
 const ShopRouteChildren: ShopRouteChildren = {
+  ShopProductIdRoute: ShopProductIdRoute,
   ShopIndexRoute: ShopIndexRoute,
 }
 

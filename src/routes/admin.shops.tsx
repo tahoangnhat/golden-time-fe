@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { Fragment } from "react";
 import { MapPin, Search, Star } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { AdminShell, AdminTable, FilterBar, SectionCard, StatusBadge } from "@/components/AdminShell";
@@ -20,12 +21,59 @@ function AdminShops() {
   const [applicationAddresses, setApplicationAddresses] = useState<Record<number, string>>({});
   const [locationPickerApplicationId, setLocationPickerApplicationId] = useState<number | null>(null);
   const [busyId, setBusyId] = useState<number | null>(null);
+  const [editingShopId, setEditingShopId] = useState<number | null>(null);
+  const [editingShopAddress, setEditingShopAddress] = useState("");
+  const [editingShopLocation, setEditingShopLocation] = useState<Coordinates | null>(null);
+  const [shopLocationError, setShopLocationError] = useState("");
+  const [shopLocationNotice, setShopLocationNotice] = useState("");
+  const [shopLocationBusy, setShopLocationBusy] = useState(false);
   useEffect(() => {
     api.adminShops().then(setShops).catch((cause) => setError(cause instanceof Error ? cause.message : "Không tải được cửa hàng."));
     api.adminBusinessApplications().then(setApplications).catch((cause) => setApplicationError(cause instanceof Error ? cause.message : "Không tải được hồ sơ doanh nghiệp."));
   }, []);
   const filtered = useMemo(() => shops.filter((shop) => `${shop.name} ${shop.owner ?? ""} ${shop.address ?? ""}`.toLowerCase().includes(query.toLowerCase())), [shops, query]);
   const pendingApplications = applications.filter((application) => application.status === "PENDING");
+
+  function editShopLocation(shop: AdminShop) {
+    setShopLocationError("");
+    setShopLocationNotice("");
+    if (editingShopId === shop.id) {
+      setEditingShopId(null);
+      return;
+    }
+    setEditingShopId(shop.id);
+    setEditingShopAddress(shop.address ?? "");
+    setEditingShopLocation({ lat: shop.latitude, lng: shop.longitude });
+  }
+
+  async function saveShopLocation(shop: AdminShop) {
+    const address = editingShopAddress.trim();
+    if (address.length < 5 || address.length > 512) {
+      setShopLocationError("Địa chỉ cửa hàng cần dài từ 5 đến 512 ký tự.");
+      return;
+    }
+    if (!editingShopLocation) {
+      setShopLocationError("Hãy chọn vị trí cửa hàng trên bản đồ.");
+      return;
+    }
+    setShopLocationBusy(true);
+    setShopLocationError("");
+    setShopLocationNotice("");
+    try {
+      const updated = await api.updateAdminShopLocation(shop.id, {
+        address,
+        latitude: editingShopLocation.lat,
+        longitude: editingShopLocation.lng,
+      });
+      setShops((current) => current.map((item) => item.id === shop.id ? { ...item, ...updated } : item));
+      setEditingShopId(null);
+      setShopLocationNotice(`Đã cập nhật địa chỉ và vị trí của ${shop.name}.`);
+    } catch (cause) {
+      setShopLocationError(cause instanceof Error ? cause.message : "Không cập nhật được vị trí cửa hàng.");
+    } finally {
+      setShopLocationBusy(false);
+    }
+  }
 
   function applicationLocation(application: BusinessApplication): Coordinates | null {
     if (Object.hasOwn(applicationLocations, application.id)) return applicationLocations[application.id];
@@ -160,9 +208,14 @@ function AdminShops() {
     <FilterBar><div className="flex items-center gap-2 bg-[oklch(0.97_0.04_95)] px-3 h-9 rounded-lg flex-1 min-w-[200px]"><Search className="h-4 w-4 text-muted-foreground" /><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Tìm cửa hàng, chủ shop..." className="flex-1 bg-transparent outline-none text-sm" /></div></FilterBar>
     {error && <p role="alert" className="mb-3 rounded-xl bg-red-50 p-3 text-sm text-red-700">{error}</p>}
     <SectionCard title={`Cửa hàng (${filtered.length})`}>
-      <AdminTable head={<><th className="py-2 pr-3">Cửa hàng</th><th className="py-2 pr-3">Chủ cửa hàng</th><th className="py-2 pr-3">Địa chỉ</th><th className="py-2 pr-3 text-right">Sản phẩm</th><th className="py-2 pr-3 text-right">Rating</th><th className="py-2 pr-3">Trạng thái</th><th className="py-2 pr-3 text-right">Giá trị đơn</th></>}>
-        {filtered.map((shop) => <tr key={shop.id} className="hover:bg-muted/30"><td className="py-3 pr-3 font-semibold">{shop.name}</td><td className="py-3 pr-3">{shop.owner || "Chưa gán chủ cửa hàng"}</td><td className="py-3 pr-3 text-muted-foreground">{shop.address || "—"}</td><td className="py-3 pr-3 text-right">{shop.products}</td><td className="py-3 pr-3 text-right"><span className="inline-flex items-center gap-1"><Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />{Number(shop.rating).toFixed(1)} ({shop.reviewCount})</span></td><td className="py-3 pr-3"><StatusBadge status={shop.status} /></td><td className="py-3 pr-3 text-right font-bold">{shop.orderValue.toLocaleString("vi-VN")}₫</td></tr>)}
-        {!error && filtered.length === 0 && <tr><td colSpan={7} className="p-10 text-center text-muted-foreground">Chưa có cửa hàng trong cơ sở dữ liệu.</td></tr>}
+      {shopLocationError && <p role="alert" className="mb-3 rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">{shopLocationError}</p>}
+      {shopLocationNotice && <p role="status" className="mb-3 rounded-xl border border-green-200 bg-green-50 p-3 text-sm text-green-800">{shopLocationNotice}</p>}
+      <AdminTable head={<><th className="py-2 pr-3">Cửa hàng</th><th className="py-2 pr-3">Chủ cửa hàng</th><th className="py-2 pr-3">Địa chỉ</th><th className="py-2 pr-3 text-right">Sản phẩm</th><th className="py-2 pr-3 text-right">Rating</th><th className="py-2 pr-3">Trạng thái</th><th className="py-2 pr-3 text-right">Giá trị đơn</th><th className="py-2 pr-3">Vị trí</th></>}>
+        {filtered.map((shop) => <Fragment key={shop.id}>
+          <tr className="hover:bg-muted/30"><td className="py-3 pr-3 font-semibold">{shop.name}</td><td className="py-3 pr-3">{shop.owner || "Chưa gán chủ cửa hàng"}</td><td className="py-3 pr-3 text-muted-foreground">{shop.address || "—"}</td><td className="py-3 pr-3 text-right">{shop.products}</td><td className="py-3 pr-3 text-right"><span className="inline-flex items-center gap-1"><Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />{Number(shop.rating).toFixed(1)} ({shop.reviewCount})</span></td><td className="py-3 pr-3"><StatusBadge status={shop.status} /></td><td className="py-3 pr-3 text-right font-bold">{shop.orderValue.toLocaleString("vi-VN")}₫</td><td className="py-3 pr-3"><button type="button" onClick={() => editShopLocation(shop)} className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-lg border border-border px-2.5 py-1.5 text-xs font-semibold text-primary hover:bg-cream"><MapPin className="h-3.5 w-3.5" />{editingShopId === shop.id ? "Đóng" : "Sửa vị trí"}</button></td></tr>
+          {editingShopId === shop.id && <tr><td colSpan={8} className="bg-cream/30 p-3"><div className="rounded-xl border border-border bg-white p-3"><h3 className="font-semibold">Cập nhật vị trí · {shop.name}</h3><LocationPicker key={shop.id} address={editingShopAddress} value={editingShopLocation} onAddressChange={setEditingShopAddress} onChange={setEditingShopLocation} /><div className="mt-3 flex justify-end gap-2"><button type="button" disabled={shopLocationBusy} onClick={() => setEditingShopId(null)} className="rounded-lg border border-border px-3 py-2 text-sm font-semibold disabled:opacity-50">Hủy</button><button type="button" disabled={shopLocationBusy} onClick={() => void saveShopLocation(shop)} className="rounded-lg gt-gradient px-3 py-2 text-sm font-semibold text-white disabled:opacity-50">{shopLocationBusy ? "Đang lưu…" : "Lưu vị trí"}</button></div></div></td></tr>}
+        </Fragment>)}
+        {!error && filtered.length === 0 && <tr><td colSpan={8} className="p-10 text-center text-muted-foreground">Chưa có cửa hàng trong cơ sở dữ liệu.</td></tr>}
       </AdminTable>
     </SectionCard>
   </AdminShell>;

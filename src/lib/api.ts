@@ -75,6 +75,7 @@ export type ArticleWritePayload = Omit<Article, "id" | "readingTime"> & { publis
 
 export type AdminUser = { id: number; name: string; email: string; role: "USER" | "SHOP_OWNER" | "ADMIN"; phone?: string | null; enabled: boolean; joined: string; orders: number; scans: number; reviews: number };
 export type AdminShop = { id: number; name: string; address?: string | null; latitude: number; longitude: number; status: string; rating: number; reviewCount: number; owner?: string | null; products: number; orderValue: number };
+export type AdminShopLocation = { id: number; address: string; latitude: number; longitude: number };
 export type BusinessApplication = {
   id: number; businessName: string; registrationNumber?: string | null; taxCode?: string | null; contactName: string;
   representativePhone?: string | null; email: string; phone: string; address: string;
@@ -254,6 +255,7 @@ export const api = {
   fruit: (slug: string) => request<FruitNutrition>(`/fruits/${encodeURIComponent(slug)}`),
   shops: (lat?: number, lng?: number, radiusKm?: number) => request<Shop[]>(`/shops?${query({ lat, lng, radiusKm })}`),
   products: (filters: { q?: string; fruitSlug?: string; lat?: number; lng?: number; radiusKm?: number } = {}) => request<Product[]>(`/products?${query(filters)}`),
+  product: (id: number) => request<Product>(`/products/${id}`),
   prices: (fruitSlug: string) => request<PriceComparison>(`/market/prices?${query({ fruitSlug })}`),
   scan: async (file: File, shopId?: number) => {
     const form = new FormData();
@@ -306,6 +308,7 @@ export const api = {
   adminOverview: () => request<AdminOverview>("/admin/overview"),
   adminUsers: () => request<AdminUser[]>("/admin/users"),
   adminShops: () => request<AdminShop[]>("/admin/shops"),
+  updateAdminShopLocation: (id: number, location: { address: string; latitude: number; longitude: number }) => request<AdminShopLocation>(`/admin/shops/${id}/location`, { method: "PUT", body: JSON.stringify(location) }),
   adminBusinessApplications: () => request<BusinessApplication[]>("/admin/business-applications"),
   adminBusinessLicense: (id: number) => requestBlob(`/admin/business-applications/${id}/license`),
   decideBusinessApplication: (id: number, approved: boolean, reason?: string, location?: { latitude: number; longitude: number; address?: string }) => request<BusinessApplication>(`/admin/business-applications/${id}/decision`, { method: "POST", body: JSON.stringify({ approved, reason, ...location }) }),

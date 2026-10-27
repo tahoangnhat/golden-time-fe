@@ -27,6 +27,7 @@ export function ArticleRichEditor({ value, onChange, onUploadImage }: Props) {
   const fileRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
   const [selectedImage, setSelectedImage] = useState<HTMLImageElement | null>(null);
+  const [imageAlignment, setImageAlignment] = useState<"left" | "center" | "right">("center");
   const [selectionBox, setSelectionBox] = useState({ left: 0, top: 0, width: 0, height: 0 });
   const [imageWidth, setImageWidth] = useState(0);
   const [widthInput, setWidthInput] = useState("");
@@ -133,6 +134,9 @@ export function ArticleRichEditor({ value, onChange, onUploadImage }: Props) {
 
   function selectImage(image: HTMLImageElement) {
     setSelectedImage(image);
+    const alignmentTarget = image.closest("figure") || image;
+    const alignment = (["left", "center", "right"] as const).find((value) => alignmentTarget.classList.contains(`article-align-${value}`));
+    setImageAlignment(alignment || "center");
     const width = image.style.width.trim();
     const match = width.match(/^(\d+(?:\.\d+)?)(px|%)$/);
     if (match?.[2] === "%") {
@@ -146,6 +150,15 @@ export function ArticleRichEditor({ value, onChange, onUploadImage }: Props) {
       setWidthInput(String(nextWidth));
     }
     requestAnimationFrame(() => refreshSelectionBox(image));
+  }
+
+  function alignSelectedImage(alignment: "left" | "center" | "right") {
+    if (!selectedImage) return;
+    const target = selectedImage.closest("figure") || selectedImage;
+    target.classList.remove("article-align-left", "article-align-center", "article-align-right");
+    target.classList.add(`article-align-${alignment}`);
+    setImageAlignment(alignment);
+    emitChange();
   }
 
   function imageMaxWidth(image: HTMLImageElement) {
@@ -285,6 +298,11 @@ export function ArticleRichEditor({ value, onChange, onUploadImage }: Props) {
         </select>
       </label>
       <span className="text-[11px] text-green-900/70">Chiều cao tự động theo tỷ lệ ảnh</span>
+      <span className="mx-1 hidden h-6 w-px bg-green-200 sm:block" />
+      <span className="text-[11px] font-semibold text-green-900">Căn lề ảnh</span>
+      {([{ value: "left", label: "Căn trái", icon: <AlignLeft className="h-4 w-4" /> }, { value: "center", label: "Căn giữa", icon: <AlignCenter className="h-4 w-4" /> }, { value: "right", label: "Căn phải", icon: <AlignRight className="h-4 w-4" /> }] as const).map(({ value, label, icon }) => <button key={value} type="button" title={label} aria-label={label} aria-pressed={imageAlignment === value}
+        onMouseDown={(event) => event.preventDefault()} onClick={() => alignSelectedImage(value)}
+        className={`grid h-8 w-8 place-items-center rounded-lg ${imageAlignment === value ? "bg-green-700 text-white" : "bg-white text-green-900 ring-1 ring-green-200 hover:bg-green-100"}`}>{icon}</button>)}
       <span className="mx-1 hidden h-6 w-px bg-green-200 sm:block" />
       <span className="text-[11px] font-semibold text-green-900">Theo vùng nội dung</span>
       {imageWidthChoices.map((percent) => <button key={percent} type="button" aria-pressed={widthUnit === "%" && Math.abs(imageWidth - percent) < 0.1}
