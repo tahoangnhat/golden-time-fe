@@ -10,7 +10,6 @@ import {
   Star,
   ArrowRight,
   BookOpen,
-  Clock,
   CheckCircle2,
 } from "lucide-react";
 import { SiteShell, Section, SectionHeading } from "@/components/SiteShell";
@@ -212,7 +211,7 @@ function HomePage() {
   );
 }
 
-export function ArticleCard({ article }: { article: Pick<ApiArticle, "slug" | "title" | "category" | "emoji" | "gradient" | "description" | "readingTime" | "coverUrl" | "coverAlt"> }) {
+export function ArticleCard({ article }: { article: Pick<ApiArticle, "slug" | "title" | "category" | "emoji" | "gradient" | "description" | "coverUrl" | "coverAlt"> }) {
   return (
     <Link
       to="/knowledge/$slug"
@@ -226,9 +225,6 @@ export function ArticleCard({ article }: { article: Pick<ApiArticle, "slug" | "t
         <div className="flex items-center gap-2 mb-2">
           <span className="text-[10px] font-bold uppercase tracking-wider text-primary bg-cream px-2 py-1 rounded-full">
             {article.category}
-          </span>
-          <span className="text-xs text-muted-foreground inline-flex items-center gap-1">
-            <Clock className="h-3 w-3" /> {article.readingTime}
           </span>
         </div>
         <h3 className="font-bold leading-snug mb-2 group-hover:text-primary transition-colors">{article.title}</h3>

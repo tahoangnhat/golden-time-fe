@@ -45,12 +45,7 @@ function Shop() {
   const selectedCategory = SHOP_CATEGORIES.find((item) => item.value === category) ?? SHOP_CATEGORIES[0];
   const visible = useMemo(() => products.filter((product) => {
     if (category === "ALL") return true;
-    if (category === "SEASONAL") return product.seasonal;
-    if (category === "PREPARED") return product.prepared;
-    const origin = (product.category ?? "").toLocaleLowerCase("vi");
-    return category === "LOCAL"
-      ? origin.includes("nội địa") || origin.includes("việt nam") || origin.includes("local")
-      : origin.includes("nhập khẩu") || origin.includes("import");
+    return product.category === category;
   }), [category, products]);
   function add(product: Product) {
     if (!cart.add(product)) return toast.error("Giỏ hàng chỉ nhận sản phẩm từ một cửa hàng. Hãy xóa giỏ hàng trước khi đổi cửa hàng.");
