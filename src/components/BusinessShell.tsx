@@ -15,6 +15,7 @@ import {
   X,
   Bell,
   Search,
+  Sprout,
 } from "lucide-react";
 import { api, logout, type ShopProfile } from "@/lib/api";
 
@@ -24,6 +25,7 @@ const NAV = [
   { to: "/business/orders", label: "Đơn hàng", icon: ShoppingBag },
   { to: "/business/inventory", label: "Tồn kho", icon: Boxes },
   { to: "/business/traceability", label: "Truy xuất nguồn gốc", icon: QrCode },
+  { to: "/business/farms", label: "Nông trại", icon: Sprout },
   { to: "/business/promotions", label: "Khuyến mãi", icon: Tag },
   { to: "/business/reviews", label: "Đánh giá", icon: Star },
   { to: "/business/profile", label: "Hồ sơ doanh nghiệp", icon: Store },

@@ -50,7 +50,11 @@ export type BatchTrace = {
   batch: { batchCode: string; productName: string; origin?: string | null; supplier?: string | null;
     certified: boolean; harvestDate?: string | null; intakeDate?: string | null; certificates?: string | null;
     storageTemperature?: string | null; storageHumidity?: string | null; publicNote?: string | null;
-    fruitName?: string | null; emoji?: string | null };
+    fruitName?: string | null; emoji?: string | null; quantityKg?: number | null; packagingDate?: string | null;
+    qualityCheckedAt?: string | null; qualityResult?: string | null; qualityScore?: number | null; qualityNote?: string | null;
+    transportDate?: string | null; transportInfo?: string | null; batchStatus?: string | null;
+    farm?: { id: number; name: string; address?: string | null; managerName?: string | null; fruitTypes?: string | null; certifications?: string | null; imageUrl?: string | null } | null;
+    business?: { id: number; name: string; address?: string | null; logoUrl?: string | null } | null };
   events: { stepOrder: number; title: string; eventDate?: string | null; location?: string | null; iconKey?: string | null; completed: boolean }[];
 };
 export type OrderDetail = {
@@ -72,8 +76,9 @@ export type ArticleWritePayload = Omit<Article, "id" | "readingTime"> & { publis
 export type AdminUser = { id: number; name: string; email: string; role: "USER" | "SHOP_OWNER" | "ADMIN"; phone?: string | null; enabled: boolean; joined: string; orders: number; scans: number; reviews: number };
 export type AdminShop = { id: number; name: string; address?: string | null; latitude: number; longitude: number; status: string; rating: number; reviewCount: number; owner?: string | null; products: number; orderValue: number };
 export type BusinessApplication = {
-  id: number; businessName: string; registrationNumber: string; contactName: string; email: string; phone: string;
-  address: string; licenseOriginalName: string; licenseContentType: string; status: "PENDING" | "APPROVED" | "REJECTED";
+  id: number; businessName: string; registrationNumber?: string | null; taxCode?: string | null; contactName: string;
+  representativePhone?: string | null; email: string; phone: string; address: string;
+  licenseOriginalName?: string | null; licenseContentType?: string | null; logoUrl?: string | null; status: "PENDING" | "APPROVED" | "REJECTED";
   rejectionReason?: string | null; createdAt: string; reviewedAt?: string | null; shopId?: number | null; notificationSent?: boolean | null;
   latitude?: number | null; longitude?: number | null;
 };
@@ -82,14 +87,17 @@ export type AdminOrder = { id: number; customer: string; shop: string; total: nu
 export type AdminReview = { id: number; user: string; shop: string; rating: number; comment: string; createdAt: string; purchased: boolean };
 export type AdminScan = { id: number; fruit?: string | null; emoji?: string | null; freshness?: number | null; quality?: number | null; confidence?: number | null; user: string; mode: string; createdAt: string };
 export type AdminNutrition = { id: number; slug: string; name: string; emoji: string; calories?: number | null; vitaminC?: number | null; fiber?: number | null; sugar?: number | null; potassium?: number | null; water?: number | null; benefits?: string | null };
-export type AdminTrace = { batchCode: string; product: string; shop?: string | null; supplier?: string | null; area?: string | null; harvestDate?: string | null; intakeDate?: string | null; certificates?: string | null; certified: boolean };
+export type AdminTrace = { batchCode: string; product: string; shop?: string | null; supplier?: string | null; area?: string | null; harvestDate?: string | null; intakeDate?: string | null; certificates?: string | null; certified: boolean; farm?: string | null; quantityKg?: number | null; packagingDate?: string | null; qualityCheckedAt?: string | null; qualityResult?: string | null; qualityScore?: number | null; qualityNote?: string | null; transportDate?: string | null; transportInfo?: string | null; batchStatus?: string | null };
 export type AdminPriceSource = { id: number; retailer: string; fruit: string; productName: string; sourceUrl: string; enabled: boolean; lastAttemptAt?: string | null; lastSuccessAt?: string | null; lastError?: string | null };
 export type AdminOverview = { users: number; shops: number; orders: number; orderValueToday: number; scansToday: number; confirmedPercent: number; topFruits: { name: string; scans: number }[]; topShops: { name: string; orders: number; orderValue: number }[]; pendingOrders: number; daily: { date: string; orderValue: number; scans: number }[] };
-export type ShopProfile = { id: number; name: string; address?: string | null; latitude: number; longitude: number; status: string; description?: string | null; rating: number; reviewCount: number };
+export type ShopProfile = { id: number; name: string; address?: string | null; latitude: number; longitude: number; status: string; description?: string | null; rating: number; reviewCount: number; businessEmail?: string | null; businessPhone?: string | null; taxCode?: string | null; representativeName?: string | null; representativePhone?: string | null; logoUrl?: string | null };
 export type ShopProduct = { id: number; fruitId: number | null; fruitName: string; emoji: string; category?: string | null; seasonal: boolean; prepared: boolean; displayName: string; pricePerKg: number; stockKg: number; aiScore?: number | null; status: string; batchCode?: string | null; imageUrl?: string | null };
 export type ShopOrder = { id: number; customer: string; total: number; subtotal: number; shippingFee: number; status: string; payment: string; deliveryName?: string | null; deliveryPhone?: string | null; deliveryAddress?: string | null; note?: string | null; createdAt: string; items: { name: string; emoji: string; quantityKg: number; unitPrice: number; lineTotal: number }[] };
 export type ShopReview = { id: number; author: string; rating: number; comment: string; createdAt: string; purchased: boolean };
 export type ShopTrace = { batchCode: string; product: string; origin?: string | null; supplier?: string | null; certified: boolean; harvestDate?: string | null; intakeDate?: string | null; certificates?: string | null; storageTemperature?: string | null; storageHumidity?: string | null; publicNote?: string | null };
+export type Farm = { id: number; shopId: number; name: string; address: string; managerName: string; phone: string; fruitTypes: string; areaHectares?: number | null; certifications?: string | null; imageUrl?: string | null; status: "PENDING" | "APPROVED" | "REJECTED"; rejectionReason?: string | null; createdAt: string; updatedAt: string; reviewedAt?: string | null; shopName?: string | null };
+export type ShopBatch = { batchCode: string; product: string; productId?: number | null; shopId?: number | null; farmId?: number | null; quantityKg?: number | null; harvestDate?: string | null; packagingDate?: string | null; qualityCheckedAt?: string | null; qualityResult?: string | null; qualityScore?: number | null; qualityNote?: string | null; transportDate?: string | null; transportInfo?: string | null; batchStatus: string; createdAt: string; farmName?: string | null; farmStatus?: string | null; shopName?: string | null };
+export type BatchWritePayload = { productId: number; farmId: number; quantityKg: number; harvestDate?: string; packagingDate?: string; qualityCheckedAt?: string; qualityResult?: string; qualityScore?: number; qualityNote?: string; transportDate?: string; transportInfo?: string; batchStatus: string };
 export type ShopOverview = { products: number; soldOut: number; orders: number; pendingOrders: number; orderValueToday: number; rating: number; reviewCount: number; daily: { date: string; orderValue: number }[]; topProducts: { name: string; sold: number; orderValue: number }[] };
 export type AppUpdate = { version: string; date: string; title: string; type: "Tính năng mới" | "Cải tiến" | "Sửa lỗi"; changes: string[] };
 
@@ -277,6 +285,18 @@ export const api = {
     const image = await request<{ url: string; contentType: string }>("/shop/products/images", { method: "POST", body: form });
     return { ...image, url: image.url.startsWith("http") ? image.url : `${API_ORIGIN}${image.url}` };
   },
+  uploadBusinessLogo: async (file: File) => {
+    const form = new FormData();
+    form.set("file", file);
+    const image = await request<{ url: string; contentType: string }>("/shop/profile/logo", { method: "POST", body: form });
+    return { ...image, url: image.url.startsWith("http") ? image.url : `${API_ORIGIN}${image.url}` };
+  },
+  uploadFarmImage: async (file: File) => {
+    const form = new FormData();
+    form.set("file", file);
+    const image = await request<{ url: string; contentType: string }>("/shop/farms/images", { method: "POST", body: form });
+    return { ...image, url: image.url.startsWith("http") ? image.url : `${API_ORIGIN}${image.url}` };
+  },
   adminOverview: () => request<AdminOverview>("/admin/overview"),
   adminUsers: () => request<AdminUser[]>("/admin/users"),
   adminShops: () => request<AdminShop[]>("/admin/shops"),
@@ -290,10 +310,13 @@ export const api = {
   adminScans: () => request<AdminScan[]>("/admin/scans"),
   adminNutrition: () => request<AdminNutrition[]>("/admin/nutrition"),
   adminTraceability: () => request<AdminTrace[]>("/admin/traceability"),
+  adminUpdateBatchStatus: (batchCode: string, batchStatus: string, note?: string) => request<ShopBatch>(`/admin/traceability/${encodeURIComponent(batchCode)}/status`, { method: "PUT", body: JSON.stringify({ batchStatus, note }) }),
+  adminFarms: () => request<Farm[]>("/admin/farms"),
+  decideFarm: (id: number, approved: boolean, reason?: string) => request<Farm>(`/admin/farms/${id}/decision`, { method: "POST", body: JSON.stringify({ approved, reason }) }),
   adminPriceSources: () => request<AdminPriceSource[]>("/admin/prices/sources"),
   refreshPrices: () => request<{ sources: number; updated: number; failed: number; completedAt: string }>("/admin/prices/refresh", { method: "POST" }),
   shopProfile: () => request<ShopProfile>("/shop/profile"),
-  updateShopProfile: (payload: { address: string; latitude: number; longitude: number }) => request<ShopProfile>("/shop/profile", { method: "PUT", body: JSON.stringify(payload) }),
+  updateShopProfile: (payload: { name?: string; address: string; latitude: number; longitude: number; businessEmail?: string; businessPhone?: string; taxCode?: string; representativeName?: string; representativePhone?: string; logoUrl?: string }) => request<ShopProfile>("/shop/profile", { method: "PUT", body: JSON.stringify(payload) }),
   mapAddressSearch: (query: string) => request<{ place_id: number; display_name: string; lat: string; lon: string }[]>(`/map/geocoding/search?q=${encodeURIComponent(query)}`),
   mapAddressReverse: (point: { lat: number; lng: number }) => request<{ display_name?: string | null }>(`/map/geocoding/reverse?lat=${point.lat}&lon=${point.lng}`),
   nearbyChainShops: (point: { lat: number; lng: number }) => request<NearbyChainShop[]>(`/map/nearby-chain-stores?lat=${point.lat}&lon=${point.lng}`),
@@ -303,19 +326,28 @@ export const api = {
   shopOrders: () => request<ShopOrder[]>("/shop/orders"),
   shopReviews: () => request<ShopReview[]>("/shop/reviews"),
   shopTraceability: () => request<ShopTrace[]>("/shop/traceability"),
+  shopFarms: () => request<Farm[]>("/shop/farms"),
+  createFarm: (payload: Omit<Farm, "id" | "shopId" | "status" | "rejectionReason" | "createdAt" | "updatedAt" | "reviewedAt" | "shopName">) => request<Farm>("/shop/farms", { method: "POST", body: JSON.stringify(payload) }),
+  updateFarm: (id: number, payload: Omit<Farm, "id" | "shopId" | "status" | "rejectionReason" | "createdAt" | "updatedAt" | "reviewedAt" | "shopName">) => request<Farm>(`/shop/farms/${id}`, { method: "PUT", body: JSON.stringify(payload) }),
+  deleteFarm: (id: number) => request<void>(`/shop/farms/${id}`, { method: "DELETE" }),
+  shopBatches: () => request<ShopBatch[]>("/shop/batches"),
+  createBatch: (payload: BatchWritePayload) => request<ShopBatch>("/shop/batches", { method: "POST", body: JSON.stringify(payload) }),
+  updateBatch: (batchCode: string, payload: BatchWritePayload) => request<ShopBatch>(`/shop/batches/${encodeURIComponent(batchCode)}`, { method: "PUT", body: JSON.stringify(payload) }),
   shopOverview: () => request<ShopOverview>("/shop/overview"),
-  submitBusinessApplication: (payload: { businessName: string; registrationNumber: string; contactName: string; email: string; phone: string; address: string; password: string; licenseFile: File; latitude: number; longitude: number }) => {
+  submitBusinessApplication: (payload: { businessName: string; taxCode?: string; contactName: string; representativePhone: string; email: string; phone: string; address: string; password: string; licenseFile?: File; logoFile: File; latitude: number; longitude: number }) => {
     const form = new FormData();
     form.set("businessName", payload.businessName);
-    form.set("registrationNumber", payload.registrationNumber);
+    if (payload.taxCode) form.set("taxCode", payload.taxCode);
     form.set("contactName", payload.contactName);
+    form.set("representativePhone", payload.representativePhone);
     form.set("email", payload.email);
     form.set("phone", payload.phone);
     form.set("address", payload.address);
     form.set("latitude", String(payload.latitude));
     form.set("longitude", String(payload.longitude));
     form.set("password", payload.password);
-    form.set("licenseFile", payload.licenseFile);
+    if (payload.licenseFile) form.set("licenseFile", payload.licenseFile);
+    if (payload.logoFile) form.set("logoFile", payload.logoFile);
     return request<{ id: number; status: string; createdAt: string }>("/business/applications", { method: "POST", body: form });
   },
   updates: () => request<AppUpdate[]>("/updates"),

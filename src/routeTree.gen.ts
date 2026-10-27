@@ -32,6 +32,7 @@ import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as AdminAiScansRouteImport } from './routes/admin.ai-scans'
 import { Route as AdminArticlesRouteImport } from './routes/admin.articles'
 import { Route as AdminDashboardRouteImport } from './routes/admin.dashboard'
+import { Route as AdminFarmsRouteImport } from './routes/admin.farms'
 import { Route as AdminLoginRouteImport } from './routes/admin.login'
 import { Route as AdminNutritionRouteImport } from './routes/admin.nutrition'
 import { Route as AdminOrdersRouteImport } from './routes/admin.orders'
@@ -44,6 +45,7 @@ import { Route as AdminTraceabilityRouteImport } from './routes/admin.traceabili
 import { Route as AdminUsersRouteImport } from './routes/admin.users'
 import { Route as AppLoginRouteImport } from './routes/app.login'
 import { Route as BusinessDashboardRouteImport } from './routes/business.dashboard'
+import { Route as BusinessFarmsRouteImport } from './routes/business.farms'
 import { Route as BusinessInventoryRouteImport } from './routes/business.inventory'
 import { Route as BusinessLoginRouteImport } from './routes/business.login'
 import { Route as BusinessOrdersRouteImport } from './routes/business.orders'
@@ -172,6 +174,11 @@ const AdminDashboardRoute = AdminDashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminFarmsRoute = AdminFarmsRouteImport.update({
+  id: '/farms',
+  path: '/farms',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminLoginRoute = AdminLoginRouteImport.update({
   id: '/login',
   path: '/login',
@@ -230,6 +237,11 @@ const AppLoginRoute = AppLoginRouteImport.update({
 const BusinessDashboardRoute = BusinessDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
+  getParentRoute: () => BusinessRoute,
+} as any)
+const BusinessFarmsRoute = BusinessFarmsRouteImport.update({
+  id: '/farms',
+  path: '/farms',
   getParentRoute: () => BusinessRoute,
 } as any)
 const BusinessInventoryRoute = BusinessInventoryRouteImport.update({
@@ -316,6 +328,7 @@ export interface FileRoutesByFullPath {
   '/admin/ai-scans': typeof AdminAiScansRoute
   '/admin/articles': typeof AdminArticlesRoute
   '/admin/dashboard': typeof AdminDashboardRoute
+  '/admin/farms': typeof AdminFarmsRoute
   '/admin/login': typeof AdminLoginRoute
   '/admin/nutrition': typeof AdminNutritionRoute
   '/admin/orders': typeof AdminOrdersRoute
@@ -328,6 +341,7 @@ export interface FileRoutesByFullPath {
   '/admin/users': typeof AdminUsersRoute
   '/app/login': typeof AppLoginRoute
   '/business/dashboard': typeof BusinessDashboardRoute
+  '/business/farms': typeof BusinessFarmsRoute
   '/business/inventory': typeof BusinessInventoryRoute
   '/business/login': typeof BusinessLoginRoute
   '/business/orders': typeof BusinessOrdersRoute
@@ -363,6 +377,7 @@ export interface FileRoutesByTo {
   '/admin/ai-scans': typeof AdminAiScansRoute
   '/admin/articles': typeof AdminArticlesRoute
   '/admin/dashboard': typeof AdminDashboardRoute
+  '/admin/farms': typeof AdminFarmsRoute
   '/admin/login': typeof AdminLoginRoute
   '/admin/nutrition': typeof AdminNutritionRoute
   '/admin/orders': typeof AdminOrdersRoute
@@ -375,6 +390,7 @@ export interface FileRoutesByTo {
   '/admin/users': typeof AdminUsersRoute
   '/app/login': typeof AppLoginRoute
   '/business/dashboard': typeof BusinessDashboardRoute
+  '/business/farms': typeof BusinessFarmsRoute
   '/business/inventory': typeof BusinessInventoryRoute
   '/business/login': typeof BusinessLoginRoute
   '/business/orders': typeof BusinessOrdersRoute
@@ -413,6 +429,7 @@ export interface FileRoutesById {
   '/admin/ai-scans': typeof AdminAiScansRoute
   '/admin/articles': typeof AdminArticlesRoute
   '/admin/dashboard': typeof AdminDashboardRoute
+  '/admin/farms': typeof AdminFarmsRoute
   '/admin/login': typeof AdminLoginRoute
   '/admin/nutrition': typeof AdminNutritionRoute
   '/admin/orders': typeof AdminOrdersRoute
@@ -425,6 +442,7 @@ export interface FileRoutesById {
   '/admin/users': typeof AdminUsersRoute
   '/app/login': typeof AppLoginRoute
   '/business/dashboard': typeof BusinessDashboardRoute
+  '/business/farms': typeof BusinessFarmsRoute
   '/business/inventory': typeof BusinessInventoryRoute
   '/business/login': typeof BusinessLoginRoute
   '/business/orders': typeof BusinessOrdersRoute
@@ -464,6 +482,7 @@ export interface FileRouteTypes {
     | '/admin/ai-scans'
     | '/admin/articles'
     | '/admin/dashboard'
+    | '/admin/farms'
     | '/admin/login'
     | '/admin/nutrition'
     | '/admin/orders'
@@ -476,6 +495,7 @@ export interface FileRouteTypes {
     | '/admin/users'
     | '/app/login'
     | '/business/dashboard'
+    | '/business/farms'
     | '/business/inventory'
     | '/business/login'
     | '/business/orders'
@@ -511,6 +531,7 @@ export interface FileRouteTypes {
     | '/admin/ai-scans'
     | '/admin/articles'
     | '/admin/dashboard'
+    | '/admin/farms'
     | '/admin/login'
     | '/admin/nutrition'
     | '/admin/orders'
@@ -523,6 +544,7 @@ export interface FileRouteTypes {
     | '/admin/users'
     | '/app/login'
     | '/business/dashboard'
+    | '/business/farms'
     | '/business/inventory'
     | '/business/login'
     | '/business/orders'
@@ -560,6 +582,7 @@ export interface FileRouteTypes {
     | '/admin/ai-scans'
     | '/admin/articles'
     | '/admin/dashboard'
+    | '/admin/farms'
     | '/admin/login'
     | '/admin/nutrition'
     | '/admin/orders'
@@ -572,6 +595,7 @@ export interface FileRouteTypes {
     | '/admin/users'
     | '/app/login'
     | '/business/dashboard'
+    | '/business/farms'
     | '/business/inventory'
     | '/business/login'
     | '/business/orders'
@@ -773,6 +797,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminDashboardRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/farms': {
+      id: '/admin/farms'
+      path: '/farms'
+      fullPath: '/admin/farms'
+      preLoaderRoute: typeof AdminFarmsRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/login': {
       id: '/admin/login'
       path: '/login'
@@ -855,6 +886,13 @@ declare module '@tanstack/react-router' {
       path: '/dashboard'
       fullPath: '/business/dashboard'
       preLoaderRoute: typeof BusinessDashboardRouteImport
+      parentRoute: typeof BusinessRoute
+    }
+    '/business/farms': {
+      id: '/business/farms'
+      path: '/farms'
+      fullPath: '/business/farms'
+      preLoaderRoute: typeof BusinessFarmsRouteImport
       parentRoute: typeof BusinessRoute
     }
     '/business/inventory': {
@@ -948,6 +986,7 @@ interface AdminRouteChildren {
   AdminAiScansRoute: typeof AdminAiScansRoute
   AdminArticlesRoute: typeof AdminArticlesRoute
   AdminDashboardRoute: typeof AdminDashboardRoute
+  AdminFarmsRoute: typeof AdminFarmsRoute
   AdminLoginRoute: typeof AdminLoginRoute
   AdminNutritionRoute: typeof AdminNutritionRoute
   AdminOrdersRoute: typeof AdminOrdersRoute
@@ -965,6 +1004,7 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminAiScansRoute: AdminAiScansRoute,
   AdminArticlesRoute: AdminArticlesRoute,
   AdminDashboardRoute: AdminDashboardRoute,
+  AdminFarmsRoute: AdminFarmsRoute,
   AdminLoginRoute: AdminLoginRoute,
   AdminNutritionRoute: AdminNutritionRoute,
   AdminOrdersRoute: AdminOrdersRoute,
@@ -982,6 +1022,7 @@ const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
 
 interface BusinessRouteChildren {
   BusinessDashboardRoute: typeof BusinessDashboardRoute
+  BusinessFarmsRoute: typeof BusinessFarmsRoute
   BusinessInventoryRoute: typeof BusinessInventoryRoute
   BusinessLoginRoute: typeof BusinessLoginRoute
   BusinessOrdersRoute: typeof BusinessOrdersRoute
@@ -996,6 +1037,7 @@ interface BusinessRouteChildren {
 
 const BusinessRouteChildren: BusinessRouteChildren = {
   BusinessDashboardRoute: BusinessDashboardRoute,
+  BusinessFarmsRoute: BusinessFarmsRoute,
   BusinessInventoryRoute: BusinessInventoryRoute,
   BusinessLoginRoute: BusinessLoginRoute,
   BusinessOrdersRoute: BusinessOrdersRoute,

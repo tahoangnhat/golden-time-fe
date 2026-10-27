@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ChevronLeft, BadgeCheck, Sprout, Truck, Store, User, ShieldCheck, Search, LoaderCircle } from "lucide-react";
+import { ChevronLeft, BadgeCheck, Sprout, Truck, Store, User, ShieldCheck, Search, LoaderCircle, Package, Building2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { PhoneShell } from "@/components/PhoneShell";
 import { api, userStorageKey, type BatchTrace, type ScanResult } from "@/lib/api";
@@ -29,7 +29,7 @@ function Trace() {
     catch (cause) { setTrace(null); setError(cause instanceof Error ? cause.message : "Không tìm thấy lô hàng."); }
     finally { setLoading(false); }
   }
-  const Icon = (key?: string | null) => key === "harvest" ? Sprout : key === "transport" ? Truck : key === "store" ? Store : key === "quality" ? ShieldCheck : User;
+  const Icon = (key?: string | null) => key === "farm" || key === "harvest" ? Sprout : key === "transport" ? Truck : key === "store" ? Store : key === "quality" ? ShieldCheck : key === "package" ? Package : User;
   return (
     <PhoneShell hideNav>
       <div className="flex items-center justify-between px-5 pt-5 pb-2"><Link to="/result" className="h-9 w-9 grid place-items-center rounded-full bg-white border border-border"><ChevronLeft className="h-5 w-5" /></Link><span className="font-semibold text-sm">Truy xuất nguồn gốc</span><span className="w-9" /></div>
@@ -45,9 +45,14 @@ function Trace() {
               <span className="inline-flex items-center gap-1 mt-1 text-[11px] bg-primary/10 text-primary font-semibold px-2 py-0.5 rounded-md"><BadgeCheck className="h-3 w-3" /> {trace.batch.certified ? "Có chứng nhận khai báo" : "Chưa có chứng nhận"}</span>
             </div>
           </div>
+          {(trace.batch.farm || trace.batch.business) && <div className="mt-4 grid gap-3 sm:grid-cols-2">
+            {trace.batch.farm && <section className="rounded-2xl border border-border bg-white p-4 gt-shadow-soft">{trace.batch.farm.imageUrl && <img src={trace.batch.farm.imageUrl} alt={trace.batch.farm.name} className="mb-3 h-32 w-full rounded-xl object-cover" />}<div className="flex items-center gap-2"><Sprout className="h-4 w-4 text-primary" /><h3 className="font-bold">{trace.batch.farm.name}</h3></div><p className="mt-2 text-xs text-muted-foreground">{trace.batch.farm.address}</p><p className="mt-2 text-xs">Người phụ trách: {trace.batch.farm.managerName || "—"}</p><p className="mt-1 text-xs">Trái cây: {trace.batch.farm.fruitTypes || "—"}</p>{trace.batch.farm.certifications && <p className="mt-1 text-xs">Chứng nhận: {trace.batch.farm.certifications}</p>}</section>}
+            {trace.batch.business && <section className="rounded-2xl border border-border bg-white p-4 gt-shadow-soft">{trace.batch.business.logoUrl && <img src={trace.batch.business.logoUrl} alt={trace.batch.business.name} className="mb-3 h-20 w-20 rounded-xl border border-border object-cover" />}<div className="flex items-center gap-2"><Building2 className="h-4 w-4 text-primary" /><h3 className="font-bold">{trace.batch.business.name}</h3></div><p className="mt-2 text-xs text-muted-foreground">{trace.batch.business.address}</p><p className="mt-3 rounded-lg bg-primary/5 p-2 text-[11px] text-muted-foreground">Doanh nghiệp đã được hệ thống phê duyệt.</p></section>}
+          </div>}
           <div className="mt-4 bg-white rounded-2xl p-4 gt-shadow-soft border border-border space-y-2 text-sm">
-            {[["Nhà cung cấp", trace.batch.supplier], ["Khu vực", trace.batch.origin], ["Ngày thu hoạch", trace.batch.harvestDate], ["Ngày nhập hàng", trace.batch.intakeDate], ["Chứng nhận", trace.batch.certificates], ["Bảo quản", [trace.batch.storageTemperature, trace.batch.storageHumidity].filter(Boolean).join(" • ")]].filter(([, value]) => value).map(([label, value]) => <div key={label} className="flex justify-between gap-3 border-b border-border last:border-0 pb-2 last:pb-0"><span className="text-muted-foreground">{label}</span><span className="font-semibold text-right">{value}</span></div>)}
+            {[["Nhà cung cấp", trace.batch.supplier], ["Khu vực", trace.batch.origin], ["Số lượng", trace.batch.quantityKg != null ? `${trace.batch.quantityKg} kg` : null], ["Ngày thu hoạch", trace.batch.harvestDate], ["Ngày kiểm định", trace.batch.qualityCheckedAt], ["Kết quả kiểm định", trace.batch.qualityResult], ["Điểm chất lượng", trace.batch.qualityScore != null ? `${trace.batch.qualityScore}/100` : null], ["Ngày đóng gói", trace.batch.packagingDate || trace.batch.intakeDate], ["Chứng nhận", trace.batch.farm?.certifications || trace.batch.certificates], ["Vận chuyển", trace.batch.transportInfo], ["Ngày vận chuyển", trace.batch.transportDate], ["Trạng thái lô", trace.batch.batchStatus], ["Bảo quản", [trace.batch.storageTemperature, trace.batch.storageHumidity].filter(Boolean).join(" • ")]].filter(([, value]) => value).map(([label, value]) => <div key={label} className="flex justify-between gap-3 border-b border-border last:border-0 pb-2 last:pb-0"><span className="text-muted-foreground">{label}</span><span className="font-semibold text-right">{value}</span></div>)}
           </div>
+          {trace.batch.qualityNote && <p className="mt-3 rounded-xl border border-border bg-white p-3 text-xs text-muted-foreground"><span className="font-semibold text-foreground">Ghi chú kiểm định:</span> {trace.batch.qualityNote}</p>}
           {trace.batch.publicNote && <p className="mt-3 text-xs text-muted-foreground">{trace.batch.publicNote}</p>}
           <h3 className="mt-5 font-bold">Hành trình sản phẩm</h3>
           <div className="mt-3 relative"><div className="absolute left-[19px] top-2 bottom-2 w-0.5 bg-border" /><div className="space-y-4">

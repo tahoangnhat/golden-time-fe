@@ -115,8 +115,7 @@ function AdminShops() {
         {applications.map((application) => <article key={application.id} className="rounded-2xl border border-border p-4">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
-              <h3 className="font-bold">{application.businessName}</h3>
-              <p className="mt-1 text-xs text-muted-foreground">Mã số đăng ký: {application.registrationNumber} · Gửi {new Date(application.createdAt).toLocaleString("vi-VN")}</p>
+              <div className="flex items-center gap-3">{application.logoUrl && <img src={application.logoUrl} alt="Logo doanh nghiệp" className="h-10 w-10 rounded-lg border border-border object-cover" />}<div><h3 className="font-bold">{application.businessName}</h3><p className="mt-1 text-xs text-muted-foreground">Mã số thuế: {application.taxCode || "Chưa cung cấp"} · Gửi {new Date(application.createdAt).toLocaleString("vi-VN")}</p></div></div>
             </div>
             <div className="flex flex-wrap items-center gap-2">
               <StatusBadge status={application.status === "PENDING" ? "Chờ duyệt" : application.status === "APPROVED" ? "Đã duyệt" : "Từ chối"} />
@@ -129,9 +128,10 @@ function AdminShops() {
             <p><span className="text-muted-foreground">Người liên hệ:</span> {application.contactName}</p>
             <p><span className="text-muted-foreground">Email:</span> {application.email}</p>
             <p><span className="text-muted-foreground">Điện thoại:</span> {application.phone}</p>
+            <p><span className="text-muted-foreground">Điện thoại đại diện:</span> {application.representativePhone || "—"}</p>
             <p className="sm:col-span-2"><span className="text-muted-foreground">Địa chỉ:</span> {applicationAddresses[application.id] ?? application.address}</p>
           </div>
-          <button onClick={() => void openLicense(application)} className="mt-3 rounded-lg border border-border px-3 py-2 text-xs font-semibold text-primary hover:bg-cream">Tải giấy phép: {application.licenseOriginalName}</button>
+          {application.licenseOriginalName && <button onClick={() => void openLicense(application)} className="mt-3 rounded-lg border border-border px-3 py-2 text-xs font-semibold text-primary hover:bg-cream">Tải giấy phép: {application.licenseOriginalName}</button>}
           {application.status !== "PENDING" && application.notificationSent !== true && <button disabled={busyId === application.id} onClick={() => void resendNotification(application)} className="ml-2 mt-3 rounded-lg border border-border px-3 py-2 text-xs font-semibold text-primary hover:bg-cream disabled:opacity-50">{busyId === application.id ? "Đang gửi…" : "Gửi lại email"}</button>}
           {application.status === "PENDING" ? <>
             <div className="mt-4 rounded-xl bg-cream/70 p-3">

@@ -12,8 +12,9 @@ export const Route = createFileRoute("/business/register")({
 
 function BusinessRegister() {
   const [businessName, setBusinessName] = useState("");
-  const [registrationNumber, setRegistrationNumber] = useState("");
+  const [taxCode, setTaxCode] = useState("");
   const [contactName, setContactName] = useState("");
+  const [representativePhone, setRepresentativePhone] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [address, setAddress] = useState("");
@@ -21,6 +22,7 @@ function BusinessRegister() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [licenseFile, setLicenseFile] = useState<File | null>(null);
+  const [logoFile, setLogoFile] = useState<File | null>(null);
   const [error, setError] = useState("");
   const [submitted, setSubmitted] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -30,12 +32,13 @@ function BusinessRegister() {
     setError("");
     if (password !== confirmPassword) return setError("Mật khẩu xác nhận chưa khớp.");
     if (address.trim().length < 5) return setError("Vui lòng nhập địa chỉ kinh doanh đầy đủ.");
-    if (!licenseFile) return setError("Vui lòng đính kèm giấy phép kinh doanh.");
-    if (licenseFile.size > 10 * 1024 * 1024) return setError("Tệp giấy phép không được vượt quá 10 MB.");
+    if (!logoFile) return setError("Vui lòng tải logo doanh nghiệp lên.");
+    if (licenseFile && licenseFile.size > 10 * 1024 * 1024) return setError("Tệp giấy phép không được vượt quá 10 MB.");
+    if (logoFile && logoFile.size > 10 * 1024 * 1024) return setError("Logo không được vượt quá 10 MB.");
     if (!location) return setError("Vui lòng chọn địa chỉ và ghim vị trí cửa hàng trên bản đồ.");
     setBusy(true);
     try {
-      await api.submitBusinessApplication({ businessName, registrationNumber, contactName, email, phone, address, password, licenseFile,
+      await api.submitBusinessApplication({ businessName, taxCode, contactName, representativePhone, email, phone, address, password, licenseFile: licenseFile ?? undefined, logoFile,
         latitude: location.lat, longitude: location.lng });
       setSubmitted(true);
     } catch (cause) {
@@ -50,7 +53,7 @@ function BusinessRegister() {
       <section className="w-full max-w-xl rounded-3xl border border-border bg-white p-8 text-center gt-shadow-soft">
         <div className="mx-auto h-14 w-14 rounded-2xl bg-[oklch(0.95_0.06_145)] text-primary grid place-items-center"><FileCheck2 className="h-7 w-7" /></div>
         <h1 className="mt-5 text-2xl font-extrabold">Đã nhận hồ sơ đăng ký</h1>
-        <p className="mt-2 text-sm leading-relaxed text-muted-foreground">Admin sẽ xem thông tin doanh nghiệp và giấy phép kinh doanh. Kết quả sẽ được gửi đến <span className="font-semibold text-foreground">{email}</span>. Bạn có thể đăng nhập sau khi hồ sơ được chấp nhận.</p>
+        <p className="mt-2 text-sm leading-relaxed text-muted-foreground">Admin sẽ xem thông tin doanh nghiệp. Kết quả sẽ được gửi đến <span className="font-semibold text-foreground">{email}</span>. Bạn có thể đăng nhập sau khi hồ sơ được chấp nhận.</p>
         <Link to="/business/login" className="mt-6 inline-flex items-center gap-2 rounded-xl gt-gradient px-5 py-3 font-semibold text-white">Về đăng nhập doanh nghiệp</Link>
       </section>
     </main>;
@@ -67,14 +70,16 @@ function BusinessRegister() {
 
         <form onSubmit={submit} className="mt-7 grid gap-4 md:grid-cols-2">
           <label className="block md:col-span-2"><span className="text-xs font-semibold">Tên doanh nghiệp / cửa hàng</span><input required maxLength={255} value={businessName} onChange={(event) => setBusinessName(event.target.value)} className="mt-1 h-11 w-full rounded-xl border border-border px-3" /></label>
-          <label className="block"><span className="text-xs font-semibold">Mã số đăng ký kinh doanh</span><input required minLength={3} maxLength={64} value={registrationNumber} onChange={(event) => setRegistrationNumber(event.target.value)} className="mt-1 h-11 w-full rounded-xl border border-border px-3" /></label>
+          <label className="block"><span className="text-xs font-semibold">Mã số thuế (không bắt buộc)</span><input maxLength={64} value={taxCode} onChange={(event) => setTaxCode(event.target.value)} className="mt-1 h-11 w-full rounded-xl border border-border px-3" /></label>
           <label className="block"><span className="text-xs font-semibold">Người đại diện / liên hệ</span><input required maxLength={255} value={contactName} onChange={(event) => setContactName(event.target.value)} className="mt-1 h-11 w-full rounded-xl border border-border px-3" /></label>
           <label className="block"><span className="text-xs font-semibold">Email doanh nghiệp</span><input required type="email" maxLength={255} autoComplete="email" value={email} onChange={(event) => setEmail(event.target.value)} className="mt-1 h-11 w-full rounded-xl border border-border px-3" /></label>
           <label className="block"><span className="text-xs font-semibold">Số điện thoại</span><input required type="tel" maxLength={32} autoComplete="tel" value={phone} onChange={(event) => setPhone(event.target.value)} className="mt-1 h-11 w-full rounded-xl border border-border px-3" /></label>
+          <label className="block"><span className="text-xs font-semibold">Số điện thoại người đại diện</span><input required type="tel" maxLength={32} value={representativePhone} onChange={(event) => setRepresentativePhone(event.target.value)} className="mt-1 h-11 w-full rounded-xl border border-border px-3" /></label>
           <div className="md:col-span-2"><LocationPicker address={address} value={location} onAddressChange={setAddress} onChange={setLocation} /></div>
           <label className="block"><span className="text-xs font-semibold">Mật khẩu</span><input required type="password" minLength={8} maxLength={128} autoComplete="new-password" value={password} onChange={(event) => setPassword(event.target.value)} className="mt-1 h-11 w-full rounded-xl border border-border px-3" /></label>
           <label className="block"><span className="text-xs font-semibold">Nhập lại mật khẩu</span><input required type="password" minLength={8} maxLength={128} autoComplete="new-password" value={confirmPassword} onChange={(event) => setConfirmPassword(event.target.value)} className="mt-1 h-11 w-full rounded-xl border border-border px-3" /></label>
-          <label className="block md:col-span-2"><span className="text-xs font-semibold">Giấy phép kinh doanh</span><span className="mt-1 flex min-h-12 cursor-pointer items-center gap-3 rounded-xl border border-dashed border-border px-4 py-3 text-sm hover:bg-cream"><Upload className="h-4 w-4 shrink-0 text-primary" /><span className="truncate">{licenseFile?.name || "Tải tệp PDF, PNG hoặc JPG lên (tối đa 10 MB)"}</span><input required type="file" accept="application/pdf,image/png,image/jpeg,.pdf,.png,.jpg,.jpeg" onChange={(event) => setLicenseFile(event.target.files?.[0] ?? null)} className="sr-only" /></span></label>
+          <label className="block md:col-span-2"><span className="text-xs font-semibold">Logo doanh nghiệp *</span><span className="mt-1 flex min-h-12 cursor-pointer items-center gap-3 rounded-xl border border-dashed border-border px-4 py-3 text-sm hover:bg-cream"><Upload className="h-4 w-4 shrink-0 text-primary" /><span className="truncate">{logoFile?.name || "Tải ảnh PNG, JPG hoặc WebP lên (tối đa 10 MB)"}</span><input type="file" accept="image/png,image/jpeg,image/webp" onChange={(event) => setLogoFile(event.target.files?.[0] ?? null)} className="sr-only" /></span></label>
+          <label className="block md:col-span-2"><span className="text-xs font-semibold">Giấy phép kinh doanh (không bắt buộc)</span><span className="mt-1 flex min-h-12 cursor-pointer items-center gap-3 rounded-xl border border-dashed border-border px-4 py-3 text-sm hover:bg-cream"><Upload className="h-4 w-4 shrink-0 text-primary" /><span className="truncate">{licenseFile?.name || "Tải tệp PDF, PNG hoặc JPG lên (tối đa 10 MB)"}</span><input type="file" accept="application/pdf,image/png,image/jpeg,.pdf,.png,.jpg,.jpeg" onChange={(event) => setLicenseFile(event.target.files?.[0] ?? null)} className="sr-only" /></span></label>
           {error && <p role="alert" className="md:col-span-2 rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
           <button disabled={busy} className="md:col-span-2 inline-flex h-12 items-center justify-center gap-2 rounded-xl gt-gradient font-semibold text-white gt-shadow disabled:opacity-60">{busy ? <><LoaderCircle className="h-4 w-4 animate-spin" /> Đang gửi hồ sơ…</> : "Gửi hồ sơ đăng ký"}</button>
         </form>
