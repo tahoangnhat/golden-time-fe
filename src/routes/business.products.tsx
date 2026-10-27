@@ -8,14 +8,14 @@ import { api, type Fruit, type ShopProduct } from "@/lib/api";
 export const Route = createFileRoute("/business/products")({ head: () => ({ meta: [{ title: "Sản phẩm — Golden Time Business" }] }), component: Products });
 
 type ProductCategory = "LOCAL" | "IMPORTED" | "SEASONAL" | "PREPARED";
-type ProductDraft = { fruitId: number | null; category: ProductCategory; displayName: string; pricePerKg: string; stockKg: string; onSale: boolean; imageUrl: string };
+type ProductDraft = { fruitId: number | null; category: ProductCategory; displayName: string; pricePerKg: string; stockKg: string; onSale: boolean; imageUrls: string[] };
 const PRODUCT_CATEGORIES: { value: ProductCategory; label: string }[] = [
   { value: "LOCAL", label: "Trái cây Việt Nam" },
   { value: "IMPORTED", label: "Trái cây nhập khẩu" },
   { value: "SEASONAL", label: "Trái cây theo mùa" },
   { value: "PREPARED", label: "Trái cây sơ chế" },
 ];
-const emptyDraft = (): ProductDraft => ({ fruitId: null, category: "LOCAL", displayName: "", pricePerKg: "", stockKg: "", onSale: true, imageUrl: "" });
+const emptyDraft = (): ProductDraft => ({ fruitId: null, category: "LOCAL", displayName: "", pricePerKg: "", stockKg: "", onSale: true, imageUrls: [] });
 
 function originLabel(category?: string | null) {
   const value = (category ?? "").toLocaleLowerCase("vi");
@@ -90,19 +90,21 @@ function Products() {
 
   function beginEdit(product: ShopProduct) {
     setEditingId(product.id);
-    setDraft({ fruitId: product.fruitId, category: productCategory(product), displayName: product.displayName, pricePerKg: String(product.pricePerKg), stockKg: String(product.stockKg), onSale: product.status !== "HIDDEN", imageUrl: product.imageUrl ?? "" });
+    setDraft({ fruitId: product.fruitId, category: productCategory(product), displayName: product.displayName, pricePerKg: String(product.pricePerKg), stockKg: String(product.stockKg), onSale: product.status !== "HIDDEN", imageUrls: product.imageUrls?.length ? product.imageUrls : product.imageUrl ? [product.imageUrl] : [] });
     setFormOpen(true);
     setError("");
     setNotice("");
   }
 
-  async function uploadImage(file?: File) {
-    if (!file) return;
+  async function uploadImages(files?: FileList | null) {
+    const selected = Array.from(files ?? []);
+    if (!selected.length) return;
+    if (draft.imageUrls.length + selected.length > 10) { setError("Mỗi sản phẩm có thể lưu tối đa 10 ảnh."); if (imageInputRef.current) imageInputRef.current.value = ""; return; }
     setUploadingImage(true);
     setError("");
     try {
-      const image = await api.uploadShopProductImage(file);
-      setDraft((current) => ({ ...current, imageUrl: image.url }));
+      const images = await Promise.all(selected.map((file) => api.uploadShopProductImage(file)));
+      setDraft((current) => ({ ...current, imageUrls: [...current.imageUrls, ...images.map((image) => image.url)] }));
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : "Không tải được ảnh sản phẩm.");
     } finally {
@@ -114,12 +116,12 @@ function Products() {
   async function saveProduct(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!draft.displayName.trim()) return setError("Hãy nhập tên sản phẩm.");
-    if (!draft.imageUrl) return setError("Hãy tải ảnh sản phẩm lên trước khi lưu.");
+    if (!draft.imageUrls.length) return setError("Hãy tải ít nhất một ảnh sản phẩm lên trước khi lưu.");
     setSaving(true);
     setError("");
     setNotice("");
     try {
-      const payload = { fruitId: fruitIdForName(draft.displayName, fruits) ?? draft.fruitId, category: draft.category, displayName: draft.displayName.trim(), pricePerKg: Number(draft.pricePerKg), stockKg: Number(draft.stockKg), onSale: draft.onSale, imageUrl: draft.imageUrl };
+      const payload = { fruitId: fruitIdForName(draft.displayName, fruits) ?? draft.fruitId, category: draft.category, displayName: draft.displayName.trim(), pricePerKg: Number(draft.pricePerKg), stockKg: Number(draft.stockKg), onSale: draft.onSale, imageUrl: draft.imageUrls[0], imageUrls: draft.imageUrls };
       const saved = editingId === null ? await api.createShopProduct(payload) : await api.updateShopProduct(editingId, payload);
       setProducts((current) => [saved, ...current.filter((product) => product.id !== saved.id)]);
       setFormOpen(false);
@@ -131,9 +133,10 @@ function Products() {
 
   async function toggleVisibility(product: ShopProduct) {
     const onSale = product.status === "HIDDEN";
-    if (!product.imageUrl) return beginEdit(product);
+    const imageUrls = product.imageUrls?.length ? product.imageUrls : product.imageUrl ? [product.imageUrl] : [];
+    if (!imageUrls.length) return beginEdit(product);
     try {
-      const saved = await api.updateShopProduct(product.id, { fruitId: product.fruitId, category: productCategory(product), displayName: product.displayName, pricePerKg: product.pricePerKg, stockKg: Number(product.stockKg), onSale, imageUrl: product.imageUrl });
+      const saved = await api.updateShopProduct(product.id, { fruitId: product.fruitId, category: productCategory(product), displayName: product.displayName, pricePerKg: product.pricePerKg, stockKg: Number(product.stockKg), onSale, imageUrl: imageUrls[0], imageUrls });
       setProducts((current) => current.map((item) => item.id === saved.id ? saved : item));
       setError("");
     } catch (cause) { setError(cause instanceof Error ? cause.message : "Không đổi được trạng thái bán."); }
@@ -152,17 +155,17 @@ function Products() {
           <label className="block"><span className="text-xs font-semibold text-muted-foreground">Tên hiển thị</span><input required maxLength={255} value={draft.displayName} onChange={(event) => { const displayName = event.target.value; setDraft((current) => ({ ...current, displayName, fruitId: fruitIdForName(displayName, fruits) })); }} placeholder="Ví dụ: Xoài cát Hòa Lộc, Táo Fuji New Zealand" className="mt-1 h-11 w-full rounded-xl border border-border px-3 text-sm" /></label>
           <label className="block"><span className="text-xs font-semibold text-muted-foreground">Giá bán / kg (đ)</span><input required type="number" min="1" step="1" value={draft.pricePerKg} onChange={(event) => setDraft((current) => ({ ...current, pricePerKg: event.target.value }))} placeholder="49000" className="mt-1 h-11 w-full rounded-xl border border-border px-3 text-sm" /></label>
           <label className="block"><span className="text-xs font-semibold text-muted-foreground">Tồn kho (kg)</span><input required type="number" min="0" max="99999999.99" step="0.01" value={draft.stockKg} onChange={(event) => setDraft((current) => ({ ...current, stockKg: event.target.value }))} placeholder="10" className="mt-1 h-11 w-full rounded-xl border border-border px-3 text-sm" /></label>
-          <label className="flex items-center gap-2 self-end rounded-xl border border-border px-3 py-3 text-sm sm:col-span-2"><input type="checkbox" checked={draft.onSale} onChange={(event) => setDraft((current) => ({ ...current, onSale: event.target.checked }))} className="h-4 w-4 accent-primary" />Cho phép khách mua sản phẩm này</label>
         </div>
         <div>
           <p className="text-xs font-semibold text-muted-foreground">Ảnh sản phẩm</p>
-          <ProductThumb emoji={categoryEmoji(draft.category)} imageUrl={draft.imageUrl} size="md" alt={draft.displayName} className="mt-1 !h-36 !w-full !rounded-xl bg-muted object-cover" />
-          <input ref={imageInputRef} type="file" accept="image/png,image/jpeg,image/webp" className="hidden" onChange={(event) => uploadImage(event.target.files?.[0])} />
-          <button type="button" onClick={() => imageInputRef.current?.click()} disabled={uploadingImage} className="mt-2 inline-flex h-10 w-full items-center justify-center gap-2 rounded-xl border border-border text-sm font-semibold hover:bg-muted disabled:opacity-60"><ImagePlus className="h-4 w-4" />{uploadingImage ? "Đang tải ảnh…" : draft.imageUrl ? "Đổi ảnh" : "Tải ảnh lên"}</button>
-          <p className="mt-1 text-[10px] text-muted-foreground">PNG, JPG hoặc WebP · tối đa 10 MB</p>
+          <ProductThumb emoji={categoryEmoji(draft.category)} imageUrl={draft.imageUrls[0]} size="md" alt={draft.displayName} className="mt-1 !h-36 !w-full !rounded-xl bg-muted object-cover" />
+          <input ref={imageInputRef} type="file" accept="image/png,image/jpeg,image/webp" multiple className="hidden" onChange={(event) => uploadImages(event.target.files)} />
+          <button type="button" onClick={() => imageInputRef.current?.click()} disabled={uploadingImage} className="mt-2 inline-flex h-10 w-full items-center justify-center gap-2 rounded-xl border border-border text-sm font-semibold hover:bg-muted disabled:opacity-60"><ImagePlus className="h-4 w-4" />{uploadingImage ? "Đang tải ảnh…" : "Tải nhiều ảnh lên"}</button>
+          <p className="mt-1 text-[10px] text-muted-foreground">Chọn nhiều ảnh cùng lúc · PNG, JPG hoặc WebP · tối đa 10 MB/ảnh</p>
+          {!!draft.imageUrls.length && <div className="mt-3 grid grid-cols-4 gap-2">{draft.imageUrls.map((imageUrl, index) => <div key={`${imageUrl}-${index}`} className="relative"><img src={imageUrl} alt={`Ảnh sản phẩm ${index + 1}`} className="h-14 w-full rounded-lg border border-border object-cover" /><button type="button" aria-label={`Xóa ảnh ${index + 1}`} onClick={() => setDraft((current) => ({ ...current, imageUrls: current.imageUrls.filter((_, imageIndex) => imageIndex !== index) }))} className="absolute -right-1.5 -top-1.5 grid h-5 w-5 place-items-center rounded-full bg-white text-red-700 shadow"><X className="h-3 w-3" /></button></div>)}</div>}
         </div>
       </div>
-      <div className="mt-4 flex justify-end gap-2"><button type="button" onClick={() => setFormOpen(false)} className="rounded-xl border border-border px-4 py-2.5 text-sm font-semibold">Hủy</button><button type="submit" disabled={saving || uploadingImage || !draft.imageUrl} className="inline-flex items-center gap-2 rounded-xl gt-gradient px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-50"><Save className="h-4 w-4" />{saving ? "Đang lưu…" : "Lưu sản phẩm"}</button></div>
+      <div className="mt-4 flex justify-end gap-2"><button type="button" onClick={() => setFormOpen(false)} className="rounded-xl border border-border px-4 py-2.5 text-sm font-semibold">Hủy</button><button type="submit" disabled={saving || uploadingImage || !draft.imageUrls.length} className="inline-flex items-center gap-2 rounded-xl gt-gradient px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-50"><Save className="h-4 w-4" />{saving ? "Đang lưu…" : "Lưu sản phẩm"}</button></div>
     </form>}
 
     <div className="overflow-x-auto rounded-2xl border border-border bg-white gt-shadow-soft"><table className="w-full min-w-[820px] text-sm"><thead className="bg-[oklch(0.97_0.04_95)] text-xs uppercase text-muted-foreground"><tr><th className="p-3 text-left">Sản phẩm</th><th className="p-3 text-left">Danh mục</th><th className="p-3 text-right">Giá / kg</th><th className="p-3 text-right">Tồn (kg)</th><th className="p-3 text-left">Trạng thái</th><th className="p-3 text-right">Thao tác</th></tr></thead><tbody className="divide-y divide-border">

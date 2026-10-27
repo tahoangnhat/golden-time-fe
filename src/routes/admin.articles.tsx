@@ -267,6 +267,14 @@ function sanitizePreviewHtml(html: string) {
       if (attribute.name === "class") {
         const allowed = attribute.value.split(/\s+/).filter((value) => value.startsWith("article-")).join(" ");
         allowed ? element.setAttribute("class", allowed) : element.removeAttribute("class");
+      } else if (element.tagName === "IMG" && attribute.name === "style") {
+        const width = (element as HTMLImageElement).style.width.trim();
+        const match = width.match(/^(\d+(?:\.\d+)?)(px|%)$/);
+        if (match && Number(match[1]) > 0 && (match[2] !== "%" || Number(match[1]) <= 100) && (match[2] !== "px" || Number(match[1]) <= 2000)) {
+          element.setAttribute("style", `width:${Number(match[1])}${match[2]};height:auto`);
+        } else {
+          element.removeAttribute("style");
+        }
       } else if (element.tagName === "IMG" && attribute.name === "src") {
         if (!/^(https?:\/\/|\/uploads\/)/i.test(attribute.value)) element.removeAttribute("src");
       } else if (element.tagName === "IMG" && attribute.name === "alt") continue;

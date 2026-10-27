@@ -25,7 +25,7 @@ export type Product = {
   id: number; shopId: number; shopName: string; fruitId: number | null; fruitSlug: string | null;
   fruitName: string; emoji: string; category?: string | null; displayName: string;
   pricePerKg: number; stockKg: number; aiScore?: number | null; batchCode?: string | null;
-  distanceKm?: number | null; imageUrl?: string | null; seasonal: boolean; prepared: boolean;
+  distanceKm?: number | null; imageUrl?: string | null; imageUrls?: string[]; seasonal: boolean; prepared: boolean;
 };
 export type Shop = {
   id: number; name: string; address?: string | null; latitude: number; longitude: number;
@@ -53,7 +53,7 @@ export type BatchTrace = {
     fruitName?: string | null; emoji?: string | null; quantityKg?: number | null; packagingDate?: string | null;
     qualityCheckedAt?: string | null; qualityResult?: string | null; qualityScore?: number | null; qualityNote?: string | null;
     transportDate?: string | null; transportInfo?: string | null; batchStatus?: string | null;
-    farm?: { id: number; name: string; address?: string | null; managerName?: string | null; fruitTypes?: string | null; certifications?: string | null; imageUrl?: string | null } | null;
+    farm?: { id: number; name: string; address?: string | null; managerName?: string | null; fruitTypes?: string | null; certifications?: string | null; certificationImageUrl?: string | null; imageUrl?: string | null; imageUrls?: string[] } | null;
     business?: { id: number; name: string; address?: string | null; logoUrl?: string | null } | null };
   events: { stepOrder: number; title: string; eventDate?: string | null; location?: string | null; iconKey?: string | null; completed: boolean }[];
 };
@@ -86,16 +86,16 @@ export type AdminProduct = { id: number; emoji: string; name: string; shop: stri
 export type AdminOrder = { id: number; customer: string; shop: string; total: number; subtotal: number; shippingFee: number; status: string; payment: string; note?: string | null; deliveryName?: string | null; deliveryPhone?: string | null; deliveryAddress?: string | null; createdAt: string; itemCount: number };
 export type AdminReview = { id: number; user: string; shop: string; rating: number; comment: string; createdAt: string; purchased: boolean };
 export type AdminScan = { id: number; fruit?: string | null; emoji?: string | null; freshness?: number | null; quality?: number | null; confidence?: number | null; user: string; mode: string; createdAt: string };
-export type AdminNutrition = { id: number; slug: string; name: string; emoji: string; calories?: number | null; vitaminC?: number | null; fiber?: number | null; sugar?: number | null; potassium?: number | null; water?: number | null; benefits?: string | null };
+export type AdminNutrition = { id: number; slug: string; name: string; emoji: string; category?: string | null; calories?: number | null; vitaminC?: number | null; fiber?: number | null; sugar?: number | null; potassium?: number | null; water?: number | null; benefits?: string | null };
 export type AdminTrace = { batchCode: string; product: string; shop?: string | null; supplier?: string | null; area?: string | null; harvestDate?: string | null; intakeDate?: string | null; certificates?: string | null; certified: boolean; farm?: string | null; quantityKg?: number | null; packagingDate?: string | null; qualityCheckedAt?: string | null; qualityResult?: string | null; qualityScore?: number | null; qualityNote?: string | null; transportDate?: string | null; transportInfo?: string | null; batchStatus?: string | null };
 export type AdminPriceSource = { id: number; retailer: string; fruit: string; productName: string; sourceUrl: string; enabled: boolean; lastAttemptAt?: string | null; lastSuccessAt?: string | null; lastError?: string | null };
 export type AdminOverview = { users: number; shops: number; orders: number; orderValueToday: number; scansToday: number; confirmedPercent: number; topFruits: { name: string; scans: number }[]; topShops: { name: string; orders: number; orderValue: number }[]; pendingOrders: number; daily: { date: string; orderValue: number; scans: number }[] };
 export type ShopProfile = { id: number; name: string; address?: string | null; latitude: number; longitude: number; status: string; description?: string | null; rating: number; reviewCount: number; businessEmail?: string | null; businessPhone?: string | null; taxCode?: string | null; representativeName?: string | null; representativePhone?: string | null; logoUrl?: string | null };
-export type ShopProduct = { id: number; fruitId: number | null; fruitName: string; emoji: string; category?: string | null; seasonal: boolean; prepared: boolean; displayName: string; pricePerKg: number; stockKg: number; aiScore?: number | null; status: string; batchCode?: string | null; imageUrl?: string | null };
+export type ShopProduct = { id: number; fruitId: number | null; fruitName: string; emoji: string; category?: string | null; seasonal: boolean; prepared: boolean; displayName: string; pricePerKg: number; stockKg: number; aiScore?: number | null; status: string; batchCode?: string | null; imageUrl?: string | null; imageUrls?: string[] };
 export type ShopOrder = { id: number; customer: string; total: number; subtotal: number; shippingFee: number; status: string; payment: string; deliveryName?: string | null; deliveryPhone?: string | null; deliveryAddress?: string | null; note?: string | null; createdAt: string; items: { name: string; emoji: string; quantityKg: number; unitPrice: number; lineTotal: number }[] };
 export type ShopReview = { id: number; author: string; rating: number; comment: string; createdAt: string; purchased: boolean };
 export type ShopTrace = { batchCode: string; product: string; origin?: string | null; supplier?: string | null; certified: boolean; harvestDate?: string | null; intakeDate?: string | null; certificates?: string | null; storageTemperature?: string | null; storageHumidity?: string | null; publicNote?: string | null };
-export type Farm = { id: number; shopId: number; name: string; address: string; managerName: string; phone: string; fruitTypes: string; areaHectares?: number | null; certifications?: string | null; imageUrl?: string | null; status: "PENDING" | "APPROVED" | "REJECTED"; rejectionReason?: string | null; createdAt: string; updatedAt: string; reviewedAt?: string | null; shopName?: string | null };
+export type Farm = { id: number; shopId: number; name: string; address: string; managerName: string; phone: string; fruitTypes: string; areaHectares?: number | null; certifications?: string | null; certificationImageUrl?: string | null; imageUrl?: string | null; imageUrls?: string[]; status: "PENDING" | "APPROVED" | "REJECTED"; rejectionReason?: string | null; createdAt: string; updatedAt: string; reviewedAt?: string | null; shopName?: string | null };
 export type ShopBatch = { batchCode: string; product: string; productId?: number | null; shopId?: number | null; farmId?: number | null; quantityKg?: number | null; harvestDate?: string | null; packagingDate?: string | null; qualityCheckedAt?: string | null; qualityResult?: string | null; qualityScore?: number | null; qualityNote?: string | null; transportDate?: string | null; transportInfo?: string | null; batchStatus: string; createdAt: string; farmName?: string | null; farmStatus?: string | null; shopName?: string | null };
 export type BatchWritePayload = { productId: number; farmId: number; quantityKg: number; harvestDate?: string; packagingDate?: string; qualityCheckedAt?: string; qualityResult?: string; qualityScore?: number; qualityNote?: string; transportDate?: string; transportInfo?: string; batchStatus: string };
 export type ShopOverview = { products: number; soldOut: number; orders: number; pendingOrders: number; orderValueToday: number; rating: number; reviewCount: number; daily: { date: string; orderValue: number }[]; topProducts: { name: string; sold: number; orderValue: number }[] };
@@ -297,6 +297,12 @@ export const api = {
     const image = await request<{ url: string; contentType: string }>("/shop/farms/images", { method: "POST", body: form });
     return { ...image, url: image.url.startsWith("http") ? image.url : `${API_ORIGIN}${image.url}` };
   },
+  uploadFarmCertification: async (file: File) => {
+    const form = new FormData();
+    form.set("file", file);
+    const image = await request<{ url: string; contentType: string }>("/shop/farms/certifications", { method: "POST", body: form });
+    return { ...image, url: image.url.startsWith("http") ? image.url : `${API_ORIGIN}${image.url}` };
+  },
   adminOverview: () => request<AdminOverview>("/admin/overview"),
   adminUsers: () => request<AdminUser[]>("/admin/users"),
   adminShops: () => request<AdminShop[]>("/admin/shops"),
@@ -321,8 +327,8 @@ export const api = {
   mapAddressReverse: (point: { lat: number; lng: number }) => request<{ display_name?: string | null }>(`/map/geocoding/reverse?lat=${point.lat}&lon=${point.lng}`),
   nearbyChainShops: (point: { lat: number; lng: number }) => request<NearbyChainShop[]>(`/map/nearby-chain-stores?lat=${point.lat}&lon=${point.lng}`),
   shopProducts: () => request<ShopProduct[]>("/shop/products"),
-  createShopProduct: (payload: { fruitId: number | null; category: string; displayName: string; pricePerKg: number; stockKg: number; onSale: boolean; imageUrl: string }) => request<ShopProduct>("/shop/products", { method: "POST", body: JSON.stringify(payload) }),
-  updateShopProduct: (id: number, payload: { fruitId: number | null; category: string; displayName: string; pricePerKg: number; stockKg: number; onSale: boolean; imageUrl: string }) => request<ShopProduct>(`/shop/products/${id}`, { method: "PUT", body: JSON.stringify(payload) }),
+  createShopProduct: (payload: { fruitId: number | null; category: string; displayName: string; pricePerKg: number; stockKg: number; onSale: boolean; imageUrl?: string; imageUrls: string[] }) => request<ShopProduct>("/shop/products", { method: "POST", body: JSON.stringify(payload) }),
+  updateShopProduct: (id: number, payload: { fruitId: number | null; category: string; displayName: string; pricePerKg: number; stockKg: number; onSale: boolean; imageUrl?: string; imageUrls: string[] }) => request<ShopProduct>(`/shop/products/${id}`, { method: "PUT", body: JSON.stringify(payload) }),
   shopOrders: () => request<ShopOrder[]>("/shop/orders"),
   shopReviews: () => request<ShopReview[]>("/shop/reviews"),
   shopTraceability: () => request<ShopTrace[]>("/shop/traceability"),
