@@ -161,7 +161,7 @@ function AdminArticles() {
             <div className="min-w-0 flex-1">
               <div className="flex flex-wrap items-center gap-2"><span className={`rounded-full px-2.5 py-1 text-[11px] font-bold ${article.published ? "bg-green-50 text-green-700" : "bg-amber-50 text-amber-700"}`}>{article.published ? "Đang công khai" : "Bản nháp"}</span><span className="rounded-full bg-cream px-2.5 py-1 text-[11px] font-semibold text-primary">{article.category}</span>{article.featured && <span className="inline-flex items-center gap-1 rounded-full bg-yellow-50 px-2.5 py-1 text-[11px] font-semibold text-yellow-700"><Star className="h-3 w-3 fill-current" /> Nổi bật</span>}</div>
               <h2 className="mt-2 truncate text-base font-bold">{article.title}</h2>
-              <p className="mt-1 truncate text-xs text-muted-foreground">/knowledge/{article.slug} · Sửa lần cuối {formatDate(article.updatedAt)}</p>
+              <p className="mt-1 truncate text-xs text-muted-foreground">/knowledge/{article.slug}{article.published ? ` · Đăng ngày ${formatDate(article.publishedAt)}` : " · Bản nháp"} · Sửa lần cuối {formatDate(article.updatedAt)}</p>
             </div>
             <div className="flex shrink-0 items-center gap-2">
               {article.published && <Link to="/knowledge/$slug" params={{ slug: article.slug }} target="_blank" className="grid h-10 w-10 place-items-center rounded-xl border border-border text-muted-foreground hover:bg-muted" title="Mở bài viết công khai"><ExternalLink className="h-4 w-4" /></Link>}
@@ -207,9 +207,8 @@ function ArticleEditorPanel({
       <aside className="space-y-4">
         <Panel title="Xuất bản">
           <label className="flex items-center justify-between gap-3 rounded-xl bg-muted/40 p-3"><span><span className="block text-sm font-semibold">Bài viết nổi bật</span><span className="block text-xs text-muted-foreground">Ưu tiên hiển thị trên trang danh sách</span></span><input type="checkbox" checked={Boolean(form.featured)} onChange={(event) => onUpdate("featured", event.target.checked)} className="h-4 w-4 accent-green-600" /></label>
-          <label className="mt-3 block"><span className="text-xs font-semibold text-muted-foreground">Ngày xuất bản</span><input type="date" max={new Date().toISOString().slice(0, 10)} value={form.publishedAt || ""} onChange={(event) => onUpdate("publishedAt", event.target.value)} className="mt-1 h-10 w-full rounded-xl border border-border px-3 text-sm" /></label>
           <div className="mt-4 grid gap-2"><button type="button" disabled={saving} onClick={() => onSave(true)} className="inline-flex h-11 items-center justify-center gap-2 rounded-xl gt-gradient text-sm font-bold text-white disabled:opacity-60"><Send className="h-4 w-4" />{saving ? "Đang lưu…" : form.published ? "Lưu và cập nhật công khai" : "Xuất bản"}</button><button type="button" disabled={saving} onClick={() => onSave(false)} className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-border text-sm font-semibold hover:bg-muted disabled:opacity-60"><Check className="h-4 w-4" />{saving ? "Đang lưu…" : "Lưu bản nháp"}</button></div>
-          <p className="mt-3 text-xs leading-5 text-muted-foreground">{form.published ? "Bài viết hiện đang hiển thị công khai. Lưu bản nháp sẽ gỡ bài khỏi website." : "Bản nháp chỉ quản trị viên nhìn thấy cho đến khi xuất bản."}</p>
+          <p className="mt-3 text-xs leading-5 text-muted-foreground">{form.published ? "Bài viết hiện đang hiển thị công khai. Lưu bản nháp sẽ gỡ bài khỏi website." : "Ngày đăng được ghi tự động theo giờ Việt Nam khi bạn xuất bản."}</p>
         </Panel>
         <Panel title="Thông tin bài viết">
           <label className="block"><span className="text-xs font-semibold text-muted-foreground">Chuyên mục</span><input list="article-categories" value={form.category} onChange={(event) => onUpdate("category", event.target.value)} maxLength={128} placeholder="Dinh dưỡng" className="mt-1 h-10 w-full rounded-xl border border-border px-3 text-sm" /><datalist id="article-categories">{["Chọn trái cây", "Dinh dưỡng", "Bảo quản", "Mua sắm thông minh", "Theo mùa", "Sức khỏe"].map((category) => <option key={category} value={category} />)}</datalist></label>
@@ -242,13 +241,14 @@ function Panel({ title, children }: { title: string; children: React.ReactNode }
 
 function ArticlePreview({ form, onClose }: { form: ArticleForm; onClose: () => void }) {
   const safeHtml = sanitizePreviewHtml(form.body);
+  const previewDate = form.publishedAt ? formatDate(form.publishedAt) : form.published ? formatDate(new Date().toISOString()) : "Ngày đăng tự động khi xuất bản";
   return <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/55 p-3 sm:p-6" role="dialog" aria-modal="true" aria-label="Xem trước bài viết">
     <div className="relative flex max-h-[94vh] w-full max-w-4xl flex-col overflow-hidden rounded-3xl bg-white shadow-2xl">
       <div className="flex items-center justify-between border-b border-border px-5 py-4"><div><p className="text-xs font-semibold uppercase tracking-wider text-primary">Xem trước · Golden Time</p><p className="mt-0.5 text-xs text-muted-foreground">/knowledge/{form.slug || "duong-dan-bai-viet"}</p></div><button type="button" onClick={onClose} aria-label="Đóng xem trước" className="grid h-9 w-9 place-items-center rounded-full hover:bg-muted"><X className="h-4 w-4" /></button></div>
       <div className="overflow-y-auto"><article className="mx-auto max-w-3xl px-5 py-8 sm:px-10 sm:py-12">
         <span className="inline-flex rounded-full bg-cream px-3 py-1 text-xs font-bold uppercase tracking-wider text-primary">{form.category || "Chuyên mục"}</span>
         <h1 className="mt-4 text-3xl font-extrabold leading-tight sm:text-5xl">{form.title || "Tiêu đề bài viết"}</h1>
-        <p className="mt-4 text-sm text-muted-foreground">{form.author || "Golden Time"} · {form.publishedAt ? formatDate(form.publishedAt) : "Ngày xuất bản"}</p>
+        <p className="mt-4 text-sm text-muted-foreground">{form.author || "Golden Time"} · {previewDate}</p>
         {form.coverUrl && <img src={form.coverUrl} alt={form.coverAlt || form.title} className="mt-8 max-h-[28rem] w-full rounded-3xl object-cover" />}
         {form.description && <p className="mt-7 text-lg font-semibold leading-8">{form.description}</p>}
         <div className="article-content mt-7" dangerouslySetInnerHTML={{ __html: safeHtml }} />
