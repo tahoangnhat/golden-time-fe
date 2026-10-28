@@ -54,7 +54,7 @@ function AdminSettings() {
       </SectionCard>
       <div className="space-y-4">
         <SectionCard title="Dịch vụ AI"><p className="text-sm text-muted-foreground">Phân tích ảnh chỉ hoạt động khi cấu hình AI_SERVICE_URL. Kết quả không được tự tạo khi dịch vụ chưa có.</p></SectionCard>
-        <SectionCard title="Thanh toán"><p className="text-sm text-muted-foreground">Hệ thống hỗ trợ COD và PayOS. Mỗi cửa hàng kết nối kênh PayOS riêng để khoản thanh toán được chuyển về tài khoản của chính cửa hàng.</p></SectionCard>
+        <SectionCard title="Thanh toán"><p className="text-sm text-muted-foreground">PayOS được kết nối bằng tài khoản trung tâm của sàn qua cấu hình máy chủ. Khách hàng thanh toán cho Golden Time; ví Shop ghi nhận doanh thu sau khi thanh toán được xác nhận, còn Admin quản lý hoa hồng, đối soát COD và ghi nhận các khoản trả Shop.</p></SectionCard>
         <SectionCard title="Thiết lập nền tảng"><p className="text-sm text-muted-foreground">Phí, chính sách đối tác, nội dung thông báo và quản lý tài khoản quản trị chưa có API lưu cấu hình.</p></SectionCard>
       </div>
     </div>

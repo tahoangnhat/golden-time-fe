@@ -43,6 +43,7 @@ import { Route as AdminSettingsRouteImport } from './routes/admin.settings'
 import { Route as AdminShopsRouteImport } from './routes/admin.shops'
 import { Route as AdminTraceabilityRouteImport } from './routes/admin.traceability'
 import { Route as AdminUsersRouteImport } from './routes/admin.users'
+import { Route as AdminWalletsRouteImport } from './routes/admin.wallets'
 import { Route as AppLoginRouteImport } from './routes/app.login'
 import { Route as BusinessDashboardRouteImport } from './routes/business.dashboard'
 import { Route as BusinessFarmsRouteImport } from './routes/business.farms'
@@ -56,6 +57,7 @@ import { Route as BusinessRegisterRouteImport } from './routes/business.register
 import { Route as BusinessReviewsRouteImport } from './routes/business.reviews'
 import { Route as BusinessSupportRouteImport } from './routes/business.support'
 import { Route as BusinessTraceabilityRouteImport } from './routes/business.traceability'
+import { Route as BusinessWalletRouteImport } from './routes/business.wallet'
 import { Route as KnowledgeSlugRouteImport } from './routes/knowledge.$slug'
 import { Route as ShopIndexRouteImport } from './routes/shop.index'
 import { Route as ShopProductIdRouteImport } from './routes/shop.$productId'
@@ -230,6 +232,11 @@ const AdminUsersRoute = AdminUsersRouteImport.update({
   path: '/users',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminWalletsRoute = AdminWalletsRouteImport.update({
+  id: '/wallets',
+  path: '/wallets',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AppLoginRoute = AppLoginRouteImport.update({
   id: '/app/login',
   path: '/app/login',
@@ -295,6 +302,11 @@ const BusinessTraceabilityRoute = BusinessTraceabilityRouteImport.update({
   path: '/traceability',
   getParentRoute: () => BusinessRoute,
 } as any)
+const BusinessWalletRoute = BusinessWalletRouteImport.update({
+  id: '/wallet',
+  path: '/wallet',
+  getParentRoute: () => BusinessRoute,
+} as any)
 const KnowledgeSlugRoute = KnowledgeSlugRouteImport.update({
   id: '/$slug',
   path: '/$slug',
@@ -345,6 +357,7 @@ export interface FileRoutesByFullPath {
   '/admin/shops': typeof AdminShopsRoute
   '/admin/traceability': typeof AdminTraceabilityRoute
   '/admin/users': typeof AdminUsersRoute
+  '/admin/wallets': typeof AdminWalletsRoute
   '/app/login': typeof AppLoginRoute
   '/business/dashboard': typeof BusinessDashboardRoute
   '/business/farms': typeof BusinessFarmsRoute
@@ -358,6 +371,7 @@ export interface FileRoutesByFullPath {
   '/business/reviews': typeof BusinessReviewsRoute
   '/business/support': typeof BusinessSupportRoute
   '/business/traceability': typeof BusinessTraceabilityRoute
+  '/business/wallet': typeof BusinessWalletRoute
   '/knowledge/$slug': typeof KnowledgeSlugRoute
   '/shop/$productId': typeof ShopProductIdRoute
   '/admin/': typeof AdminIndexRoute
@@ -395,6 +409,7 @@ export interface FileRoutesByTo {
   '/admin/shops': typeof AdminShopsRoute
   '/admin/traceability': typeof AdminTraceabilityRoute
   '/admin/users': typeof AdminUsersRoute
+  '/admin/wallets': typeof AdminWalletsRoute
   '/app/login': typeof AppLoginRoute
   '/business/dashboard': typeof BusinessDashboardRoute
   '/business/farms': typeof BusinessFarmsRoute
@@ -408,6 +423,7 @@ export interface FileRoutesByTo {
   '/business/reviews': typeof BusinessReviewsRoute
   '/business/support': typeof BusinessSupportRoute
   '/business/traceability': typeof BusinessTraceabilityRoute
+  '/business/wallet': typeof BusinessWalletRoute
   '/knowledge/$slug': typeof KnowledgeSlugRoute
   '/shop/$productId': typeof ShopProductIdRoute
   '/admin': typeof AdminIndexRoute
@@ -448,6 +464,7 @@ export interface FileRoutesById {
   '/admin/shops': typeof AdminShopsRoute
   '/admin/traceability': typeof AdminTraceabilityRoute
   '/admin/users': typeof AdminUsersRoute
+  '/admin/wallets': typeof AdminWalletsRoute
   '/app/login': typeof AppLoginRoute
   '/business/dashboard': typeof BusinessDashboardRoute
   '/business/farms': typeof BusinessFarmsRoute
@@ -461,6 +478,7 @@ export interface FileRoutesById {
   '/business/reviews': typeof BusinessReviewsRoute
   '/business/support': typeof BusinessSupportRoute
   '/business/traceability': typeof BusinessTraceabilityRoute
+  '/business/wallet': typeof BusinessWalletRoute
   '/knowledge/$slug': typeof KnowledgeSlugRoute
   '/shop/$productId': typeof ShopProductIdRoute
   '/admin/': typeof AdminIndexRoute
@@ -502,6 +520,7 @@ export interface FileRouteTypes {
     | '/admin/shops'
     | '/admin/traceability'
     | '/admin/users'
+    | '/admin/wallets'
     | '/app/login'
     | '/business/dashboard'
     | '/business/farms'
@@ -515,6 +534,7 @@ export interface FileRouteTypes {
     | '/business/reviews'
     | '/business/support'
     | '/business/traceability'
+    | '/business/wallet'
     | '/knowledge/$slug'
     | '/shop/$productId'
     | '/admin/'
@@ -552,6 +572,7 @@ export interface FileRouteTypes {
     | '/admin/shops'
     | '/admin/traceability'
     | '/admin/users'
+    | '/admin/wallets'
     | '/app/login'
     | '/business/dashboard'
     | '/business/farms'
@@ -565,6 +586,7 @@ export interface FileRouteTypes {
     | '/business/reviews'
     | '/business/support'
     | '/business/traceability'
+    | '/business/wallet'
     | '/knowledge/$slug'
     | '/shop/$productId'
     | '/admin'
@@ -604,6 +626,7 @@ export interface FileRouteTypes {
     | '/admin/shops'
     | '/admin/traceability'
     | '/admin/users'
+    | '/admin/wallets'
     | '/app/login'
     | '/business/dashboard'
     | '/business/farms'
@@ -617,6 +640,7 @@ export interface FileRouteTypes {
     | '/business/reviews'
     | '/business/support'
     | '/business/traceability'
+    | '/business/wallet'
     | '/knowledge/$slug'
     | '/shop/$productId'
     | '/admin/'
@@ -886,6 +910,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminUsersRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/wallets': {
+      id: '/admin/wallets'
+      path: '/wallets'
+      fullPath: '/admin/wallets'
+      preLoaderRoute: typeof AdminWalletsRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/app/login': {
       id: '/app/login'
       path: '/app/login'
@@ -977,6 +1008,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof BusinessTraceabilityRouteImport
       parentRoute: typeof BusinessRoute
     }
+    '/business/wallet': {
+      id: '/business/wallet'
+      path: '/wallet'
+      fullPath: '/business/wallet'
+      preLoaderRoute: typeof BusinessWalletRouteImport
+      parentRoute: typeof BusinessRoute
+    }
     '/knowledge/$slug': {
       id: '/knowledge/$slug'
       path: '/$slug'
@@ -1016,6 +1054,7 @@ interface AdminRouteChildren {
   AdminShopsRoute: typeof AdminShopsRoute
   AdminTraceabilityRoute: typeof AdminTraceabilityRoute
   AdminUsersRoute: typeof AdminUsersRoute
+  AdminWalletsRoute: typeof AdminWalletsRoute
   AdminIndexRoute: typeof AdminIndexRoute
 }
 
@@ -1034,6 +1073,7 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminShopsRoute: AdminShopsRoute,
   AdminTraceabilityRoute: AdminTraceabilityRoute,
   AdminUsersRoute: AdminUsersRoute,
+  AdminWalletsRoute: AdminWalletsRoute,
   AdminIndexRoute: AdminIndexRoute,
 }
 
@@ -1052,6 +1092,7 @@ interface BusinessRouteChildren {
   BusinessReviewsRoute: typeof BusinessReviewsRoute
   BusinessSupportRoute: typeof BusinessSupportRoute
   BusinessTraceabilityRoute: typeof BusinessTraceabilityRoute
+  BusinessWalletRoute: typeof BusinessWalletRoute
 }
 
 const BusinessRouteChildren: BusinessRouteChildren = {
@@ -1067,6 +1108,7 @@ const BusinessRouteChildren: BusinessRouteChildren = {
   BusinessReviewsRoute: BusinessReviewsRoute,
   BusinessSupportRoute: BusinessSupportRoute,
   BusinessTraceabilityRoute: BusinessTraceabilityRoute,
+  BusinessWalletRoute: BusinessWalletRoute,
 }
 
 const BusinessRouteWithChildren = BusinessRoute._addFileChildren(

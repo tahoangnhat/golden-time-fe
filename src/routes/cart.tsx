@@ -27,17 +27,15 @@ function Cart() {
   const paymentWasCancelledOnPayOS = paymentReturnMode.toUpperCase() === "CANCELLED" || paymentReturnMode.toLowerCase() === "cancelled";
 
   useEffect(() => {
-    const shopId = cart.items[0]?.shopId;
     setPayosEnabled(false);
-    if (!shopId) return;
     let active = true;
-    api.shopPaymentMethods(shopId).then((methods) => {
+    api.paymentMethods().then((methods) => {
       if (active) setPayosEnabled(methods.payosEnabled);
     }).catch(() => {
       if (active) setPayosEnabled(false);
     });
     return () => { active = false; };
-  }, [cart.items[0]?.shopId]);
+  }, []);
 
   useEffect(() => {
     if (!payosEnabled && paymentMethod === "PAYOS") setPaymentMethod("COD");
@@ -132,8 +130,8 @@ function Cart() {
           <div className="bg-white rounded-2xl p-4 gt-shadow-soft border border-border space-y-3"><div className="flex items-center gap-2 text-xs text-muted-foreground"><MapPin className="h-3.5 w-3.5" /> Thông tin nhận hàng</div><input required value={name} onChange={(event) => setName(event.target.value)} placeholder="Tên người nhận" className="w-full rounded-xl border border-border px-3 py-2 text-sm" /><input required value={phone} onChange={(event) => setPhone(event.target.value)} placeholder="Số điện thoại" className="w-full rounded-xl border border-border px-3 py-2 text-sm" /><textarea required value={address} onChange={(event) => setAddress(event.target.value)} placeholder="Địa chỉ giao hàng" rows={2} className="w-full rounded-xl border border-border px-3 py-2 text-sm" /></div>
           <div className="bg-white rounded-2xl p-4 gt-shadow-soft border border-border space-y-3"><p className="text-xs text-muted-foreground">Phương thức thanh toán</p>
             <label className={`flex items-center gap-3 rounded-xl border p-3 cursor-pointer ${paymentMethod === "COD" ? "border-primary bg-primary/5" : "border-border"}`}><input type="radio" name="paymentMethod" value="COD" checked={paymentMethod === "COD"} onChange={() => setPaymentMethod("COD")} className="accent-green-600" /><span className="h-9 w-9 rounded-xl gt-gradient text-white grid place-items-center"><Banknote className="h-4 w-4" /></span><span className="flex-1"><span className="block text-sm font-semibold">Thanh toán khi nhận hàng</span><span className="block text-[11px] text-muted-foreground">Thanh toán tiền mặt khi nhận được hàng.</span></span></label>
-            {payosEnabled ? <label className={`flex items-center gap-3 rounded-xl border p-3 cursor-pointer ${paymentMethod === "PAYOS" ? "border-primary bg-primary/5" : "border-border"}`}><input type="radio" name="paymentMethod" value="PAYOS" checked={paymentMethod === "PAYOS"} onChange={() => setPaymentMethod("PAYOS")} className="accent-green-600" /><span className="h-9 w-9 rounded-xl bg-cream text-primary grid place-items-center"><QrCode className="h-4 w-4" /></span><span className="flex-1"><span className="block text-sm font-semibold">Thanh toán qua PayOS</span><span className="block text-[11px] text-muted-foreground">Thanh toán trực tiếp vào kênh PayOS của cửa hàng.</span></span></label>
-              : <p className="rounded-xl bg-cream px-3 py-2 text-[11px] text-muted-foreground">Cửa hàng chưa kết nối PayOS. Hiện có thể thanh toán COD.</p>}
+            {payosEnabled ? <label className={`flex items-center gap-3 rounded-xl border p-3 cursor-pointer ${paymentMethod === "PAYOS" ? "border-primary bg-primary/5" : "border-border"}`}><input type="radio" name="paymentMethod" value="PAYOS" checked={paymentMethod === "PAYOS"} onChange={() => setPaymentMethod("PAYOS")} className="accent-green-600" /><span className="h-9 w-9 rounded-xl bg-cream text-primary grid place-items-center"><QrCode className="h-4 w-4" /></span><span className="flex-1"><span className="block text-sm font-semibold">Thanh toán qua PayOS</span><span className="block text-[11px] text-muted-foreground">Thanh toán cho Golden Time; sàn sẽ đối soát và trả tiền cho cửa hàng.</span></span></label>
+              : <p className="rounded-xl bg-cream px-3 py-2 text-[11px] text-muted-foreground">PayOS của sàn chưa được cấu hình. Hiện có thể thanh toán COD.</p>}
           </div>
           <div className="bg-white rounded-2xl p-4 gt-shadow-soft border border-border space-y-2 text-sm"><div className="flex justify-between"><span className="text-muted-foreground">Tạm tính</span><span className="font-semibold">{cart.subtotal.toLocaleString("vi-VN")}đ</span></div><div className="flex justify-between"><span className="text-muted-foreground">Phí giao hàng</span><span className="font-semibold">{shipping.toLocaleString("vi-VN")}đ</span></div><div className="border-t border-border pt-2 flex justify-between"><span className="font-bold">Tổng cộng</span><span className="font-extrabold text-primary text-lg">{(cart.subtotal + shipping).toLocaleString("vi-VN")}đ</span></div></div>
           {error && <p role="alert" className="rounded-xl bg-red-50 border border-red-200 text-red-700 text-sm px-3 py-2">{error}</p>}

@@ -32,7 +32,7 @@ export type Shop = {
   rating: number; reviewCount: number; description?: string | null; popularFruit?: string | null;
   productCount: number; distanceKm?: number | null;
 };
-export type ShopPaymentMethods = { codEnabled: boolean; payosEnabled: boolean };
+export type PaymentMethods = { codEnabled: boolean; payosEnabled: boolean };
 export type NearbyChainShop = { id: string; name: string; address?: string | null; latitude: number; longitude: number };
 export type PriceQuote = { retailerCode: string; retailerName: string; pricePerKg: number; sourceUrl: string; fetchedAt: string };
 export type PriceComparison = {
@@ -93,7 +93,8 @@ export type AdminTrace = { batchCode: string; product: string; shop?: string | n
 export type AdminPriceSource = { id: number; retailer: string; fruit: string; productName: string; sourceUrl: string; enabled: boolean; lastAttemptAt?: string | null; lastSuccessAt?: string | null; lastError?: string | null };
 export type AdminOverview = { users: number; shops: number; orders: number; orderValueToday: number; scansToday: number; confirmedPercent: number; topFruits: { name: string; scans: number }[]; topShops: { name: string; orders: number; orderValue: number }[]; pendingOrders: number; daily: { date: string; orderValue: number; scans: number }[] };
 export type ShopProfile = { id: number; name: string; address?: string | null; latitude: number; longitude: number; status: string; description?: string | null; rating: number; reviewCount: number; businessEmail?: string | null; businessPhone?: string | null; taxCode?: string | null; representativeName?: string | null; representativePhone?: string | null; logoUrl?: string | null };
-export type ShopPayOSSettings = { connected: boolean; webhookUrl: string };
+export type WalletSummary = { shopId: number; shopName: string; commissionTier: "NEW_SHOP" | "STANDARD" | "LARGE_PARTNER" | "CUSTOM"; commissionRate: number; approvedAt?: string | null; balance: number; grossSales: number; commissions: number; payouts: number };
+export type WalletTransaction = { id: number; orderId?: number | null; entryType: "ORDER_SALE" | "COMMISSION_FEE" | "PAYOUT"; amount: number; grossAmount?: number | null; commissionRate?: number | null; commissionAmount?: number | null; externalReference?: string | null; description?: string | null; createdAt: string };
 export type ShopProduct = { id: number; fruitId: number | null; fruitName: string; emoji: string; category?: string | null; seasonal: boolean; prepared: boolean; displayName: string; pricePerKg: number; stockKg: number; aiScore?: number | null; status: string; batchCode?: string | null; imageUrl?: string | null; imageUrls?: string[] };
 export type ShopOrder = { id: number; customer: string; total: number; subtotal: number; shippingFee: number; status: string; payment: string; paymentStatus: string; deliveryName?: string | null; deliveryPhone?: string | null; deliveryAddress?: string | null; note?: string | null; createdAt: string; items: { name: string; emoji: string; quantityKg: number; unitPrice: number; lineTotal: number }[] };
 export type ShopReview = { id: number; author: string; rating: number; comment: string; createdAt: string; purchased: boolean };
@@ -273,7 +274,7 @@ export const api = {
   orders: () => request<OrderSummary[]>("/orders/mine"),
   createReview: (payload: { shopId: number; orderId?: number; scanId?: number; rating: number; comment: string }) => request<Review>("/reviews", { method: "POST", body: JSON.stringify(payload) }),
   reviews: (shopId: number) => request<Review[]>(`/shops/${shopId}/reviews`),
-  shopPaymentMethods: (shopId: number) => request<ShopPaymentMethods>(`/shops/${shopId}/payment-methods`),
+  paymentMethods: () => request<PaymentMethods>("/payment-methods"),
   articles: (filters: { q?: string; category?: string } = {}) => request<Article[]>(`/articles?${query(filters)}`),
   article: (slug: string) => request<Article>(`/articles/${encodeURIComponent(slug)}`),
   adminArticles: (filters: { q?: string; status?: string } = {}) => request<AdminArticle[]>(`/admin/articles?${query(filters)}`),
@@ -337,9 +338,13 @@ export const api = {
   refreshPrices: () => request<{ sources: number; updated: number; failed: number; completedAt: string }>("/admin/prices/refresh", { method: "POST" }),
   shopProfile: () => request<ShopProfile>("/shop/profile"),
   updateShopProfile: (payload: { name?: string; address: string; latitude: number; longitude: number; businessEmail?: string; businessPhone?: string; taxCode?: string; representativeName?: string; representativePhone?: string; logoUrl?: string }) => request<ShopProfile>("/shop/profile", { method: "PUT", body: JSON.stringify(payload) }),
-  shopPayOSSettings: () => request<ShopPayOSSettings>("/shop/payments/payos"),
-  connectShopPayOS: (payload: { clientId: string; apiKey: string; checksumKey: string }) => request<void>("/shop/payments/payos", { method: "PUT", body: JSON.stringify(payload) }),
-  disconnectShopPayOS: () => request<void>("/shop/payments/payos", { method: "DELETE" }),
+  shopWallet: () => request<WalletSummary>("/shop/wallet"),
+  shopWalletTransactions: () => request<WalletTransaction[]>("/shop/wallet/transactions"),
+  adminWallets: () => request<WalletSummary[]>("/admin/wallets"),
+  adminWalletTransactions: (shopId: number) => request<WalletTransaction[]>(`/admin/wallets/${shopId}/transactions`),
+  updateShopCommission: (shopId: number, payload: { tier: WalletSummary["commissionTier"]; customRate?: number | null }) => request<void>(`/admin/wallets/${shopId}/commission`, { method: "PUT", body: JSON.stringify(payload) }),
+  recordShopPayout: (shopId: number, payload: { amount: number; reference?: string; note?: string }) => request<void>(`/admin/wallets/${shopId}/payouts`, { method: "POST", body: JSON.stringify(payload) }),
+  collectCod: (orderId: number, reference?: string) => request<void>(`/admin/wallets/orders/${orderId}/collect-cod`, { method: "POST", body: JSON.stringify({ reference }) }),
   mapAddressSearch: (query: string) => request<{ place_id: number; display_name: string; lat: string; lon: string }[]>(`/map/geocoding/search?q=${encodeURIComponent(query)}`),
   mapAddressReverse: (point: { lat: number; lng: number }) => request<{ display_name?: string | null }>(`/map/geocoding/reverse?lat=${point.lat}&lon=${point.lng}`),
   nearbyChainShops: (point: { lat: number; lng: number }) => request<NearbyChainShop[]>(`/map/nearby-chain-stores?lat=${point.lat}&lon=${point.lng}`),
