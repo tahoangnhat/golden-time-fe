@@ -80,7 +80,7 @@ function Home() {
                 <p className="text-[11px] text-muted-foreground truncate">{p.shopName}</p>
                 <p className="text-sm font-extrabold text-primary mt-0.5">{p.pricePerKg.toLocaleString("vi-VN")}đ<span className="text-[10px] text-muted-foreground font-medium">/kg</span></p>
               </div>
-              <Link to="/shop" className="shrink-0 text-[11px] font-semibold bg-cream text-foreground px-3 py-2 rounded-xl border border-border">Xem</Link>
+              <Link to="/shop/$productId" params={{ productId: String(p.id) }} className="shrink-0 text-[11px] font-semibold bg-cream text-foreground px-3 py-2 rounded-xl border border-border">Xem</Link>
             </div>
           ))}
           {products.length === 0 && <p className="text-xs text-muted-foreground">Chưa có sản phẩm đang bán trong dữ liệu.</p>}

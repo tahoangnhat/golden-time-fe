@@ -75,7 +75,6 @@ export type ArticleWritePayload = Omit<Article, "id" | "readingTime"> & { publis
 
 export type AdminUser = { id: number; name: string; email: string; role: "USER" | "SHOP_OWNER" | "ADMIN"; phone?: string | null; enabled: boolean; joined: string; orders: number; scans: number; reviews: number };
 export type AdminShop = { id: number; name: string; address?: string | null; latitude: number; longitude: number; status: string; rating: number; reviewCount: number; owner?: string | null; products: number; orderValue: number };
-export type AdminShopLocation = { id: number; address: string; latitude: number; longitude: number };
 export type BusinessApplication = {
   id: number; businessName: string; registrationNumber?: string | null; taxCode?: string | null; contactName: string;
   representativePhone?: string | null; email: string; phone: string; address: string;
@@ -97,8 +96,8 @@ export type ShopOrder = { id: number; customer: string; total: number; subtotal:
 export type ShopReview = { id: number; author: string; rating: number; comment: string; createdAt: string; purchased: boolean };
 export type ShopTrace = { batchCode: string; product: string; origin?: string | null; supplier?: string | null; certified: boolean; harvestDate?: string | null; intakeDate?: string | null; certificates?: string | null; storageTemperature?: string | null; storageHumidity?: string | null; publicNote?: string | null };
 export type Farm = { id: number; shopId: number; name: string; address: string; managerName: string; phone: string; fruitTypes: string; areaHectares?: number | null; certifications?: string | null; certificationImageUrl?: string | null; imageUrl?: string | null; imageUrls?: string[]; status: "PENDING" | "APPROVED" | "REJECTED"; rejectionReason?: string | null; createdAt: string; updatedAt: string; reviewedAt?: string | null; shopName?: string | null };
-export type ShopBatch = { batchCode: string; product: string; productId?: number | null; shopId?: number | null; farmId?: number | null; quantityKg?: number | null; harvestDate?: string | null; packagingDate?: string | null; qualityCheckedAt?: string | null; qualityResult?: string | null; qualityScore?: number | null; qualityNote?: string | null; transportDate?: string | null; transportInfo?: string | null; batchStatus: string; createdAt: string; farmName?: string | null; farmStatus?: string | null; shopName?: string | null };
-export type BatchWritePayload = { productId: number; farmId: number; quantityKg: number; harvestDate?: string; packagingDate?: string; qualityCheckedAt?: string; qualityResult?: string; qualityScore?: number; qualityNote?: string; transportDate?: string; transportInfo?: string; batchStatus: string };
+export type ShopBatch = { batchCode: string; product: string; productId?: number | null; shopId?: number | null; farmId?: number | null; quantityKg?: number | null; harvestDate?: string | null; packagingDate?: string | null; qualityCheckedAt?: string | null; qualityResult?: string | null; qualityScore?: number | null; qualityNote?: string | null; transportDate?: string | null; transportInfo?: string | null; batchStatus: string; createdAt: string; farmName?: string | null; farmStatus?: string | null; shopName?: string | null; origin?: string | null; reviewStatus: "PENDING_REVIEW" | "VERIFIED" | "NEEDS_CORRECTION"; reviewVersion: number; reviewNote?: string | null; reviewedAt?: string | null; evidenceUrls: string[] };
+export type BatchWritePayload = { productId: number; farmId: number; quantityKg: number; harvestDate?: string; packagingDate?: string; qualityCheckedAt?: string; qualityResult?: string; qualityScore?: number; qualityNote?: string; transportDate?: string; transportInfo?: string; evidenceUrls: string[] };
 export type ShopOverview = { products: number; soldOut: number; orders: number; pendingOrders: number; orderValueToday: number; rating: number; reviewCount: number; daily: { date: string; orderValue: number }[]; topProducts: { name: string; sold: number; orderValue: number }[] };
 export type AppUpdate = { version: string; date: string; title: string; type: "Tính năng mới" | "Cải tiến" | "Sửa lỗi"; changes: string[] };
 
@@ -305,10 +304,15 @@ export const api = {
     const image = await request<{ url: string; contentType: string }>("/shop/farms/certifications", { method: "POST", body: form });
     return { ...image, url: image.url.startsWith("http") ? image.url : `${API_ORIGIN}${image.url}` };
   },
+  uploadBatchEvidence: async (file: File) => {
+    const form = new FormData();
+    form.set("file", file);
+    const image = await request<{ url: string; contentType: string }>("/shop/batches/evidence", { method: "POST", body: form });
+    return { ...image, url: image.url.startsWith("http") ? image.url : `${API_ORIGIN}${image.url}` };
+  },
   adminOverview: () => request<AdminOverview>("/admin/overview"),
   adminUsers: () => request<AdminUser[]>("/admin/users"),
   adminShops: () => request<AdminShop[]>("/admin/shops"),
-  updateAdminShopLocation: (id: number, location: { address: string; latitude: number; longitude: number }) => request<AdminShopLocation>(`/admin/shops/${id}/location`, { method: "PUT", body: JSON.stringify(location) }),
   adminBusinessApplications: () => request<BusinessApplication[]>("/admin/business-applications"),
   adminBusinessLicense: (id: number) => requestBlob(`/admin/business-applications/${id}/license`),
   decideBusinessApplication: (id: number, approved: boolean, reason?: string, location?: { latitude: number; longitude: number; address?: string }) => request<BusinessApplication>(`/admin/business-applications/${id}/decision`, { method: "POST", body: JSON.stringify({ approved, reason, ...location }) }),
@@ -318,7 +322,8 @@ export const api = {
   adminReviews: () => request<AdminReview[]>("/admin/reviews"),
   adminScans: () => request<AdminScan[]>("/admin/scans"),
   adminNutrition: () => request<AdminNutrition[]>("/admin/nutrition"),
-  adminTraceability: () => request<AdminTrace[]>("/admin/traceability"),
+  adminTraceability: () => request<ShopBatch[]>("/admin/traceability/review-queue"),
+  decideBatch: (batchCode: string, approved: boolean, note?: string) => request<ShopBatch>(`/admin/traceability/${encodeURIComponent(batchCode)}/decision`, { method: "POST", body: JSON.stringify({ approved, note }) }),
   adminUpdateBatchStatus: (batchCode: string, batchStatus: string, note?: string) => request<ShopBatch>(`/admin/traceability/${encodeURIComponent(batchCode)}/status`, { method: "PUT", body: JSON.stringify({ batchStatus, note }) }),
   adminFarms: () => request<Farm[]>("/admin/farms"),
   decideFarm: (id: number, approved: boolean, reason?: string) => request<Farm>(`/admin/farms/${id}/decision`, { method: "POST", body: JSON.stringify({ approved, reason }) }),
