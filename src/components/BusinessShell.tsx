@@ -246,6 +246,8 @@ export function StatusBadge({ status }: { status: string }) {
     "Hoàn tất": "bg-green-100 text-green-700",
     "Đã hủy": "bg-red-100 text-red-700",
     "Đang bán": "bg-green-100 text-green-700",
+      "Chờ admin duyệt": "bg-yellow-100 text-yellow-700",
+      "Cần bổ sung hồ sơ": "bg-amber-100 text-amber-800",
     "Ẩn": "bg-gray-100 text-gray-600",
     "Sắp hết": "bg-yellow-100 text-yellow-700",
     "Hết hàng": "bg-red-100 text-red-700",

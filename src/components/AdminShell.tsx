@@ -263,6 +263,7 @@ export function StatusBadge({ status }: { status: string }) {
     "Đang bán": "bg-green-100 text-green-700",
     "Đã duyệt": "bg-green-100 text-green-700",
     "Chờ duyệt": "bg-yellow-100 text-yellow-700",
+      "Cần bổ sung": "bg-amber-100 text-amber-800",
     "Từ chối": "bg-red-100 text-red-700",
     "Đã khóa": "bg-red-100 text-red-700",
     "Hoạt động": "bg-green-100 text-green-700",

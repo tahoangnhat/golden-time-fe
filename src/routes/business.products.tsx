@@ -8,14 +8,14 @@ import { api, type Fruit, type ShopProduct } from "@/lib/api";
 export const Route = createFileRoute("/business/products")({ head: () => ({ meta: [{ title: "Sản phẩm — Golden Time Business" }] }), component: Products });
 
 type ProductCategory = "LOCAL" | "IMPORTED" | "SEASONAL" | "PREPARED";
-type ProductDraft = { fruitId: number | null; category: ProductCategory; displayName: string; pricePerKg: string; stockKg: string; onSale: boolean; imageUrls: string[] };
+type ProductDraft = { fruitId: number | null; category: ProductCategory; displayName: string; pricePerKg: string; stockKg: string; productOrigin: string; supplierName: string; lotCode: string; traceabilityProof: string; imageUrls: string[] };
 const PRODUCT_CATEGORIES: { value: ProductCategory; label: string }[] = [
   { value: "LOCAL", label: "Trái cây Việt Nam" },
   { value: "IMPORTED", label: "Trái cây nhập khẩu" },
   { value: "SEASONAL", label: "Trái cây theo mùa" },
   { value: "PREPARED", label: "Trái cây sơ chế" },
 ];
-const emptyDraft = (): ProductDraft => ({ fruitId: null, category: "LOCAL", displayName: "", pricePerKg: "", stockKg: "", onSale: true, imageUrls: [] });
+const emptyDraft = (): ProductDraft => ({ fruitId: null, category: "LOCAL", displayName: "", pricePerKg: "", stockKg: "", productOrigin: "", supplierName: "", lotCode: "", traceabilityProof: "", imageUrls: [] });
 
 function originLabel(category?: string | null) {
   const value = (category ?? "").toLocaleLowerCase("vi");
@@ -49,7 +49,9 @@ function fruitIdForName(name: string, fruits: Fruit[]) {
   })?.id ?? null;
 }
 
-function statusLabel(status: string) {
+function statusLabel(status: string, approvalStatus: string) {
+  if (approvalStatus === "PENDING_REVIEW") return "Chờ admin duyệt";
+  if (approvalStatus === "NEEDS_CORRECTION") return "Cần bổ sung hồ sơ";
   return ({ ON_SALE: "Đang bán", OUT_OF_STOCK: "Hết hàng", HIDDEN: "Đã ẩn", LOW_STOCK: "Sắp hết" } as Record<string, string>)[status] ?? status;
 }
 
@@ -90,7 +92,7 @@ function Products() {
 
   function beginEdit(product: ShopProduct) {
     setEditingId(product.id);
-    setDraft({ fruitId: product.fruitId, category: productCategory(product), displayName: product.displayName, pricePerKg: String(product.pricePerKg), stockKg: String(product.stockKg), onSale: product.status !== "HIDDEN", imageUrls: product.imageUrls?.length ? product.imageUrls : product.imageUrl ? [product.imageUrl] : [] });
+    setDraft({ fruitId: product.fruitId, category: productCategory(product), displayName: product.displayName, pricePerKg: String(product.pricePerKg), stockKg: String(product.stockKg), productOrigin: product.productOrigin ?? "", supplierName: product.supplierName ?? "", lotCode: product.lotCode ?? "", traceabilityProof: product.traceabilityProof ?? "", imageUrls: product.imageUrls?.length ? product.imageUrls : product.imageUrl ? [product.imageUrl] : [] });
     setFormOpen(true);
     setError("");
     setNotice("");
@@ -116,16 +118,20 @@ function Products() {
   async function saveProduct(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!draft.displayName.trim()) return setError("Hãy nhập tên sản phẩm.");
+    if (!draft.productOrigin.trim()) return setError("Hãy nhập xuất xứ sản phẩm.");
+    if (!draft.supplierName.trim()) return setError("Hãy nhập nhà cung cấp hoặc nhà sản xuất.");
+    if (!draft.lotCode.trim()) return setError("Hãy nhập mã lô sản phẩm.");
+    if (!draft.traceabilityProof.trim()) return setError("Hãy nhập giấy tờ hoặc thông tin chứng minh nguồn gốc.");
     if (!draft.imageUrls.length) return setError("Hãy tải ít nhất một ảnh sản phẩm lên trước khi lưu.");
     setSaving(true);
     setError("");
     setNotice("");
     try {
-      const payload = { fruitId: fruitIdForName(draft.displayName, fruits) ?? draft.fruitId, category: draft.category, displayName: draft.displayName.trim(), pricePerKg: Number(draft.pricePerKg), stockKg: Number(draft.stockKg), onSale: draft.onSale, imageUrl: draft.imageUrls[0], imageUrls: draft.imageUrls };
+      const payload = { fruitId: fruitIdForName(draft.displayName, fruits) ?? draft.fruitId, category: draft.category, displayName: draft.displayName.trim(), pricePerKg: Number(draft.pricePerKg), stockKg: Number(draft.stockKg), onSale: true, productOrigin: draft.productOrigin.trim(), supplierName: draft.supplierName.trim(), lotCode: draft.lotCode.trim(), traceabilityProof: draft.traceabilityProof.trim(), imageUrl: draft.imageUrls[0], imageUrls: draft.imageUrls };
       const saved = editingId === null ? await api.createShopProduct(payload) : await api.updateShopProduct(editingId, payload);
       setProducts((current) => [saved, ...current.filter((product) => product.id !== saved.id)]);
       setFormOpen(false);
-      setNotice(editingId === null ? "Đã đăng sản phẩm. Khách có thể mua nếu cửa hàng đang hoạt động và còn hàng." : "Đã cập nhật sản phẩm.");
+      setNotice(saved.approvalStatus === "PENDING_REVIEW" ? "Đã gửi hồ sơ sản phẩm cho admin duyệt. Sản phẩm sẽ được mở bán sau khi được duyệt." : "Đã cập nhật sản phẩm.");
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : "Không lưu được sản phẩm.");
     } finally { setSaving(false); }
@@ -133,10 +139,9 @@ function Products() {
 
   async function toggleVisibility(product: ShopProduct) {
     const onSale = product.status === "HIDDEN";
-    const imageUrls = product.imageUrls?.length ? product.imageUrls : product.imageUrl ? [product.imageUrl] : [];
-    if (!imageUrls.length) return beginEdit(product);
+    if (product.approvalStatus !== "APPROVED") return;
     try {
-      const saved = await api.updateShopProduct(product.id, { fruitId: product.fruitId, category: productCategory(product), displayName: product.displayName, pricePerKg: product.pricePerKg, stockKg: Number(product.stockKg), onSale, imageUrl: imageUrls[0], imageUrls });
+      const saved = await api.updateShopProductVisibility(product.id, onSale);
       setProducts((current) => current.map((item) => item.id === saved.id ? saved : item));
       setError("");
     } catch (cause) { setError(cause instanceof Error ? cause.message : "Không đổi được trạng thái bán."); }
@@ -148,13 +153,19 @@ function Products() {
     {notice && <p role="status" className="mb-4 rounded-xl bg-green-50 p-3 text-sm text-green-800">{notice}</p>}
 
     {formOpen && <form onSubmit={saveProduct} className="mb-5 rounded-2xl border border-border bg-white p-4 sm:p-6 gt-shadow-soft">
-      <div className="mb-4 flex items-start justify-between gap-3"><div><h2 className="font-bold">{editingId === null ? "Thêm sản phẩm mới" : "Sửa sản phẩm"}</h2><p className="mt-1 text-xs text-muted-foreground">Sản phẩm có ảnh, giá và tồn kho sẽ hiển thị cho khách khi cửa hàng hoạt động.</p></div><button type="button" onClick={() => setFormOpen(false)} aria-label="Đóng biểu mẫu" className="rounded-lg p-2 hover:bg-muted"><X className="h-4 w-4" /></button></div>
+      <div className="mb-4 flex items-start justify-between gap-3"><div><h2 className="font-bold">{editingId === null ? "Thêm sản phẩm mới" : "Sửa sản phẩm"}</h2><p className="mt-1 text-xs text-muted-foreground">Sản phẩm mới hoặc vừa chỉnh sửa sẽ chờ admin duyệt trước khi được mở bán.</p></div><button type="button" onClick={() => setFormOpen(false)} aria-label="Đóng biểu mẫu" className="rounded-lg p-2 hover:bg-muted"><X className="h-4 w-4" /></button></div>
       <div className="grid gap-4 md:grid-cols-[1fr_14rem]">
         <div className="grid gap-3 sm:grid-cols-2 content-start">
           <label className="block"><span className="text-xs font-semibold text-muted-foreground">Danh mục sản phẩm</span><select required value={draft.category} onChange={(event) => setDraft((current) => ({ ...current, category: event.target.value as ProductCategory }))} className="mt-1 h-11 w-full rounded-xl border border-border bg-white px-3 text-sm">{PRODUCT_CATEGORIES.map((category) => <option key={category.value} value={category.value}>{category.label}</option>)}</select><span className="mt-1 block text-[10px] text-muted-foreground">Chọn danh mục để khách lọc sản phẩm; nhập tên cụ thể ở ô bên cạnh.</span></label>
           <label className="block"><span className="text-xs font-semibold text-muted-foreground">Tên hiển thị</span><input required maxLength={255} value={draft.displayName} onChange={(event) => { const displayName = event.target.value; setDraft((current) => ({ ...current, displayName, fruitId: fruitIdForName(displayName, fruits) })); }} placeholder="Ví dụ: Xoài cát Hòa Lộc, Táo Fuji New Zealand" className="mt-1 h-11 w-full rounded-xl border border-border px-3 text-sm" /></label>
           <label className="block"><span className="text-xs font-semibold text-muted-foreground">Giá bán / kg (đ)</span><input required type="number" min="1" step="1" value={draft.pricePerKg} onChange={(event) => setDraft((current) => ({ ...current, pricePerKg: event.target.value }))} placeholder="49000" className="mt-1 h-11 w-full rounded-xl border border-border px-3 text-sm" /></label>
           <label className="block"><span className="text-xs font-semibold text-muted-foreground">Tồn kho (kg)</span><input required type="number" min="0" max="99999999.99" step="0.01" value={draft.stockKg} onChange={(event) => setDraft((current) => ({ ...current, stockKg: event.target.value }))} placeholder="10" className="mt-1 h-11 w-full rounded-xl border border-border px-3 text-sm" /></label>
+          <div className="sm:col-span-2 rounded-xl border border-emerald-100 bg-emerald-50/60 p-3"><h3 className="text-sm font-bold text-emerald-950">Thông tin truy xuất nguồn gốc</h3><p className="mt-1 text-xs text-muted-foreground">Các thông tin này được gửi cho admin kiểm tra trước khi sản phẩm được bán.</p><div className="mt-3 grid gap-3 sm:grid-cols-2">
+            <label className="block"><span className="text-xs font-semibold text-muted-foreground">Xuất xứ *</span><input required maxLength={512} value={draft.productOrigin} onChange={(event) => setDraft((current) => ({ ...current, productOrigin: event.target.value }))} placeholder="Ví dụ: Hòa Lộc, Tiền Giang" className="mt-1 h-10 w-full rounded-lg border border-border bg-white px-3 text-sm" /></label>
+            <label className="block"><span className="text-xs font-semibold text-muted-foreground">Nhà cung cấp / nhà sản xuất *</span><input required maxLength={255} value={draft.supplierName} onChange={(event) => setDraft((current) => ({ ...current, supplierName: event.target.value }))} placeholder="Tên đơn vị cung cấp hoặc nhà vườn" className="mt-1 h-10 w-full rounded-lg border border-border bg-white px-3 text-sm" /></label>
+            <label className="block"><span className="text-xs font-semibold text-muted-foreground">Mã lô *</span><input required maxLength={128} value={draft.lotCode} onChange={(event) => setDraft((current) => ({ ...current, lotCode: event.target.value }))} placeholder="Ví dụ: XOAI-2026-1029" className="mt-1 h-10 w-full rounded-lg border border-border bg-white px-3 text-sm" /></label>
+            <label className="block"><span className="text-xs font-semibold text-muted-foreground">Giấy tờ / thông tin chứng minh *</span><textarea required maxLength={4000} rows={2} value={draft.traceabilityProof} onChange={(event) => setDraft((current) => ({ ...current, traceabilityProof: event.target.value }))} placeholder="Số chứng nhận, giấy kiểm định hoặc đường dẫn hồ sơ" className="mt-1 w-full rounded-lg border border-border bg-white px-3 py-2 text-sm" /></label>
+          </div>{editingId !== null && products.find((product) => product.id === editingId)?.reviewNote && <p className="mt-2 rounded-lg bg-amber-100 p-2 text-xs text-amber-900"><strong>Admin yêu cầu bổ sung:</strong> {products.find((product) => product.id === editingId)?.reviewNote}</p>}</div>
         </div>
         <div>
           <p className="text-xs font-semibold text-muted-foreground">Ảnh sản phẩm</p>
@@ -169,7 +180,7 @@ function Products() {
     </form>}
 
     <div className="overflow-x-auto rounded-2xl border border-border bg-white gt-shadow-soft"><table className="w-full min-w-[820px] text-sm"><thead className="bg-[oklch(0.97_0.04_95)] text-xs uppercase text-muted-foreground"><tr><th className="p-3 text-left">Sản phẩm</th><th className="p-3 text-left">Danh mục</th><th className="p-3 text-right">Giá / kg</th><th className="p-3 text-right">Tồn (kg)</th><th className="p-3 text-left">Trạng thái</th><th className="p-3 text-right">Thao tác</th></tr></thead><tbody className="divide-y divide-border">
-      {products.map((product) => <tr key={product.id}><td className="p-3"><div className="flex items-center gap-3"><ProductThumb emoji={product.emoji} imageUrl={product.imageUrl} size="sm" alt={product.displayName} /><span className="font-semibold">{product.displayName}</span></div></td><td className="p-3">{categoryLabel(product.category)}</td><td className="p-3 text-right font-bold">{product.pricePerKg.toLocaleString("vi-VN")}đ</td><td className="p-3 text-right">{Number(product.stockKg).toLocaleString("vi-VN")}</td><td className="p-3"><StatusBadge status={statusLabel(product.status)} /></td><td className="p-3 text-right"><div className="inline-flex gap-2"><button type="button" onClick={() => beginEdit(product)} className="inline-flex items-center gap-1 rounded-lg border border-border px-2 py-1.5 text-xs font-semibold"><Pencil className="h-3 w-3" /> Sửa</button><button type="button" onClick={() => void toggleVisibility(product)} className="inline-flex items-center gap-1 rounded-lg border border-border px-2 py-1.5 text-xs font-semibold">{product.status === "HIDDEN" ? <Eye className="h-3 w-3" /> : <EyeOff className="h-3 w-3" />}{product.status === "HIDDEN" ? "Bật bán" : "Ẩn"}</button></div></td></tr>)}
+      {products.map((product) => <tr key={product.id}><td className="p-3"><div className="flex items-center gap-3"><ProductThumb emoji={product.emoji} imageUrl={product.imageUrl} size="sm" alt={product.displayName} /><span className="font-semibold">{product.displayName}</span></div></td><td className="p-3">{categoryLabel(product.category)}</td><td className="p-3 text-right font-bold">{product.pricePerKg.toLocaleString("vi-VN")}đ</td><td className="p-3 text-right">{Number(product.stockKg).toLocaleString("vi-VN")}</td><td className="p-3"><StatusBadge status={statusLabel(product.status, product.approvalStatus)} />{product.reviewNote && <p className="mt-1 max-w-48 text-[10px] text-amber-800">{product.reviewNote}</p>}</td><td className="p-3 text-right"><div className="inline-flex gap-2"><button type="button" onClick={() => beginEdit(product)} className="inline-flex items-center gap-1 rounded-lg border border-border px-2 py-1.5 text-xs font-semibold"><Pencil className="h-3 w-3" /> Sửa</button><button type="button" disabled={product.approvalStatus !== "APPROVED"} title={product.approvalStatus !== "APPROVED" ? "Chỉ bật bán sau khi admin duyệt" : undefined} onClick={() => void toggleVisibility(product)} className="inline-flex items-center gap-1 rounded-lg border border-border px-2 py-1.5 text-xs font-semibold disabled:cursor-not-allowed disabled:opacity-50">{product.approvalStatus !== "APPROVED" ? <LoaderCircle className="h-3 w-3" /> : product.status === "HIDDEN" ? <Eye className="h-3 w-3" /> : <EyeOff className="h-3 w-3" />}{product.approvalStatus !== "APPROVED" ? "Chờ duyệt" : product.status === "HIDDEN" ? "Bật bán" : "Ẩn"}</button></div></td></tr>)}
       {!loading && products.length === 0 && <tr><td colSpan={6} className="p-10 text-center text-muted-foreground">Cửa hàng chưa có sản phẩm. Bấm “Thêm sản phẩm” để bắt đầu đăng bán.</td></tr>}
       {loading && <tr><td colSpan={6} className="p-10 text-center text-muted-foreground"><LoaderCircle className="mx-auto h-5 w-5 animate-spin" /></td></tr>}
     </tbody></table></div>
