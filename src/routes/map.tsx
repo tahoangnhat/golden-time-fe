@@ -41,6 +41,10 @@ function normalizeStoreName(name: string) {
   return name.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]/g, "");
 }
 
+function storeMarkerHtml(background: string) {
+  return `<div style="display:grid;place-items:center;width:36px;height:36px;border:3px solid white;border-radius:50%;background:${background};color:white;box-shadow:0 2px 8px #0005"><svg aria-hidden="true" viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 10 9-7 9 7"/><path d="M5 9.5V21h14V9.5"/><path d="M9 21v-7h6v7"/></svg></div>`;
+}
+
 function MapScreen() {
   const [shops, setShops] = useState<Shop[]>([]);
   const [location, setLocation] = useState<Coordinates | null>(null);
@@ -207,7 +211,7 @@ function MapScreen() {
         popup.appendChild(distance);
       }
       leaflet.marker(point, {
-        icon: leaflet.divIcon({ className: "", html: '<div style="display:grid;place-items:center;width:36px;height:36px;border:3px solid white;border-radius:50%;background:#e47d24;color:white;font-size:18px;box-shadow:0 2px 8px #0005">🍎</div>', iconSize: [36, 36], iconAnchor: [18, 18] }),
+        icon: leaflet.divIcon({ className: "", html: storeMarkerHtml("#e47d24"), iconSize: [36, 36], iconAnchor: [18, 18] }),
         title: shop.name,
       }).bindPopup(popup).on("click", () => setSelectedShopId(shop.id)).addTo(layer);
     });
@@ -233,7 +237,7 @@ function MapScreen() {
         popup.appendChild(distance);
       }
       leaflet.marker(point, {
-        icon: leaflet.divIcon({ className: "", html: '<div style="display:grid;place-items:center;width:36px;height:36px;border:3px solid white;border-radius:50%;background:#7c3aed;color:white;font-size:18px;box-shadow:0 2px 8px #0005">🛒</div>', iconSize: [36, 36], iconAnchor: [18, 18] }),
+        icon: leaflet.divIcon({ className: "", html: storeMarkerHtml("#7c3aed"), iconSize: [36, 36], iconAnchor: [18, 18] }),
         title: shop.name,
       }).bindPopup(popup).addTo(layer);
     });

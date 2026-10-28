@@ -26,7 +26,7 @@ function BusinessWallet() {
     {error && <p role="alert" className="mb-4 rounded-xl bg-red-50 p-3 text-sm text-red-700">{error}</p>}
     {loading ? <div className="rounded-2xl border border-border bg-white p-8 text-center text-sm text-muted-foreground">Đang tải số dư…</div> : wallet && <>
       <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <article className="rounded-2xl border border-border bg-white p-5"><p className="text-sm text-muted-foreground">Số dư chờ thanh toán</p><p className="mt-2 text-2xl font-extrabold">{money(wallet.balance)}</p><p className="mt-1 text-xs text-muted-foreground">Sàn sẽ thanh toán theo chính sách đối soát.</p></article>
+        <article className="rounded-2xl border border-border bg-white p-5"><p className="text-sm text-muted-foreground">Số dư chờ thanh toán</p><p className="mt-2 text-2xl font-extrabold">{money(wallet.balance)}</p><p className="mt-1 text-xs text-muted-foreground">Doanh thu được ghi nhận khi khách xác nhận đã nhận hàng và thanh toán đã được đối soát.</p></article>
         <article className="rounded-2xl border border-border bg-white p-5"><p className="text-sm text-muted-foreground">Doanh thu đã thu</p><p className="mt-2 text-2xl font-extrabold">{money(wallet.grossSales)}</p></article>
         <article className="rounded-2xl border border-border bg-white p-5"><p className="text-sm text-muted-foreground">Hoa hồng đã khấu trừ</p><p className="mt-2 text-2xl font-extrabold">{money(wallet.commissions)}</p></article>
         <article className="rounded-2xl border border-border bg-white p-5"><p className="text-sm text-muted-foreground">Đã được thanh toán</p><p className="mt-2 text-2xl font-extrabold">{money(wallet.payouts)}</p></article>

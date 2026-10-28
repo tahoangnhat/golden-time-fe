@@ -21,6 +21,7 @@ import { Route as HomeRouteImport } from './routes/home'
 import { Route as KnowledgeRouteImport } from './routes/knowledge'
 import { Route as MapRouteImport } from './routes/map'
 import { Route as NutritionRouteImport } from './routes/nutrition'
+import { Route as OrdersRouteImport } from './routes/orders'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as ResultRouteImport } from './routes/result'
@@ -120,6 +121,11 @@ const MapRoute = MapRouteImport.update({
 const NutritionRoute = NutritionRouteImport.update({
   id: '/nutrition',
   path: '/nutrition',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OrdersRoute = OrdersRouteImport.update({
+  id: '/orders',
+  path: '/orders',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PrivacyRoute = PrivacyRouteImport.update({
@@ -336,6 +342,7 @@ export interface FileRoutesByFullPath {
   '/knowledge': typeof KnowledgeRouteWithChildren
   '/map': typeof MapRoute
   '/nutrition': typeof NutritionRoute
+  '/orders': typeof OrdersRoute
   '/privacy': typeof PrivacyRoute
   '/profile': typeof ProfileRoute
   '/result': typeof ResultRoute
@@ -389,6 +396,7 @@ export interface FileRoutesByTo {
   '/knowledge': typeof KnowledgeRouteWithChildren
   '/map': typeof MapRoute
   '/nutrition': typeof NutritionRoute
+  '/orders': typeof OrdersRoute
   '/privacy': typeof PrivacyRoute
   '/profile': typeof ProfileRoute
   '/result': typeof ResultRoute
@@ -443,6 +451,7 @@ export interface FileRoutesById {
   '/knowledge': typeof KnowledgeRouteWithChildren
   '/map': typeof MapRoute
   '/nutrition': typeof NutritionRoute
+  '/orders': typeof OrdersRoute
   '/privacy': typeof PrivacyRoute
   '/profile': typeof ProfileRoute
   '/result': typeof ResultRoute
@@ -499,6 +508,7 @@ export interface FileRouteTypes {
     | '/knowledge'
     | '/map'
     | '/nutrition'
+    | '/orders'
     | '/privacy'
     | '/profile'
     | '/result'
@@ -552,6 +562,7 @@ export interface FileRouteTypes {
     | '/knowledge'
     | '/map'
     | '/nutrition'
+    | '/orders'
     | '/privacy'
     | '/profile'
     | '/result'
@@ -605,6 +616,7 @@ export interface FileRouteTypes {
     | '/knowledge'
     | '/map'
     | '/nutrition'
+    | '/orders'
     | '/privacy'
     | '/profile'
     | '/result'
@@ -660,6 +672,7 @@ export interface RootRouteChildren {
   KnowledgeRoute: typeof KnowledgeRouteWithChildren
   MapRoute: typeof MapRoute
   NutritionRoute: typeof NutritionRoute
+  OrdersRoute: typeof OrdersRoute
   PrivacyRoute: typeof PrivacyRoute
   ProfileRoute: typeof ProfileRoute
   ResultRoute: typeof ResultRoute
@@ -754,6 +767,13 @@ declare module '@tanstack/react-router' {
       path: '/nutrition'
       fullPath: '/nutrition'
       preLoaderRoute: typeof NutritionRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/orders': {
+      id: '/orders'
+      path: '/orders'
+      fullPath: '/orders'
+      preLoaderRoute: typeof OrdersRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/privacy': {
@@ -1152,6 +1172,7 @@ const rootRouteChildren: RootRouteChildren = {
   KnowledgeRoute: KnowledgeRouteWithChildren,
   MapRoute: MapRoute,
   NutritionRoute: NutritionRoute,
+  OrdersRoute: OrdersRoute,
   PrivacyRoute: PrivacyRoute,
   ProfileRoute: ProfileRoute,
   ResultRoute: ResultRoute,

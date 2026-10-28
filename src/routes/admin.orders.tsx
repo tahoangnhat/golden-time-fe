@@ -14,7 +14,7 @@ function AdminOrders() {
   const [busyOrderId, setBusyOrderId] = useState<number | null>(null);
   useEffect(() => { api.adminOrders().then(setOrders).catch((cause) => setError(cause instanceof Error ? cause.message : "Không tải được đơn hàng.")); }, []);
   const filtered = useMemo(() => orders.filter((order) => `${order.id} ${order.customer} ${order.shop}`.toLowerCase().includes(query.toLowerCase())), [orders, query]);
-  const statusLabel = (status: string) => ({ PENDING: "Chờ xác nhận", CONFIRMED: "Đã xác nhận", CANCELLED: "Đã hủy" }[status] ?? status);
+  const statusLabel = (status: string) => ({ PENDING: "Chờ xác nhận", CONFIRMED: "Đã xác nhận", IN_TRANSIT: "Đang giao", DELIVERED: "Đã giao", CANCELLED: "Đã hủy" }[status] ?? status);
   const paymentStatusLabel = (status: string) => ({ UNPAID: "Chưa thu tiền", PENDING: "Chờ PayOS", PAID: "Đã thanh toán", CANCELLED: "Đã hủy thanh toán", FAILED: "Thanh toán lỗi" }[status] ?? status);
   async function reconcileCod(order: AdminOrder) {
     if (!window.confirm(`Xác nhận sàn đã thực sự thu tiền COD của đơn #${order.id}? Chỉ tiếp tục nếu tiền đã được bàn giao cho sàn.`)) return;
@@ -23,7 +23,9 @@ function AdminOrders() {
     try {
       await api.collectCod(order.id, reference);
       setOrders(await api.adminOrders());
-      setNotice(`Đã ghi nhận thu tiền COD đơn #${order.id} vào ví của cửa hàng ${order.shop}.`);
+      setNotice(order.status === "DELIVERED"
+        ? `Đã đối soát COD và ghi nhận doanh thu đơn #${order.id} vào ví của cửa hàng ${order.shop}.`
+        : `Đã đối soát COD đơn #${order.id}. Doanh thu sẽ vào ví sau khi khách xác nhận đã nhận hàng.`);
     } catch (cause) { setError(cause instanceof Error ? cause.message : "Không đối soát được đơn COD."); }
     finally { setBusyOrderId(null); }
   }

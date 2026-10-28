@@ -64,7 +64,7 @@ function Profile() {
 
         <div className="mt-5 bg-white rounded-2xl gt-shadow-soft border border-border divide-y divide-border">
           {menu.map(({ icon: Icon, label, value }) => (
-            <button key={label} className="w-full flex items-center gap-3 p-4 text-left">
+            <button key={label} onClick={() => { if (label === "Lịch sử mua hàng") nav({ to: "/orders" }); }} className="w-full flex items-center gap-3 p-4 text-left">
               <span className="h-9 w-9 rounded-xl bg-cream grid place-items-center text-primary"><Icon className="h-4 w-4" /></span>
               <span className="flex-1 font-semibold text-sm">{label}</span>
               <span className="text-xs text-muted-foreground">{value}</span>
