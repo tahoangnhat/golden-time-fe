@@ -125,7 +125,7 @@ export function AdminShell({
             </button>
             <Link to="/admin/wallets" title="Mở quản lý ví và hoa hồng" className="flex h-9 items-center gap-2 rounded-xl border border-border bg-cream px-2.5 hover:border-primary/40 hover:bg-primary/5">
               <WalletCards className="h-4 w-4 shrink-0 text-primary" />
-              <span className="leading-tight"><span className="block text-[9px] text-muted-foreground">Tổng ví Shop</span><strong className="block max-w-28 truncate text-xs">{walletTotal === null ? "—" : `${walletTotal.toLocaleString("vi-VN")}₫`}</strong></span>
+              <span className="leading-tight"><span className="block text-[9px] text-muted-foreground">Tổng phải trả Shop</span><strong className="block max-w-28 truncate text-xs">{walletTotal === null ? "—" : `${walletTotal.toLocaleString("vi-VN")}₫`}</strong></span>
             </Link>
             <div className="hidden sm:flex items-center gap-2 pl-3 border-l border-border">
               <div className="h-9 w-9 rounded-full gt-gradient grid place-items-center text-white font-bold text-sm">

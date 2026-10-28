@@ -62,7 +62,7 @@ export function BusinessShell({
       try {
         const profile = await api.shopProfile();
         if (active) { setShop(profile); setAuthorized(true); }
-        api.shopWallet().then((wallet) => { if (active) setWalletBalance(wallet.balance); }).catch(() => undefined);
+        api.shopWallet().then((wallet) => { if (active) setWalletBalance(wallet.availableBalance); }).catch(() => undefined);
       } catch {
         if (active) navigate({ to: "/business/login", replace: true });
       }
