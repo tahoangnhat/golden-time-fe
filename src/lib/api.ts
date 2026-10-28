@@ -33,6 +33,8 @@ export type Shop = {
   productCount: number; distanceKm?: number | null;
 };
 export type PaymentMethods = { codEnabled: boolean; payosEnabled: boolean };
+export type GhnAddress = { id: number; name: string };
+export type GhnShippingQuote = { shippingFee: number; expectedDeliveryAt?: string | null };
 export type NearbyChainShop = { id: string; name: string; address?: string | null; latitude: number; longitude: number };
 export type PriceQuote = { retailerCode: string; retailerName: string; pricePerKg: number; sourceUrl: string; fetchedAt: string };
 export type PriceComparison = {
@@ -62,9 +64,11 @@ export type OrderDetail = {
   id: number; shopId: number; shopName: string; status: string; paymentStatus: string; subtotal: number; shippingFee: number;
   total: number; paymentMethod: string; checkoutUrl?: string | null; qrCode?: string | null; paymentExpiresAt?: string | null;
   note?: string | null; deliveryName: string; deliveryPhone: string;
-  deliveryAddress: string; createdAt: string; items: { productId: number; name: string; emoji: string; quantityKg: number; unitPrice: number; lineTotal: number }[];
+  deliveryAddress: string; createdAt: string; trackingCode?: string | null; carrierStatus?: string | null;
+  carrierFee: number; expectedDeliveryAt?: string | null;
+  items: { productId: number; name: string; emoji: string; quantityKg: number; unitPrice: number; lineTotal: number }[];
 };
-export type OrderSummary = { id: number; shopId: number; shopName: string; status: string; total: number; paymentMethod: string; paymentStatus: string; createdAt: string; itemCount: number };
+export type OrderSummary = { id: number; shopId: number; shopName: string; status: string; total: number; paymentMethod: string; paymentStatus: string; createdAt: string; itemCount: number; trackingCode?: string | null; carrierStatus?: string | null; expectedDeliveryAt?: string | null };
 export type Review = { id: number; shopId: number; shopName: string; userId: number; author: string; rating: number; comment: string; createdAt: string; purchased: boolean };
 export type Article = {
   id: number; slug: string; title: string; category: string; emoji: string; gradient: string;
@@ -92,11 +96,11 @@ export type AdminNutrition = { id: number; slug: string; name: string; emoji: st
 export type AdminTrace = { batchCode: string; product: string; shop?: string | null; supplier?: string | null; area?: string | null; harvestDate?: string | null; intakeDate?: string | null; certificates?: string | null; certified: boolean; farm?: string | null; quantityKg?: number | null; packagingDate?: string | null; qualityCheckedAt?: string | null; qualityResult?: string | null; qualityScore?: number | null; qualityNote?: string | null; transportDate?: string | null; transportInfo?: string | null; batchStatus?: string | null };
 export type AdminPriceSource = { id: number; retailer: string; fruit: string; productName: string; sourceUrl: string; enabled: boolean; lastAttemptAt?: string | null; lastSuccessAt?: string | null; lastError?: string | null };
 export type AdminOverview = { users: number; shops: number; orders: number; orderValueToday: number; scansToday: number; confirmedPercent: number; topFruits: { name: string; scans: number }[]; topShops: { name: string; orders: number; orderValue: number }[]; pendingOrders: number; daily: { date: string; orderValue: number; scans: number }[] };
-export type ShopProfile = { id: number; name: string; address?: string | null; latitude: number; longitude: number; status: string; description?: string | null; rating: number; reviewCount: number; businessEmail?: string | null; businessPhone?: string | null; taxCode?: string | null; representativeName?: string | null; representativePhone?: string | null; logoUrl?: string | null };
+export type ShopProfile = { id: number; name: string; address?: string | null; latitude: number; longitude: number; status: string; description?: string | null; rating: number; reviewCount: number; businessEmail?: string | null; businessPhone?: string | null; taxCode?: string | null; representativeName?: string | null; representativePhone?: string | null; logoUrl?: string | null; pickupProvinceName?: string | null; pickupWardName?: string | null };
 export type WalletSummary = { shopId: number; shopName: string; commissionTier: "NEW_SHOP" | "STANDARD" | "LARGE_PARTNER" | "CUSTOM"; commissionRate: number; approvedAt?: string | null; balance: number; grossSales: number; commissions: number; payouts: number };
 export type WalletTransaction = { id: number; orderId?: number | null; entryType: "ORDER_SALE" | "COMMISSION_FEE" | "PAYOUT"; amount: number; grossAmount?: number | null; commissionRate?: number | null; commissionAmount?: number | null; externalReference?: string | null; description?: string | null; createdAt: string };
 export type ShopProduct = { id: number; fruitId: number | null; fruitName: string; emoji: string; category?: string | null; seasonal: boolean; prepared: boolean; displayName: string; pricePerKg: number; stockKg: number; aiScore?: number | null; status: string; batchCode?: string | null; imageUrl?: string | null; imageUrls?: string[] };
-export type ShopOrder = { id: number; customer: string; total: number; subtotal: number; shippingFee: number; status: string; payment: string; paymentStatus: string; deliveryName?: string | null; deliveryPhone?: string | null; deliveryAddress?: string | null; note?: string | null; createdAt: string; items: { name: string; emoji: string; quantityKg: number; unitPrice: number; lineTotal: number }[] };
+export type ShopOrder = { id: number; customer: string; total: number; subtotal: number; shippingFee: number; status: string; payment: string; paymentStatus: string; deliveryName?: string | null; deliveryPhone?: string | null; deliveryAddress?: string | null; note?: string | null; createdAt: string; trackingCode?: string | null; carrierStatus?: string | null; carrierFee: number; expectedDeliveryAt?: string | null; items: { name: string; emoji: string; quantityKg: number; unitPrice: number; lineTotal: number }[] };
 export type ShopReview = { id: number; author: string; rating: number; comment: string; createdAt: string; purchased: boolean };
 export type ShopTrace = { batchCode: string; product: string; origin?: string | null; supplier?: string | null; certified: boolean; harvestDate?: string | null; intakeDate?: string | null; certificates?: string | null; storageTemperature?: string | null; storageHumidity?: string | null; publicNote?: string | null };
 export type Farm = { id: number; shopId: number; name: string; address: string; managerName: string; phone: string; fruitTypes: string; areaHectares?: number | null; certifications?: string | null; certificationImageUrl?: string | null; imageUrl?: string | null; imageUrls?: string[]; status: "PENDING" | "APPROVED" | "REJECTED"; rejectionReason?: string | null; createdAt: string; updatedAt: string; reviewedAt?: string | null; shopName?: string | null };
@@ -268,7 +272,10 @@ export const api = {
   scans: () => request<ScanResult[]>("/scans/mine"),
   scanById: (id: number) => request<ScanResult>(`/scans/${id}`),
   trace: (batchCode: string) => request<BatchTrace>(`/trace/${encodeURIComponent(batchCode)}`),
-  createOrder: (payload: { items: { productId: number; quantityKg: number }[]; paymentMethod: string; deliveryName: string; deliveryPhone: string; deliveryAddress: string; note?: string }) => request<OrderDetail>("/orders", { method: "POST", body: JSON.stringify(payload) }),
+  createOrder: (payload: { items: { productId: number; quantityKg: number }[]; paymentMethod: string; deliveryName: string; deliveryPhone: string; deliveryAddress: string; deliveryProvinceName: string; deliveryWardName: string; note?: string }) => request<OrderDetail>("/orders", { method: "POST", body: JSON.stringify(payload) }),
+  ghnProvinces: () => request<GhnAddress[]>("/shipping/ghn/provinces"),
+  ghnWards: (provinceId: number) => request<GhnAddress[]>(`/shipping/ghn/wards?provinceId=${provinceId}`),
+  ghnQuote: (payload: { items: { productId: number; quantityKg: number }[]; paymentMethod: string; deliveryName: string; deliveryPhone: string; deliveryAddress: string; deliveryProvinceName: string; deliveryWardName: string }) => request<GhnShippingQuote>("/shipping/ghn/quote", { method: "POST", body: JSON.stringify(payload) }),
   order: (id: number) => request<OrderDetail>(`/orders/${id}`),
   confirmOrderReceived: (id: number) => request<{ walletCredited: boolean }>(`/orders/${id}/confirm-received`, { method: "POST" }),
   cancelPayment: (id: number) => request<void>(`/orders/${id}/cancel-payment`, { method: "POST" }),
@@ -338,7 +345,7 @@ export const api = {
   adminPriceSources: () => request<AdminPriceSource[]>("/admin/prices/sources"),
   refreshPrices: () => request<{ sources: number; updated: number; failed: number; completedAt: string }>("/admin/prices/refresh", { method: "POST" }),
   shopProfile: () => request<ShopProfile>("/shop/profile"),
-  updateShopProfile: (payload: { name?: string; address: string; latitude: number; longitude: number; businessEmail?: string; businessPhone?: string; taxCode?: string; representativeName?: string; representativePhone?: string; logoUrl?: string }) => request<ShopProfile>("/shop/profile", { method: "PUT", body: JSON.stringify(payload) }),
+  updateShopProfile: (payload: { name?: string; address: string; latitude: number; longitude: number; businessEmail?: string; businessPhone?: string; taxCode?: string; representativeName?: string; representativePhone?: string; logoUrl?: string; pickupProvinceName?: string; pickupWardName?: string }) => request<ShopProfile>("/shop/profile", { method: "PUT", body: JSON.stringify(payload) }),
   shopWallet: () => request<WalletSummary>("/shop/wallet"),
   shopWalletTransactions: () => request<WalletTransaction[]>("/shop/wallet/transactions"),
   adminWallets: () => request<WalletSummary[]>("/admin/wallets"),

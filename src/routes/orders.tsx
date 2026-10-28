@@ -25,6 +25,14 @@ const paymentLabel: Record<string, string> = {
   FAILED: "Thanh toán lỗi",
 };
 
+const carrierStatusLabel: Record<string, string> = {
+  ready_to_pick: "Chờ GHN lấy hàng", picking: "GHN đang lấy hàng", picked: "GHN đã lấy hàng",
+  storing: "Đang ở kho GHN", transporting: "Đang trung chuyển", sorting: "Đang phân loại",
+  delivering: "GHN đang giao", delivered: "GHN báo đã giao", delivery_fail: "Giao chưa thành công",
+  waiting_to_return: "Chờ hoàn hàng", returning: "Đang hoàn hàng", returned: "Đã hoàn về shop",
+  cancel: "Đơn GHN đã hủy", exception: "GHN cần xử lý thêm",
+};
+
 function Orders() {
   const [orders, setOrders] = useState<OrderSummary[]>([]);
   const [loading, setLoading] = useState(true);
@@ -61,7 +69,7 @@ function Orders() {
       await refresh();
       setNotice(result.walletCredited
         ? `Bạn đã xác nhận nhận đơn #${order.id}. Doanh thu của cửa hàng đã được ghi nhận.`
-        : `Bạn đã xác nhận nhận đơn #${order.id}. Đơn COD sẽ được ghi nhận vào ví cửa hàng sau khi sàn đối soát tiền.`);
+        : `Bạn đã xác nhận nhận đơn #${order.id}. Đơn COD sẽ vào ví cửa hàng sau khi GHN chuyển tiền về sàn.`);
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : "Không thể xác nhận đã nhận hàng.");
     } finally {
@@ -118,6 +126,7 @@ function Orders() {
                     <span className="text-muted-foreground">{order.paymentMethod} · {paymentLabel[order.paymentStatus] ?? order.paymentStatus}</span>
                     <strong className="text-base">{order.total.toLocaleString("vi-VN")}đ</strong>
                   </div>
+                  {order.trackingCode && <div className="mt-3 rounded-xl border border-blue-100 bg-blue-50 p-3 text-xs text-blue-900"><p><b>GHN · Mã vận đơn:</b> <span className="font-mono font-bold">{order.trackingCode}</span></p>{order.carrierStatus && <p className="mt-1">Trạng thái: {carrierStatusLabel[order.carrierStatus] ?? order.carrierStatus}</p>}{order.expectedDeliveryAt && <p className="mt-1">Dự kiến giao: {new Date(order.expectedDeliveryAt).toLocaleString("vi-VN")}</p>}</div>}
                   <button type="button" aria-expanded={expandedOrderId === order.id} onClick={() => void toggleDetails(order.id)} className="mt-3 flex w-full items-center justify-between rounded-xl bg-cream px-3 py-2.5 text-sm font-semibold">
                     <span>{expandedOrderId === order.id ? "Ẩn sản phẩm" : "Xem sản phẩm đã mua"}</span><ChevronDown className={`h-4 w-4 transition-transform ${expandedOrderId === order.id ? "rotate-180" : ""}`} />
                   </button>
@@ -130,7 +139,7 @@ function Orders() {
                   </div>}
                   {delivering && <div className="mt-3 rounded-xl bg-blue-50 p-3 text-sm text-blue-900">
                     <div className="flex items-center gap-2 font-semibold"><Truck className="h-4 w-4" /> Cửa hàng đã gửi đơn đi</div>
-                    <p className="mt-1 text-xs text-blue-800">Khi đã nhận đủ hàng, hãy xác nhận bên dưới.</p>
+                    <p className="mt-1 text-xs text-blue-800">{order.carrierStatus === "delivered" ? "GHN báo đã giao. Nếu bạn đã nhận đủ hàng, xác nhận bên dưới." : "Khi đã nhận đủ hàng, hãy xác nhận bên dưới."}</p>
                     <button type="button" disabled={busyOrderId === order.id} onClick={() => void confirmReceived(order)} className="mt-3 flex w-full items-center justify-center gap-2 rounded-xl gt-gradient py-2.5 text-sm font-bold text-white disabled:opacity-50">
                       <CheckCircle2 className="h-4 w-4" />{busyOrderId === order.id ? "Đang xác nhận…" : "Tôi đã nhận được hàng"}
                     </button>

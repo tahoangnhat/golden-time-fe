@@ -50,6 +50,7 @@ export function BusinessShell({
   const [open, setOpen] = useState(false);
   const [shop, setShop] = useState<ShopProfile | null>(null);
   const [authorized, setAuthorized] = useState(false);
+  const [walletBalance, setWalletBalance] = useState<number | null>(null);
   useEffect(() => {
     let active = true;
     api.me().then(async (user) => {
@@ -61,6 +62,7 @@ export function BusinessShell({
       try {
         const profile = await api.shopProfile();
         if (active) { setShop(profile); setAuthorized(true); }
+        api.shopWallet().then((wallet) => { if (active) setWalletBalance(wallet.balance); }).catch(() => undefined);
       } catch {
         if (active) navigate({ to: "/business/login", replace: true });
       }
@@ -119,6 +121,10 @@ export function BusinessShell({
             <button className="relative h-9 w-9 grid place-items-center rounded-lg hover:bg-muted">
               <Bell className="h-5 w-5" />
             </button>
+            <Link to="/business/wallet" title="Mở ví doanh thu" className="flex h-9 items-center gap-2 rounded-xl border border-border bg-cream px-2.5 hover:border-primary/40 hover:bg-primary/5">
+              <WalletCards className="h-4 w-4 shrink-0 text-primary" />
+              <span className="leading-tight"><span className="block text-[9px] text-muted-foreground">Số dư ví</span><strong className="block max-w-28 truncate text-xs">{walletBalance === null ? "—" : `${walletBalance.toLocaleString("vi-VN")}₫`}</strong></span>
+            </Link>
             <div className="hidden sm:flex items-center gap-2 pl-3 border-l border-border">
               <div className="h-9 w-9 rounded-full gt-gradient grid place-items-center text-white font-bold text-sm">
                 {(shop?.name ?? "").split(/\s+/).slice(0, 2).map((word) => word[0]).join("") || "—"}

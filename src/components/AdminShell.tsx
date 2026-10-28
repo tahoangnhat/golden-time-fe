@@ -57,6 +57,7 @@ export function AdminShell({
   const [open, setOpen] = useState(false);
   const [user, setUser] = useState<UserProfile | null>(null);
   const [authorized, setAuthorized] = useState(false);
+  const [walletTotal, setWalletTotal] = useState<number | null>(null);
   useEffect(() => {
     let active = true;
     api.me().then((profile) => {
@@ -67,6 +68,9 @@ export function AdminShell({
       }
       setUser(profile);
       setAuthorized(true);
+      api.adminWallets().then((wallets) => {
+        if (active) setWalletTotal(wallets.reduce((total, wallet) => total + wallet.balance, 0));
+      }).catch(() => undefined);
     }).catch(() => navigate({ to: "/admin/login", replace: true }));
     return () => { active = false; };
   }, [navigate]);
@@ -119,6 +123,10 @@ export function AdminShell({
             <button className="relative h-9 w-9 grid place-items-center rounded-lg hover:bg-muted">
               <Bell className="h-5 w-5" />
             </button>
+            <Link to="/admin/wallets" title="Mở quản lý ví và hoa hồng" className="flex h-9 items-center gap-2 rounded-xl border border-border bg-cream px-2.5 hover:border-primary/40 hover:bg-primary/5">
+              <WalletCards className="h-4 w-4 shrink-0 text-primary" />
+              <span className="leading-tight"><span className="block text-[9px] text-muted-foreground">Tổng ví Shop</span><strong className="block max-w-28 truncate text-xs">{walletTotal === null ? "—" : `${walletTotal.toLocaleString("vi-VN")}₫`}</strong></span>
+            </Link>
             <div className="hidden sm:flex items-center gap-2 pl-3 border-l border-border">
               <div className="h-9 w-9 rounded-full gt-gradient grid place-items-center text-white font-bold text-sm">
                 {user?.fullName.split(/\s+/).slice(0, 2).map((word) => word[0]).join("") || "—"}
