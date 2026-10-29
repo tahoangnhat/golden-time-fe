@@ -52,11 +52,13 @@ export function PhoneShell({
     return <div className="min-h-screen grid place-items-center bg-cream text-sm text-muted-foreground">Đang xác thực tài khoản…</div>;
   }
   return (
-    <div className="min-h-screen w-full flex items-center justify-center bg-[radial-gradient(circle_at_top,_oklch(0.95_0.08_120),_oklch(0.97_0.04_95))] py-6 px-4">
-      <div className={cn("relative w-full max-w-[420px] min-h-[860px] rounded-[2.5rem] overflow-hidden gt-shadow border border-border", bg)}>
-        <div className={cn("pb-24 min-h-[860px]", hideNav && "pb-0")}>{children}</div>
+    <div className="min-h-dvh w-full flex items-center justify-center bg-[radial-gradient(circle_at_top,_oklch(0.95_0.08_120),_oklch(0.97_0.04_95))] px-4 py-6 max-md:p-0">
+      <div className={cn("relative flex h-[min(860px,calc(100dvh-3rem))] min-h-[min(600px,calc(100dvh-3rem))] w-full max-w-[420px] flex-col overflow-hidden rounded-[2.5rem] border border-border gt-shadow max-md:h-dvh max-md:min-h-0 max-md:max-w-none max-md:rounded-none max-md:border-0", bg)}>
+        <main className="min-h-0 flex-1 overflow-x-hidden overflow-y-auto overscroll-y-contain">
+          {children}
+        </main>
         {!hideNav && (
-          <nav className="absolute bottom-0 inset-x-0 bg-white/95 backdrop-blur border-t border-border px-2 pt-2 pb-3">
+          <nav className="shrink-0 bg-white/95 backdrop-blur border-t border-border px-2 pt-2 pb-3">
             <ul className="flex items-center justify-between">
               {tabs.map(({ to, label, icon: Icon }) => {
                 const active = pathname === to || pathname.startsWith(`${to}/`);
@@ -87,7 +89,7 @@ export function PhoneShell({
 
 export function StatusBar({ title, right }: { title?: string; right?: ReactNode }) {
   return (
-    <div className="flex items-center justify-between px-5 pt-5 pb-2 text-xs text-foreground/70 font-medium">
+    <div className="sticky top-0 z-20 flex items-center justify-between bg-cream/95 px-5 pt-5 pb-2 text-xs text-foreground/70 font-medium backdrop-blur">
       <span>9:41</span>
       {title && <span className="text-foreground font-semibold text-[13px]">{title}</span>}
       <div className="flex items-center gap-1">{right ?? <span>100%</span>}</div>
