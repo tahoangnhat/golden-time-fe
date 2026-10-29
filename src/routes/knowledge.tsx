@@ -16,7 +16,6 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { SiteShell } from "@/components/SiteShell";
-import { ARTICLE_CATEGORIES } from "@/lib/site-data";
 import { api, type Article } from "@/lib/api";
 import { ArticleCard } from "./index";
 
@@ -30,11 +29,12 @@ const CATEGORY_ICONS: Record<string, LucideIcon> = {
   "Dinh dưỡng": Apple,
   "Chọn trái cây": Leaf,
   "Bảo quản": PackageCheck,
+  "Sử dụng trái cây": Utensils,
+  "Sức khỏe an toàn": HeartPulse,
   "Mua sắm thông minh": ShoppingBasket,
   "Theo mùa": CalendarDays,
-  "Sức khỏe": HeartPulse,
-  "Sử dụng": Utensils,
 };
+const FEATURED_CATEGORIES = ["Dinh dưỡng", "Chọn trái cây", "Bảo quản", "Sử dụng trái cây", "Sức khỏe an toàn"] as const;
 
 function KnowledgePage() {
   const pathname = useRouterState({ select: (state) => state.location.pathname });
@@ -60,9 +60,8 @@ function KnowledgeIndexPage() {
 
   const categories = useMemo(() => {
     const articleCategories = new Set(articles.map((article) => article.category.trim()).filter(Boolean));
-    const preferredOrder = ARTICLE_CATEGORIES.filter((item) => item !== "Tất cả" && articleCategories.has(item));
-    const additionalCategories = [...articleCategories].filter((item) => !ARTICLE_CATEGORIES.includes(item as typeof ARTICLE_CATEGORIES[number]));
-    return ["Tất cả", ...preferredOrder, ...additionalCategories];
+    const additionalCategories = [...articleCategories].filter((item) => !FEATURED_CATEGORIES.includes(item as typeof FEATURED_CATEGORIES[number]));
+    return ["Tất cả", ...FEATURED_CATEGORIES, ...additionalCategories];
   }, [articles]);
 
   const filteredArticles = useMemo(() => articles.filter((article) => {

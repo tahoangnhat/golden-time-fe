@@ -1,11 +1,12 @@
 export const ARTICLE_CATEGORIES = [
   "Tất cả",
-  "Chọn trái cây",
   "Dinh dưỡng",
+  "Chọn trái cây",
   "Bảo quản",
+  "Sử dụng trái cây",
+  "Sức khỏe an toàn",
   "Mua sắm thông minh",
   "Theo mùa",
-  "Sức khỏe",
 ] as const;
 
 export type AppUpdate = {

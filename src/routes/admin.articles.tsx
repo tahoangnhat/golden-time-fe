@@ -7,6 +7,7 @@ import {
 import { AdminShell, StatCard } from "@/components/AdminShell";
 import { ArticleRichEditor } from "@/components/ArticleRichEditor";
 import { api, formatDate, type AdminArticle, type ArticleWritePayload } from "@/lib/api";
+import { ARTICLE_CATEGORIES } from "@/lib/site-data";
 
 export const Route = createFileRoute("/admin/articles")({ component: AdminArticles });
 
@@ -211,7 +212,7 @@ function ArticleEditorPanel({
           <p className="mt-3 text-xs leading-5 text-muted-foreground">{form.published ? "Bài viết hiện đang hiển thị công khai. Lưu bản nháp sẽ gỡ bài khỏi website." : "Ngày đăng được ghi tự động theo giờ Việt Nam khi bạn xuất bản."}</p>
         </Panel>
         <Panel title="Thông tin bài viết">
-          <label className="block"><span className="text-xs font-semibold text-muted-foreground">Chuyên mục</span><input list="article-categories" value={form.category} onChange={(event) => onUpdate("category", event.target.value)} maxLength={128} placeholder="Dinh dưỡng" className="mt-1 h-10 w-full rounded-xl border border-border px-3 text-sm" /><datalist id="article-categories">{["Chọn trái cây", "Dinh dưỡng", "Bảo quản", "Mua sắm thông minh", "Theo mùa", "Sức khỏe"].map((category) => <option key={category} value={category} />)}</datalist></label>
+          <label className="block"><span className="text-xs font-semibold text-muted-foreground">Chuyên mục</span><input list="article-categories" value={form.category} onChange={(event) => onUpdate("category", event.target.value)} maxLength={128} placeholder="Dinh dưỡng" className="mt-1 h-10 w-full rounded-xl border border-border px-3 text-sm" /><datalist id="article-categories">{ARTICLE_CATEGORIES.filter((category) => category !== "Tất cả").map((category) => <option key={category} value={category} />)}</datalist></label>
           <label className="mt-3 block"><span className="text-xs font-semibold text-muted-foreground">Tác giả</span><input value={form.author} onChange={(event) => onUpdate("author", event.target.value)} maxLength={255} className="mt-1 h-10 w-full rounded-xl border border-border px-3 text-sm" /></label>
           <label className="mt-3 block"><span className="text-xs font-semibold text-muted-foreground">Biểu tượng khi chưa có ảnh bìa</span><input value={form.emoji} onChange={(event) => onUpdate("emoji", event.target.value)} maxLength={16} className="mt-1 h-10 w-full rounded-xl border border-border px-3 text-sm" /></label>
         </Panel>

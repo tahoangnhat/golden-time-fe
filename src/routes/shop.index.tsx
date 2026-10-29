@@ -46,7 +46,10 @@ function Shop() {
   const visible = useMemo(() => products.filter((product) => {
     if (category === "ALL") return true;
     return product.category === category;
-  }), [category, products]);
+  }).sort((first, second) => {
+    if (!near) return 0;
+    return (first.distanceKm ?? Number.POSITIVE_INFINITY) - (second.distanceKm ?? Number.POSITIVE_INFINITY);
+  }), [category, near, products]);
   function add(product: Product) {
     if (!cart.add(product)) return toast.error("Giỏ hàng chỉ nhận sản phẩm từ một cửa hàng. Hãy xóa giỏ hàng trước khi đổi cửa hàng.");
     toast.success(`${product.displayName} đã được thêm vào giỏ.`);
@@ -67,8 +70,9 @@ function Shop() {
           <div className="mt-4 grid grid-cols-2 gap-3">{visible.map((product) => <article key={product.id} className="bg-white rounded-2xl p-3 gt-shadow-soft border border-border flex flex-col">
             <Link to="/shop/$productId" params={{ productId: String(product.id) }} aria-label={`Xem chi tiết ${product.displayName}`} className="block w-full text-left">
               <div className="relative"><ProductThumb emoji={product.emoji} imageUrl={product.imageUrl} alt={product.displayName} size="lg" className="!h-28 !w-full !rounded-2xl !text-6xl" />{product.aiScore != null && <span className="absolute top-2 left-2 text-[10px] bg-white/95 px-1.5 py-0.5 rounded-md font-bold flex items-center gap-0.5"><Star className="h-2.5 w-2.5 text-primary fill-primary" /> {product.aiScore}</span>}</div>
-              <h4 className="font-bold text-sm mt-2 truncate">{product.displayName}</h4><p className="text-[10px] text-muted-foreground truncate">{product.shopName}</p><span className="mt-1 block text-[10px] font-semibold text-primary">Xem chi tiết</span>
-              <div className="flex items-center gap-1 text-[10px] text-muted-foreground mt-0.5"><MapPin className="h-2.5 w-2.5" />{product.distanceKm == null ? "Vị trí cửa hàng" : `${product.distanceKm.toFixed(1)} km`}</div>
+              <h4 className="font-bold text-sm mt-2 truncate">{product.displayName}</h4><p className="text-[10px] text-muted-foreground truncate">{product.shopName}</p>
+              <div className="mt-1 flex min-w-0 items-center gap-1 text-[10px] text-muted-foreground" title={product.shopAddress || "Chưa cập nhật địa chỉ cửa hàng"}><MapPin className="h-2.5 w-2.5 shrink-0" /><span className="truncate">{product.shopAddress || "Chưa cập nhật địa chỉ cửa hàng"}</span></div>
+              {near && product.distanceKm != null && <p className="mt-0.5 text-[10px] text-primary">Cách bạn {product.distanceKm.toFixed(1)} km</p>}
               <p className="text-[10px] text-muted-foreground mt-0.5">Còn {Number(product.stockKg).toLocaleString("vi-VN")} kg</p>
             </Link>
             <div className="mt-2 flex items-center justify-between gap-2"><p className="text-sm font-extrabold text-primary leading-none">{product.pricePerKg.toLocaleString("vi-VN")}đ<span className="block text-[9px] text-muted-foreground font-medium mt-1">/kg</span></p><button type="button" onClick={() => add(product)} aria-label={`Thêm ${product.displayName}`} className="h-8 w-8 grid place-items-center rounded-full gt-gradient text-white gt-shadow"><Plus className="h-4 w-4" /></button></div>

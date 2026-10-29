@@ -22,7 +22,7 @@ export type FruitNutrition = Fruit & {
   healthBenefits?: string | null; servingNote?: string | null; personalizedTip?: string | null;
 };
 export type Product = {
-  id: number; shopId: number; shopName: string; fruitId: number | null; fruitSlug: string | null;
+  id: number; shopId: number; shopName: string; shopAddress?: string | null; fruitId: number | null; fruitSlug: string | null;
   fruitName: string; emoji: string; category?: string | null; displayName: string;
   pricePerKg: number; stockKg: number; aiScore?: number | null; batchCode?: string | null;
   distanceKm?: number | null; imageUrl?: string | null; imageUrls?: string[]; seasonal: boolean; prepared: boolean;
