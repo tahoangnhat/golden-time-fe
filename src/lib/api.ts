@@ -267,6 +267,7 @@ export const api = {
   login: async (identifier: string, password: string) => saveAuth(await request<AuthResponse>("/auth/login", { method: "POST", body: JSON.stringify({ identifier, password }) })),
   register: async (payload: { email: string; fullName: string; password: string; phone: string }) => saveAuth(await request<AuthResponse>("/auth/register", { method: "POST", body: JSON.stringify(payload) })),
   me: () => request<UserProfile>("/auth/me"),
+  updateMe: (payload: { fullName: string; phone?: string | null }) => request<UserProfile>("/auth/me", { method: "PUT", body: JSON.stringify(payload) }),
   fruits: (q?: string) => request<Fruit[]>(`/fruits${q ? `?${query({ q })}` : ""}`),
   fruit: (slug: string) => request<FruitNutrition>(`/fruits/${encodeURIComponent(slug)}`),
   shops: (lat?: number, lng?: number, radiusKm?: number) => request<Shop[]>(`/shops?${query({ lat, lng, radiusKm })}`),
