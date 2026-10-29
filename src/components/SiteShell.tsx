@@ -8,7 +8,7 @@ import { BrandMark } from "@/components/BrandMark";
 
 const NAV = [
   { to: "/", label: "Trang chủ" },
-  { to: "/knowledge", label: "Kiến thức" },
+  { to: "/#knowledge", label: "Kiến thức" },
   { to: "/updates", label: "Cập nhật ứng dụng" },
   { to: "/about", label: "Về Golden Time" },
   { to: "/contact", label: "Liên hệ" },
@@ -33,9 +33,13 @@ export function SiteHeader() {
       <div className="mx-auto max-w-7xl px-5 lg:px-8 h-16 flex items-center justify-between">
         <Logo />
         <nav className="hidden lg:flex items-center gap-1">
-          {NAV.map((n) => (
+          {NAV.map((n) => n.to === "/#knowledge" ? (
+            <a key={n.label} href={n.to} className="px-4 py-2 rounded-xl text-sm font-medium text-foreground/70 hover:text-primary hover:bg-cream transition-colors">
+              {n.label}
+            </a>
+          ) : (
             <Link
-              key={n.to}
+              key={n.label}
               to={n.to}
               className="px-4 py-2 rounded-xl text-sm font-medium text-foreground/70 hover:text-primary hover:bg-cream transition-colors"
               activeProps={{ className: "text-primary bg-cream" }}
@@ -62,9 +66,13 @@ export function SiteHeader() {
       </div>
       {open && (
         <div className="lg:hidden border-t border-border/60 bg-white px-5 py-4 space-y-1">
-          {NAV.map((n) => (
+          {NAV.map((n) => n.to === "/#knowledge" ? (
+            <a key={n.label} href={n.to} onClick={() => setOpen(false)} className="block px-3 py-2.5 rounded-xl text-sm font-medium text-foreground/80 hover:bg-cream">
+              {n.label}
+            </a>
+          ) : (
             <Link
-              key={n.to}
+              key={n.label}
               to={n.to}
               onClick={() => setOpen(false)}
               className="block px-3 py-2.5 rounded-xl text-sm font-medium text-foreground/80 hover:bg-cream"
@@ -102,7 +110,11 @@ export function SiteFooter() {
           <h4 className="text-white font-semibold mb-4 text-sm">Liên kết nhanh</h4>
           <ul className="space-y-2 text-sm">
             {NAV.map((n) => (
-              <li key={n.to}><Link to={n.to} className="hover:text-white transition-colors">{n.label}</Link></li>
+              <li key={n.label}>
+                {n.to === "/#knowledge"
+                  ? <a href={n.to} className="hover:text-white transition-colors">{n.label}</a>
+                  : <Link to={n.to} className="hover:text-white transition-colors">{n.label}</Link>}
+              </li>
             ))}
             <li><Link to="/privacy" className="hover:text-white transition-colors">Chính sách quyền riêng tư</Link></li>
           </ul>

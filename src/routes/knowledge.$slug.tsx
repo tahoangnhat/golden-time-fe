@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { Calendar, Clock, User, Facebook, Link as LinkIcon, ArrowLeft, LoaderCircle } from "lucide-react";
 import { useEffect, useState } from "react";
 import { SiteShell, Section } from "@/components/SiteShell";
@@ -41,7 +41,7 @@ function ArticlePage() {
   return (
     <SiteShell>
       <Section className="pt-10 lg:pt-14 pb-8 max-w-4xl">
-        <Link to="/knowledge" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-primary mb-8"><ArrowLeft className="h-4 w-4" /> Tất cả bài viết</Link>
+        <a href="/#knowledge" className="mb-8 inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-primary"><ArrowLeft className="h-4 w-4" /> Tất cả bài viết</a>
         {loading ? <div className="py-20 grid place-items-center"><LoaderCircle className="animate-spin text-primary" /></div> : error || !article ? <div className="py-16 text-center text-red-700">{error || "Không tìm thấy bài viết."}</div> : <>
           <span className="inline-block text-xs font-bold uppercase tracking-wider text-primary bg-cream px-3 py-1 rounded-full mb-4">{article.category}</span>
           <h1 className="text-3xl lg:text-5xl font-extrabold tracking-tight leading-tight mb-6">{article.title}</h1>
