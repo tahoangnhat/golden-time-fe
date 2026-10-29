@@ -51,8 +51,8 @@ function Shop() {
     return (first.distanceKm ?? Number.POSITIVE_INFINITY) - (second.distanceKm ?? Number.POSITIVE_INFINITY);
   }), [category, near, products]);
   function add(product: Product) {
-    if (!cart.add(product)) return toast.error("Giỏ hàng chỉ nhận sản phẩm từ một cửa hàng. Hãy xóa giỏ hàng trước khi đổi cửa hàng.");
-    toast.success(`${product.displayName} đã được thêm vào giỏ.`);
+    if (!cart.add(product, 0.5)) return toast.error("Giỏ hàng chỉ nhận sản phẩm từ một cửa hàng. Hãy xóa giỏ hàng trước khi đổi cửa hàng.");
+    toast.success(`Đã thêm 0,5 kg (1 phần) ${product.displayName} vào giỏ.`);
   }
   async function toggleNear() {
     if (near) { setNear(false); return; }
@@ -75,7 +75,18 @@ function Shop() {
               {near && product.distanceKm != null && <p className="mt-0.5 text-[10px] text-primary">Cách bạn {product.distanceKm.toFixed(1)} km</p>}
               <p className="text-[10px] text-muted-foreground mt-0.5">Còn {Number(product.stockKg).toLocaleString("vi-VN")} kg</p>
             </Link>
-            <div className="mt-2 flex items-center justify-between gap-2"><p className="text-sm font-extrabold text-primary leading-none">{product.pricePerKg.toLocaleString("vi-VN")}đ<span className="block text-[9px] text-muted-foreground font-medium mt-1">/kg</span></p><button type="button" onClick={() => add(product)} aria-label={`Thêm ${product.displayName}`} className="h-8 w-8 grid place-items-center rounded-full gt-gradient text-white gt-shadow"><Plus className="h-4 w-4" /></button></div>
+            <div className="mt-2 flex items-center justify-between gap-2">
+              <div>
+                <p className="text-sm font-extrabold text-primary leading-none">
+                  {product.pricePerKg.toLocaleString("vi-VN")}đ
+                  <span className="block text-[9px] text-muted-foreground font-medium mt-0.5">/ kg</span>
+                </p>
+                <p className="text-[9px] text-muted-foreground font-medium mt-0.5">
+                  {Math.round(product.pricePerKg * 0.5).toLocaleString("vi-VN")}đ/0.5kg
+                </p>
+              </div>
+              <button type="button" onClick={() => add(product)} aria-label={`Thêm 0,5 kg ${product.displayName}`} className="h-8 w-8 grid place-items-center rounded-full gt-gradient text-white gt-shadow"><Plus className="h-4 w-4" /></button>
+            </div>
           </article>)}</div>}
         <div className="h-28" />
       </div>

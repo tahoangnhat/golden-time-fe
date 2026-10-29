@@ -4,7 +4,9 @@ import {
   ChevronRight,
   LoaderCircle,
   MapPin,
+  Minus,
   PackageCheck,
+  Plus,
   RotateCcw,
   Send,
   ShoppingCart,
@@ -45,6 +47,7 @@ function ProductDetail() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [imageIndex, setImageIndex] = useState(0);
+  const [portionKg, setPortionKg] = useState(0.5);
   const cart = useCart();
 
   // Product reviews state
@@ -188,8 +191,8 @@ function ProductDetail() {
   function addToCart() {
     if (!product) return;
     if (Number(product.stockKg) <= 0) return toast.error("Sản phẩm hiện đã hết hàng.");
-    if (!cart.add(product)) return toast.error("Giỏ hàng chỉ nhận sản phẩm từ một cửa hàng. Hãy xóa giỏ hàng trước khi đổi cửa hàng.");
-    toast.success(`${product.displayName} đã được thêm vào giỏ.`);
+    if (!cart.add(product, portionKg)) return toast.error("Giỏ hàng chỉ nhận sản phẩm từ một cửa hàng. Hãy xóa giỏ hàng trước khi đổi cửa hàng.");
+    toast.success(`Đã thêm ${portionKg} kg (${Math.round(portionKg / 0.5)} phần) ${product.displayName} vào giỏ.`);
   }
 
   const images = product?.imageUrls?.length
@@ -273,7 +276,12 @@ function ProductDetail() {
                     : `(${reviewCount} đánh giá từ khách hàng)`}
                 </span>
               </a>
-              <p className="mt-3 text-2xl font-extrabold text-primary">{product.pricePerKg.toLocaleString("vi-VN")}đ <span className="text-sm font-semibold text-muted-foreground">/ kg</span></p>
+              <p className="mt-3 text-2xl font-extrabold text-primary">
+                {product.pricePerKg.toLocaleString("vi-VN")}đ <span className="text-sm font-semibold text-muted-foreground">/ kg</span>
+                <span className="block text-xs font-normal text-muted-foreground mt-0.5">
+                  ({Math.round(product.pricePerKg * 0.5).toLocaleString("vi-VN")}đ / phần 0,5 kg)
+                </span>
+              </p>
             </div>
 
             <section className="mt-4 rounded-2xl border border-border bg-white p-4 gt-shadow-soft">
@@ -305,8 +313,51 @@ function ProductDetail() {
               )}
             </section>
 
+            {Number(product.stockKg) > 0 && (
+              <div className="mt-4 rounded-2xl border border-border bg-white p-4 gt-shadow-soft">
+                <div className="flex items-center justify-between gap-2">
+                  <div>
+                    <span className="text-xs font-semibold text-muted-foreground">Chọn khẩu phần mua</span>
+                    <p className="text-[11px] text-muted-foreground mt-0.5">Quy chuẩn 0,5 kg / phần</p>
+                  </div>
+                  <div className="flex items-center gap-1.5 bg-cream rounded-full p-1 border border-border">
+                    <button
+                      type="button"
+                      disabled={portionKg <= 0.5}
+                      onClick={() => setPortionKg((prev) => Math.max(0.5, Math.round((prev - 0.5) * 10) / 10))}
+                      className="h-8 w-8 grid place-items-center rounded-full bg-white border border-border disabled:opacity-40"
+                      aria-label="Giảm 0,5 kg"
+                    >
+                      <Minus className="h-3.5 w-3.5" />
+                    </button>
+                    <span className="min-w-16 text-center text-xs font-bold leading-tight">
+                      {portionKg} kg
+                      <span className="block text-[9px] font-normal text-muted-foreground">
+                        {Math.round(portionKg / 0.5)} phần
+                      </span>
+                    </span>
+                    <button
+                      type="button"
+                      disabled={portionKg >= Number(product.stockKg)}
+                      onClick={() => setPortionKg((prev) => Math.min(Number(product.stockKg), Math.round((prev + 0.5) * 10) / 10))}
+                      className="h-8 w-8 grid place-items-center rounded-full gt-gradient text-white disabled:opacity-40"
+                      aria-label="Tăng 0,5 kg"
+                    >
+                      <Plus className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
+                </div>
+                <div className="mt-3 pt-3 border-t border-border flex items-center justify-between text-xs">
+                  <span className="text-muted-foreground">Tạm tính ({portionKg} kg):</span>
+                  <span className="font-extrabold text-primary text-base">
+                    {Math.round(product.pricePerKg * portionKg).toLocaleString("vi-VN")}đ
+                  </span>
+                </div>
+              </div>
+            )}
+
             <button type="button" disabled={Number(product.stockKg) <= 0} onClick={addToCart} className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-2xl gt-gradient py-3.5 text-sm font-bold text-white gt-shadow disabled:cursor-not-allowed disabled:opacity-50">
-              <ShoppingCart className="h-4 w-4" />Thêm vào giỏ hàng
+              <ShoppingCart className="h-4 w-4" />Thêm {portionKg} kg vào giỏ hàng • {Math.round(product.pricePerKg * portionKg).toLocaleString("vi-VN")}đ
             </button>
 
             {/* Product Reviews Section */}

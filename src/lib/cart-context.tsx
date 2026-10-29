@@ -7,7 +7,7 @@ export type CartLine = {
   emoji: string; imageUrl?: string | null; pricePerKg: number; stockKg: number; quantityKg: number;
 };
 type CartContextValue = {
-  items: CartLine[]; add: (product: Product) => boolean; setQuantity: (productId: number, quantityKg: number) => void;
+  items: CartLine[]; add: (product: Product, quantityKg?: number) => boolean; setQuantity: (productId: number, quantityKg: number) => void;
   remove: (productId: number) => void; clear: () => void; subtotal: number;
 };
 const CartContext = createContext<CartContextValue | null>(null);
@@ -49,21 +49,22 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   const value = useMemo<CartContextValue>(() => ({
     items,
-    add: (product) => {
+    add: (product, quantityKg = 0.5) => {
       if (!cart.ready || cart.userId !== getAuthUserId()) return false;
       if (items.length > 0 && items[0].shopId !== product.shopId) return false;
+      const portion = Math.max(0.5, Math.round(quantityKg * 10) / 10);
       updateItems((current) => {
         const existing = current.find((line) => line.productId === product.id);
         if (existing) return current.map((line) => line.productId === product.id
-          ? { ...line, quantityKg: Math.min(line.quantityKg + 1, line.stockKg) } : line);
+          ? { ...line, quantityKg: Math.min(Math.round((line.quantityKg + portion) * 10) / 10, line.stockKg) } : line);
         return [...current, { productId: product.id, shopId: product.shopId, shopName: product.shopName,
           fruitName: product.fruitName, displayName: product.displayName, emoji: product.emoji,
-          imageUrl: product.imageUrl, pricePerKg: product.pricePerKg, stockKg: product.stockKg, quantityKg: Math.min(1, product.stockKg) }];
+          imageUrl: product.imageUrl, pricePerKg: product.pricePerKg, stockKg: product.stockKg, quantityKg: Math.min(portion, product.stockKg) }];
       });
       return true;
     },
     setQuantity: (productId, quantityKg) => updateItems((current) => current.map((line) => line.productId === productId
-      ? { ...line, quantityKg: Math.max(0.1, Math.min(line.stockKg, Math.round(quantityKg * 10) / 10)) } : line)),
+      ? { ...line, quantityKg: Math.max(0.5, Math.min(line.stockKg, Math.round(quantityKg * 10) / 10)) } : line)),
     remove: (productId) => updateItems((current) => current.filter((line) => line.productId !== productId)),
     clear: () => updateItems(() => []),
     subtotal: items.reduce((sum, line) => sum + Math.round(line.pricePerKg * line.quantityKg), 0),
