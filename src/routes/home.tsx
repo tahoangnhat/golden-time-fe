@@ -2,6 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { Search, ScanLine, BarChart3, ShoppingBag, MapPin, Bell, Star } from "lucide-react";
 import { useEffect, useState, type FormEvent } from "react";
 import { PhoneShell, StatusBar } from "@/components/PhoneShell";
+import { BrandMark } from "@/components/BrandMark";
 import { ProductThumb } from "@/components/FruitThumb";
 import { api, type Product } from "@/lib/api";
 
@@ -30,7 +31,7 @@ function Home() {
   }
   return (
     <PhoneShell>
-      <StatusBar title="Golden Time" right={<Bell className="h-4 w-4" />} />
+      <StatusBar title={<span className="inline-flex items-center gap-1.5"><BrandMark className="h-5 w-5 object-contain" />Golden Time</span>} right={<Bell className="h-4 w-4" />} />
       <div className="px-5 pt-2">
         <p className="text-xs text-muted-foreground">Xin chào,</p>
         <h1 className="text-xl font-extrabold leading-tight">Hôm nay bạn muốn mua trái cây gì?</h1>

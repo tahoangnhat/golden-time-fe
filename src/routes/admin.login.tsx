@@ -2,6 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState, type FormEvent } from "react";
 import { Shield, Eye, EyeOff } from "lucide-react";
 import { ApiError, api, logout } from "@/lib/api";
+import { BrandMark } from "@/components/BrandMark";
 
 export const Route = createFileRoute("/admin/login")({
   component: AdminLogin,
@@ -38,7 +39,7 @@ function AdminLogin() {
         <div className="absolute -bottom-20 -left-20 h-96 w-96 rounded-full bg-orange-300/20 blur-3xl" />
         <div className="relative">
           <div className="flex items-center gap-3">
-            <div className="h-12 w-12 rounded-2xl bg-white/20 grid place-items-center text-2xl">🍊</div>
+            <div className="grid h-12 w-12 place-items-center rounded-2xl bg-white p-1.5"><BrandMark className="h-full w-full object-contain" /></div>
             <div>
               <p className="font-extrabold text-lg">Golden Time</p>
               <p className="text-xs uppercase tracking-widest text-white/80">Admin Portal</p>
@@ -60,6 +61,7 @@ function AdminLogin() {
       <div className="flex items-center justify-center p-6 lg:p-12">
         <form onSubmit={submit} className="w-full max-w-md space-y-6">
           <div>
+            <BrandMark className="mb-3 h-12 w-12 rounded-xl bg-white p-1.5 object-contain" />
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[oklch(0.95_0.06_145)] text-[oklch(0.45_0.17_145)] text-xs font-semibold">
               <Shield className="h-3.5 w-3.5" /> Truy cập nội bộ
             </div>

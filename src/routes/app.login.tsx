@@ -3,6 +3,7 @@ import { useState, type FormEvent } from "react";
 import { Eye, EyeOff, Sparkles } from "lucide-react";
 import { PhoneShell, StatusBar } from "@/components/PhoneShell";
 import { ApiError, api, logout } from "@/lib/api";
+import { BrandMark } from "@/components/BrandMark";
 
 export const Route = createFileRoute("/app/login")({
   head: () => ({ meta: [{ title: "Đăng nhập — Golden Time" }] }),
@@ -50,6 +51,7 @@ function UserLogin() {
         <div className="mt-2 rounded-3xl gt-gradient text-white p-6 gt-shadow relative overflow-hidden">
           <div className="absolute -right-6 -bottom-6 text-8xl opacity-25">🍎</div>
           <div className="relative">
+            <BrandMark className="mb-3 h-12 w-12 rounded-xl bg-white p-1.5 object-contain" />
             <div className="inline-flex items-center gap-1.5 bg-white/20 rounded-full px-2.5 py-1 text-[10px] font-semibold">
               <Sparkles className="h-3 w-3" /> AI Fruit Intelligence
             </div>

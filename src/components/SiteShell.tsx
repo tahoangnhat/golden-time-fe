@@ -4,6 +4,7 @@ import { Menu, X } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { DownloadAppDialog } from "@/components/DownloadAppDialog";
+import { BrandMark } from "@/components/BrandMark";
 
 const NAV = [
   { to: "/", label: "Trang chủ" },
@@ -16,9 +17,7 @@ const NAV = [
 export function Logo({ className }: { className?: string }) {
   return (
     <Link to="/" className={cn("flex items-center gap-2 group", className)}>
-      <div className="h-10 w-10 rounded-2xl gt-gradient grid place-items-center text-white font-extrabold gt-shadow transition-transform group-hover:scale-105">
-        G
-      </div>
+      <BrandMark className="h-10 w-10 rounded-2xl bg-white p-1.5 object-contain gt-shadow transition-transform group-hover:scale-105" />
       <div className="leading-tight">
         <div className="font-extrabold tracking-tight text-[17px]">Golden Time</div>
         <div className="text-[10px] text-muted-foreground -mt-0.5 font-medium">AI Fruit Intelligence</div>
@@ -92,7 +91,7 @@ export function SiteFooter() {
       <div className="mx-auto max-w-7xl px-5 lg:px-8 py-14 grid gap-10 md:grid-cols-3">
         <div className="md:col-span-1">
           <div className="flex items-center gap-2 mb-4">
-            <div className="h-10 w-10 rounded-2xl gt-gradient grid place-items-center text-white font-extrabold">G</div>
+            <div className="grid h-10 w-10 place-items-center rounded-2xl bg-white p-1.5"><BrandMark className="h-full w-full object-contain" /></div>
             <div className="font-extrabold text-white text-lg">Golden Time</div>
           </div>
           <p className="text-sm leading-relaxed">

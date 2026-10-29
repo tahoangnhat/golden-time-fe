@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState, type FormEvent } from "react";
-import { Building2 } from "lucide-react";
 import { ApiError, api, logout } from "@/lib/api";
+import { BrandMark } from "@/components/BrandMark";
 
 export const Route = createFileRoute("/business/login")({
   head: () => ({ meta: [{ title: "Đăng nhập doanh nghiệp — Golden Time" }] }),
@@ -26,9 +26,9 @@ function BusinessLogin() {
     } finally { setBusy(false); }
   }
   return <div className="min-h-screen grid lg:grid-cols-2 bg-[oklch(0.97_0.04_95)]">
-    <div className="hidden lg:flex flex-col justify-between p-12 gt-gradient text-white"><div className="flex items-center gap-3"><div className="h-12 w-12 rounded-2xl bg-white/20 grid place-items-center text-2xl">🍊</div><div><p className="font-extrabold text-lg">Golden Time</p><p className="text-xs uppercase tracking-widest opacity-80">Golden Time Business</p></div></div><div><h2 className="text-4xl font-extrabold leading-tight">Cổng quản lý doanh nghiệp</h2><p className="mt-4 text-white/85 max-w-md">Đăng nhập sau khi hồ sơ doanh nghiệp được Admin chấp nhận.</p></div><p className="text-xs opacity-70">Golden Time Business</p></div>
+    <div className="hidden lg:flex flex-col justify-between p-12 gt-gradient text-white"><div className="flex items-center gap-3"><div className="grid h-12 w-12 place-items-center rounded-2xl bg-white p-1.5"><BrandMark className="h-full w-full object-contain" /></div><div><p className="font-extrabold text-lg">Golden Time</p><p className="text-xs uppercase tracking-widest opacity-80">Golden Time Business</p></div></div><div><h2 className="text-4xl font-extrabold leading-tight">Cổng quản lý doanh nghiệp</h2><p className="mt-4 text-white/85 max-w-md">Đăng nhập sau khi hồ sơ doanh nghiệp được Admin chấp nhận.</p></div><p className="text-xs opacity-70">Golden Time Business</p></div>
     <div className="flex items-center justify-center p-6 lg:p-12"><form onSubmit={submit} className="w-full max-w-md bg-white rounded-3xl gt-shadow-soft border border-border p-8">
-      <div className="h-12 w-12 rounded-2xl bg-[oklch(0.95_0.06_145)] text-[oklch(0.45_0.17_145)] grid place-items-center mb-4"><Building2 className="h-6 w-6" /></div>
+      <BrandMark className="mb-4 h-12 w-12 rounded-xl bg-cream p-1.5 object-contain" />
       <h1 className="text-2xl font-extrabold">Đăng nhập doanh nghiệp</h1><p className="text-sm text-muted-foreground mt-1">Chỉ doanh nghiệp đã được Admin chấp nhận mới có thể đăng nhập.</p>
       <div className="mt-6 space-y-4"><label className="block"><span className="text-xs font-semibold">Email hoặc số điện thoại</span><input required value={identifier} onChange={(event) => setIdentifier(event.target.value)} autoComplete="username" className="mt-1 w-full h-11 px-4 rounded-xl border border-border bg-white" /></label>
         <label className="block"><span className="text-xs font-semibold">Mật khẩu</span><input required type="password" value={password} onChange={(event) => setPassword(event.target.value)} autoComplete="current-password" className="mt-1 w-full h-11 px-4 rounded-xl border border-border bg-white" /></label>

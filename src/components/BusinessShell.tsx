@@ -18,6 +18,7 @@ import {
   Sprout,
 } from "lucide-react";
 import { api, logout, type ShopProfile } from "@/lib/api";
+import { BrandMark } from "@/components/BrandMark";
 
 const NAV = [
   { to: "/business/dashboard", label: "Tổng quan", icon: LayoutDashboard },
@@ -155,9 +156,7 @@ function SidebarInner({
     <>
       <div className="px-5 py-5 border-b border-border">
         <Link to="/business/dashboard" className="flex items-center gap-2.5" onClick={onNavigate}>
-          <div className="h-10 w-10 rounded-xl gt-gradient grid place-items-center text-white text-lg">
-            🍊
-          </div>
+          <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-cream p-1.5"><BrandMark className="h-full w-full object-contain" /></div>
           <div className="leading-tight">
             <p className="font-extrabold text-sm">Golden Time</p>
             <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold">

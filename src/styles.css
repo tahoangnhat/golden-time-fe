@@ -241,3 +241,5 @@
 .article-align-left { text-align: left; }
 .article-align-center { text-align: center; }
 .article-align-right { text-align: right; }
+
+html.golden-time-android-app .gt-phone-status-bar { display: none; }

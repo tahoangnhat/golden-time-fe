@@ -29,6 +29,13 @@ export function PhoneShell({
   // would make authenticated clients hydrate a different tree than the server.
   const [checkingRole, setCheckingRole] = useState(true);
   useEffect(() => {
+    const isAndroidApp = new URLSearchParams(window.location.search).get("platform") === "android";
+    if (isAndroidApp) sessionStorage.setItem("golden-time-platform", "android");
+    if (sessionStorage.getItem("golden-time-platform") === "android") {
+      document.documentElement.classList.add("golden-time-android-app");
+    }
+  }, []);
+  useEffect(() => {
     let active = true;
     if (!hasAuth()) {
       if (requireAuth) navigate({ to: "/app/login", replace: true });
@@ -87,12 +94,12 @@ export function PhoneShell({
   );
 }
 
-export function StatusBar({ title, right }: { title?: string; right?: ReactNode }) {
+export function StatusBar({ title, right }: { title?: ReactNode; right?: ReactNode }) {
   return (
-    <div className="sticky top-0 z-20 flex items-center justify-between bg-cream/95 px-5 pt-5 pb-2 text-xs text-foreground/70 font-medium backdrop-blur">
-      <span>9:41</span>
-      {title && <span className="text-foreground font-semibold text-[13px]">{title}</span>}
-      <div className="flex items-center gap-1">{right ?? <span>100%</span>}</div>
+    <div className="gt-phone-status-bar sticky top-0 z-20 grid grid-cols-[1fr_auto_1fr] items-center bg-cream/95 px-5 pt-5 pb-2 text-xs text-foreground/70 font-medium backdrop-blur">
+      <span aria-hidden="true" />
+      {title && <span className="text-center text-foreground font-semibold text-[13px]">{title}</span>}
+      <div className="flex items-center justify-self-end gap-1">{right}</div>
     </div>
   );
 }

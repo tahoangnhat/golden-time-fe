@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { ChevronRight, Heart, Store, History, Settings, LogOut, Target } from "lucide-react";
+import { ChevronRight, History, Settings, LogOut } from "lucide-react";
 import { useEffect, useState } from "react";
 import { PhoneShell, StatusBar } from "@/components/PhoneShell";
 import { api, clearAuth, hasAuth, logout, type UserProfile } from "@/lib/api";
@@ -9,11 +9,8 @@ export const Route = createFileRoute("/profile")({
   component: Profile,
 });
 
-const goals = ["Sống khỏe", "Eat Clean", "Tập gym", "Giảm cân"];
-
 function Profile() {
   const nav = useNavigate();
-  const [goal, setGoal] = useState<string | null>(null);
   const [user, setUser] = useState<UserProfile | null>(null);
   const [scanCount, setScanCount] = useState(0);
   const [orderCount, setOrderCount] = useState(0);
@@ -27,8 +24,6 @@ function Profile() {
   }, []);
   const initials = user?.fullName.split(/\s+/).slice(-2).map((part) => part[0]).join("").toUpperCase() || "GT";
   const menu = [
-    { icon: Heart, label: "Trái cây yêu thích", value: "Sắp có" },
-    { icon: Store, label: "Cửa hàng yêu thích", value: "Sắp có" },
     { icon: History, label: "Lịch sử mua hàng", value: `${orderCount} đơn` },
     { icon: Settings, label: "Cài đặt", value: "" },
   ];
@@ -51,15 +46,6 @@ function Profile() {
             <div className="bg-white/15 rounded-xl py-2"><p className="font-extrabold">{orderCount}</p><p className="text-[10px] opacity-80">Đơn hàng</p></div>
             <div className="bg-white/15 rounded-xl py-2"><p className="font-extrabold">—</p><p className="text-[10px] opacity-80">Trái cây/tuần</p></div>
           </div>
-        </div>
-
-        <h3 className="mt-5 font-bold flex items-center gap-2"><Target className="h-4 w-4 text-primary" /> Mục tiêu sức khỏe</h3>
-        <div className="mt-3 grid grid-cols-2 gap-2">
-          {goals.map((g) => (
-              <button key={g} onClick={() => setGoal(g)} className={`py-3 rounded-2xl text-sm font-semibold border-2 transition-colors ${goal === g ? "gt-gradient text-white border-transparent gt-shadow" : "bg-white border-border text-foreground"}`}>
-              {g}
-            </button>
-          ))}
         </div>
 
         <div className="mt-5 bg-white rounded-2xl gt-shadow-soft border border-border divide-y divide-border">

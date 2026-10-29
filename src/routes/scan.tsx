@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Camera, CameraOff, ChevronLeft, ImageUp, Zap, Lightbulb, LoaderCircle } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { PhoneShell } from "@/components/PhoneShell";
 import { ApiError, api, hasAuth, userStorageKey } from "@/lib/api";
 
@@ -20,40 +20,9 @@ function Scan() {
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const mountedRef = useRef(false);
+  const autoStartAttemptedRef = useRef(false);
 
-  useEffect(() => {
-    const video = videoRef.current;
-    if (!cameraOpen || !cameraStream || !video) return;
-
-    video.srcObject = cameraStream;
-    void video.play().catch(() => setError("Không thể phát hình ảnh từ camera. Hãy thử tải ảnh lên."));
-    return () => {
-      video.srcObject = null;
-    };
-  }, [cameraOpen, cameraStream]);
-
-  useEffect(() => {
-    mountedRef.current = true;
-    return () => {
-      mountedRef.current = false;
-      streamRef.current?.getTracks().forEach((track) => track.stop());
-      streamRef.current = null;
-    };
-  }, []);
-
-  useEffect(() => {
-    if (!preview) return;
-    return () => URL.revokeObjectURL(preview);
-  }, [preview]);
-
-  function stopCamera() {
-    streamRef.current?.getTracks().forEach((track) => track.stop());
-    streamRef.current = null;
-    setCameraStream(null);
-    setCameraOpen(false);
-  }
-
-  async function startCamera() {
+  const startCamera = useCallback(async () => {
     if (!navigator.mediaDevices?.getUserMedia) {
       setError("Trình duyệt hoặc kết nối hiện tại không hỗ trợ camera. Hãy tải ảnh lên thay thế.");
       return;
@@ -84,6 +53,44 @@ function Scan() {
     } finally {
       if (mountedRef.current) setCameraBusy(false);
     }
+  }, []);
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!cameraOpen || !cameraStream || !video) return;
+
+    video.srcObject = cameraStream;
+    void video.play().catch(() => setError("Không thể phát hình ảnh từ camera. Hãy thử tải ảnh lên."));
+    return () => {
+      video.srcObject = null;
+    };
+  }, [cameraOpen, cameraStream]);
+
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+      streamRef.current?.getTracks().forEach((track) => track.stop());
+      streamRef.current = null;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (autoStartAttemptedRef.current) return;
+    autoStartAttemptedRef.current = true;
+    void startCamera();
+  }, [startCamera]);
+
+  useEffect(() => {
+    if (!preview) return;
+    return () => URL.revokeObjectURL(preview);
+  }, [preview]);
+
+  function stopCamera() {
+    streamRef.current?.getTracks().forEach((track) => track.stop());
+    streamRef.current = null;
+    setCameraStream(null);
+    setCameraOpen(false);
   }
 
   function capturePhoto() {

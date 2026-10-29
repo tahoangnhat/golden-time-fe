@@ -42,13 +42,13 @@ const HERO_BADGES = [
 ];
 
 const FEATURES = [
-  { icon: ScanLine, title: "Phân tích ảnh trái cây", desc: "Ảnh được gửi tới dịch vụ AI đã cấu hình. Chỉ hiển thị kết quả do dịch vụ trả về." },
-  { icon: Star, title: "Thông tin chất lượng", desc: "Hiển thị điểm số và nhận xét nếu được dịch vụ phân tích cung cấp." },
-  { icon: Apple, title: "Tra cứu dinh dưỡng", desc: "Đọc dữ liệu dinh dưỡng đã có trong hệ thống; không tạo số liệu thay thế." },
-  { icon: BarChart3, title: "So sánh giá", desc: "Hiển thị báo giá có nguồn và thời gian thu thập khi nguồn dữ liệu trả về kết quả." },
-  { icon: QrCode, title: "Truy xuất theo mã lô", desc: "Tra cứu lô hàng và các mốc hành trình đã được cửa hàng ghi nhận." },
-  { icon: ShoppingBag, title: "Đặt hàng một cửa hàng", desc: "Tạo đơn COD thử nghiệm từ sản phẩm và tồn kho đang có trong hệ thống." },
-  { icon: Sparkles, title: "Đánh giá có xác thực", desc: "Chỉ người đã quét sản phẩm hoặc đặt đơn mới đủ điều kiện gửi đánh giá." },
+  { icon: ScanLine, title: "Phân tích bằng AI", desc: "Chụp ảnh trái cây để nhận đánh giá chất lượng và độ tươi." },
+  { icon: Star, title: "Đánh giá chất lượng", desc: "Xem điểm số và nhận xét từ kết quả phân tích." },
+  { icon: Apple, title: "Dinh dưỡng rõ ràng", desc: "Tra cứu thành phần dinh dưỡng của các loại trái cây có dữ liệu." },
+  { icon: BarChart3, title: "So sánh giá", desc: "Tham khảo giá từ các nguồn đã kết nối cùng thời điểm cập nhật." },
+  { icon: QrCode, title: "Nguồn gốc minh bạch", desc: "Quét mã lô để xem xuất xứ và hành trình sản phẩm khi có thông tin." },
+  { icon: ShoppingBag, title: "Mua hàng thuận tiện", desc: "Chọn sản phẩm và đặt mua trực tiếp từ cửa hàng đối tác." },
+  { icon: Sparkles, title: "Đánh giá đáng tin cậy", desc: "Khách hàng đủ điều kiện có thể chia sẻ trải nghiệm sau khi quét hoặc đặt mua." },
 ];
 
 function HomePage() {
@@ -61,10 +61,16 @@ function HomePage() {
   return (
     <SiteShell>
       {/* HERO */}
-      <section className="relative overflow-hidden">
-        <div className="absolute -top-32 -right-40 h-[480px] w-[480px] rounded-full bg-[oklch(0.92_0.18_120)] blur-3xl opacity-50" />
-        <div className="absolute top-40 -left-32 h-[420px] w-[420px] rounded-full bg-[oklch(0.94_0.16_85)] blur-3xl opacity-60" />
-        <div className="relative mx-auto max-w-7xl px-5 lg:px-8 pt-16 lg:pt-24 pb-20">
+      <section className="relative isolate flex min-h-[640px] items-center overflow-hidden lg:min-h-[720px]">
+        <img
+          src="/images/golden-time-hero.jpg"
+          alt=""
+          aria-hidden="true"
+          className="absolute inset-0 h-full w-full object-cover object-[18%_center] sm:object-center"
+        />
+        <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-r from-[#fffdf3]/95 via-[#fffdf3]/75 to-[#fffdf3]/10" />
+        <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-background/65" />
+        <div className="relative mx-auto w-full max-w-7xl px-5 py-16 lg:px-8 lg:py-24">
           <div className="max-w-3xl">
             <div className="inline-flex items-center gap-2 bg-white border border-border rounded-full px-3 py-1 text-xs font-semibold text-primary mb-6 gt-shadow-soft">
               <Sparkles className="h-3.5 w-3.5" /> AI Fruit Intelligence · Made in Vietnam
@@ -101,23 +107,22 @@ function HomePage() {
       </section>
 
       {/* FEATURES */}
-      <Section>
+      <Section className="max-w-[calc(100%-2.5rem)] rounded-[2.5rem] border border-border/60 bg-white/70 lg:max-w-7xl">
         <SectionHeading
           eyebrow="Tính năng nổi bật"
-          title="Các luồng chính của MVP"
-          subtitle="Số liệu và nội dung lấy từ backend, nhà cung cấp AI hoặc nguồn giá đã kết nối."
+          title="Mọi điều cần biết để chọn trái cây tốt hơn"
         />
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 lg:[&>*:last-child]:col-start-2">
           {FEATURES.map(({ icon: Icon, title, desc }) => (
             <div
               key={title}
-              className="group bg-white rounded-3xl border border-border p-6 hover:gt-shadow transition-all hover:-translate-y-0.5"
+              className="group rounded-3xl border border-border/70 bg-white p-6 transition-all duration-200 hover:-translate-y-1 hover:border-primary/30 hover:gt-shadow"
             >
-              <div className="h-12 w-12 rounded-2xl gt-gradient grid place-items-center text-white mb-4">
-                <Icon className="h-6 w-6" />
+              <div className="mb-5 grid h-12 w-12 place-items-center rounded-2xl bg-cream text-primary transition-colors group-hover:gt-gradient group-hover:text-white">
+                <Icon className="h-5 w-5" strokeWidth={2.1} />
               </div>
-              <h3 className="font-bold text-lg mb-1.5">{title}</h3>
-              <p className="text-sm text-muted-foreground leading-relaxed">{desc}</p>
+              <h3 className="mb-2 text-base font-bold tracking-tight sm:text-lg">{title}</h3>
+              <p className="text-sm leading-relaxed text-muted-foreground">{desc}</p>
             </div>
           ))}
         </div>

@@ -92,6 +92,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/b1957dfb-c2c2-47c4-a7b2-093c94fa13a2/id-preview-a597f954--c0fbb85e-46ff-4355-bd88-303e9dac10b9.lovable.app-1782895134699.png" },
     ],
     links: [
+      { rel: "icon", type: "image/png", href: "/images/golden-time-logo.png" },
       {
         rel: "stylesheet",
         href: appCss,
