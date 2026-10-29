@@ -265,7 +265,7 @@ const query = (values: Record<string, string | number | undefined>) => {
 
 export const api = {
   login: async (identifier: string, password: string) => saveAuth(await request<AuthResponse>("/auth/login", { method: "POST", body: JSON.stringify({ identifier, password }) })),
-  register: async (payload: { email: string; fullName: string; password: string; phone?: string }) => saveAuth(await request<AuthResponse>("/auth/register", { method: "POST", body: JSON.stringify(payload) })),
+  register: async (payload: { email: string; fullName: string; password: string; phone: string }) => saveAuth(await request<AuthResponse>("/auth/register", { method: "POST", body: JSON.stringify(payload) })),
   me: () => request<UserProfile>("/auth/me"),
   fruits: (q?: string) => request<Fruit[]>(`/fruits${q ? `?${query({ q })}` : ""}`),
   fruit: (slug: string) => request<FruitNutrition>(`/fruits/${encodeURIComponent(slug)}`),

@@ -57,7 +57,6 @@ function Result() {
             <p className="relative mt-2 text-[10px] text-white/75">Phân tích từ dịch vụ AI{scan.confidence != null && ` • Độ tin cậy ${Math.round(scan.confidence * 100)}%`}</p>
           </div>
           <div className="mt-5 grid grid-cols-2 gap-3">{metrics.map((metric) => <div key={metric.label} className="bg-white rounded-2xl p-4 gt-shadow-soft border border-border"><p className="text-[11px] text-muted-foreground font-medium">{metric.label}</p><p className="text-lg font-extrabold mt-1">{metric.value}</p></div>)}</div>
-          <div className="mt-5 bg-[oklch(0.96_0.08_85)] border border-[oklch(0.85_0.12_85)] rounded-2xl p-4 text-sm"><p className="font-semibold text-[oklch(0.4_0.12_70)]">💡 Gợi ý của Golden Time</p><p className="text-[oklch(0.4_0.08_70)] mt-1">{scan.suggestion || "Không có gợi ý bổ sung."}</p></div>
           <div className="mt-5 grid grid-cols-3 gap-2">
             <Link to="/nutrition" className="py-3 rounded-2xl bg-white border border-border text-xs font-semibold flex flex-col items-center gap-1"><Leaf className="h-4 w-4 text-primary" /> Dinh dưỡng</Link>
             <Link to="/compare" className="py-3 rounded-2xl bg-white border border-border text-xs font-semibold flex flex-col items-center gap-1"><BarChart3 className="h-4 w-4 text-primary" /> So sánh giá</Link>

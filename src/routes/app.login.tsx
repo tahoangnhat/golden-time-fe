@@ -26,7 +26,7 @@ function UserLogin() {
     try {
       let role: string;
       if (isRegistering) {
-        role = (await api.register({ email: identifier.trim(), fullName: fullName.trim(), password, phone: phone.trim() || undefined })).user.role;
+        role = (await api.register({ email: identifier.trim(), fullName: fullName.trim(), password, phone: phone.trim() })).user.role;
       } else {
         role = (await api.login(identifier, password)).user.role;
       }
@@ -75,8 +75,9 @@ function UserLogin() {
             />
           </label>
           {isRegistering && <label className="block">
-            <span className="text-xs font-semibold text-foreground/80">Số điện thoại (không bắt buộc)</span>
-            <input type="tel" value={phone} onChange={(event) => setPhone(event.target.value)} autoComplete="tel" className="mt-1 w-full h-12 px-4 rounded-2xl border border-border bg-white outline-none focus:ring-2 focus:ring-[oklch(0.62_0.17_145)]/30" />
+            <span className="text-xs font-semibold text-foreground/80">Số điện thoại</span>
+            <input type="tel" value={phone} onChange={(event) => setPhone(event.target.value)} autoComplete="tel" required className="mt-1 w-full h-12 px-4 rounded-2xl border border-border bg-white outline-none focus:ring-2 focus:ring-[oklch(0.62_0.17_145)]/30" />
+            <span className="mt-1 block text-[11px] text-muted-foreground">Dùng để tự điền thông tin người nhận khi đặt hàng.</span>
           </label>}
           <label className="block">
             <span className="text-xs font-semibold text-foreground/80">Mật khẩu</span>

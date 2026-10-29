@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ChevronLeft, MapPin, Banknote, QrCode, Minus, Plus, Trash2, CheckCircle2, LoaderCircle } from "lucide-react";
+import { ChevronLeft, MapPin, Banknote, QrCode, Minus, Plus, Trash2, CheckCircle2, LoaderCircle, UserRound } from "lucide-react";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { PhoneShell } from "@/components/PhoneShell";
 import { ProductThumb } from "@/components/FruitThumb";
@@ -16,6 +16,8 @@ function Cart() {
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [address, setAddress] = useState("");
+  const [usingMyInfo, setUsingMyInfo] = useState(false);
+  const [recipientInfoNotice, setRecipientInfoNotice] = useState("");
   const [ghnProvinces, setGhnProvinces] = useState<GhnAddress[]>([]);
   const [ghnWards, setGhnWards] = useState<GhnAddress[]>([]);
   const [deliveryProvinceName, setDeliveryProvinceName] = useState("");
@@ -33,6 +35,25 @@ function Cart() {
   const [paymentReturnOrder, setPaymentReturnOrder] = useState<OrderDetail | null>(null);
   const shipping = shippingQuote?.shippingFee ?? 0;
   const paymentWasCancelledOnPayOS = paymentReturnMode.toUpperCase() === "CANCELLED" || paymentReturnMode.toLowerCase() === "cancelled";
+
+  async function useMyInfo() {
+    setUsingMyInfo(true);
+    setRecipientInfoNotice("");
+    try {
+      const user = await api.me();
+      setName(user.fullName.trim());
+      if (user.phone?.trim()) {
+        setPhone(user.phone.trim());
+        setRecipientInfoNotice("Đã điền họ tên và số điện thoại từ tài khoản của bạn.");
+      } else {
+        setRecipientInfoNotice("Đã điền họ tên. Tài khoản chưa có số điện thoại; vui lòng nhập số nhận hàng bên dưới.");
+      }
+    } catch (cause) {
+      setRecipientInfoNotice(cause instanceof Error ? cause.message : "Không lấy được thông tin tài khoản.");
+    } finally {
+      setUsingMyInfo(false);
+    }
+  }
 
   useEffect(() => {
     setPayosEnabled(false);
@@ -82,7 +103,12 @@ function Cart() {
         paymentMethod, deliveryName: name.trim(), deliveryPhone: phone.trim(), deliveryAddress: address.trim(),
         deliveryProvinceName, deliveryWardName,
       }).then((quote) => { if (active && requestId === quoteRequestId.current) setShippingQuote(quote); }).catch((cause) => {
-        if (active && requestId === quoteRequestId.current) setShippingQuoteError(cause instanceof Error ? cause.message : "Không tính được phí giao GHN.");
+        if (active && requestId === quoteRequestId.current) {
+          const message = cause instanceof Error ? cause.message : "Không tính được phí giao GHN.";
+          setShippingQuoteError(/master_data_validate_phone|PHONE_INVALID/i.test(message)
+            ? "Số điện thoại lấy hàng của cửa hàng chưa hợp lệ. Cửa hàng cần cập nhật số điện thoại trong Hồ sơ doanh nghiệp để GHN báo phí."
+            : message);
+        }
       }).finally(() => { if (active && requestId === quoteRequestId.current) setLoadingShippingQuote(false); });
     }, 500);
     return () => { active = false; window.clearTimeout(timer); };
@@ -179,7 +205,7 @@ function Cart() {
         {cart.items.length === 0 ? <div className="mt-6 bg-white rounded-2xl p-6 text-center border border-border"><p className="font-semibold">Giỏ hàng đang trống</p><Link to="/shop" className="inline-block mt-3 text-primary font-semibold">Chọn trái cây</Link></div> : <>
           <div className="rounded-xl bg-cream px-3 py-2 text-xs font-semibold">Cửa hàng: {cart.items[0].shopName}</div>
           <div className="space-y-3">{cart.items.map((item) => <div key={item.productId} className="bg-white rounded-2xl p-3 flex items-center gap-3 gt-shadow-soft border border-border"><ProductThumb emoji={item.emoji} imageUrl={item.imageUrl} alt={item.displayName} size="md" /><div className="flex-1 min-w-0"><h4 className="font-bold text-sm truncate">{item.displayName}</h4><p className="text-[11px] text-muted-foreground">{item.pricePerKg.toLocaleString("vi-VN")}đ/kg</p><p className="text-sm font-extrabold text-primary mt-0.5">{Math.round(item.pricePerKg * item.quantityKg).toLocaleString("vi-VN")}đ</p></div><div className="flex flex-col items-end gap-2"><div className="flex items-center gap-1 bg-cream rounded-full p-1"><button type="button" onClick={() => cart.setQuantity(item.productId, item.quantityKg - 0.5)} className="h-7 w-7 grid place-items-center rounded-full bg-white border border-border"><Minus className="h-3 w-3" /></button><span className="min-w-12 text-center text-xs font-semibold">{item.quantityKg} kg</span><button type="button" disabled={item.quantityKg >= item.stockKg} onClick={() => cart.setQuantity(item.productId, item.quantityKg + 0.5)} className="h-7 w-7 grid place-items-center rounded-full gt-gradient text-white disabled:opacity-40"><Plus className="h-3 w-3" /></button></div><button type="button" onClick={() => cart.remove(item.productId)} className="text-muted-foreground hover:text-red-600" aria-label="Xóa sản phẩm"><Trash2 className="h-4 w-4" /></button></div></div>)}</div>
-          <div className="bg-white rounded-2xl p-4 gt-shadow-soft border border-border space-y-3"><div className="flex items-center gap-2 text-xs text-muted-foreground"><MapPin className="h-3.5 w-3.5" /> Thông tin nhận hàng</div><input required value={name} onChange={(event) => setName(event.target.value)} placeholder="Tên người nhận" className="w-full rounded-xl border border-border px-3 py-2 text-sm" /><input required type="tel" value={phone} onChange={(event) => setPhone(event.target.value)} placeholder="Số điện thoại" className="w-full rounded-xl border border-border px-3 py-2 text-sm" /><textarea required maxLength={400} value={address} onChange={(event) => setAddress(event.target.value)} placeholder="Số nhà, tên đường" rows={2} className="w-full rounded-xl border border-border px-3 py-2 text-sm" /><div className="grid grid-cols-2 gap-2"><select required value={deliveryProvinceName} onChange={(event) => { setDeliveryProvinceName(event.target.value); setDeliveryWardName(""); }} disabled={!ghnProvinces.length} className="w-full rounded-xl border border-border bg-white px-3 py-2 text-sm"><option value="">Tỉnh/thành</option>{ghnProvinces.map((item) => <option key={item.id} value={item.name}>{item.name}</option>)}</select><select required value={deliveryWardName} onChange={(event) => setDeliveryWardName(event.target.value)} disabled={!ghnWards.length} className="w-full rounded-xl border border-border bg-white px-3 py-2 text-sm"><option value="">Phường/xã</option>{ghnWards.map((item) => <option key={item.id} value={item.name}>{item.name}</option>)}</select></div>{shippingQuoteError && <p role="alert" className="rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-800">{shippingQuoteError}</p>}</div>
+          <div className="bg-white rounded-2xl p-4 gt-shadow-soft border border-border space-y-3"><div className="flex items-center justify-between gap-2"><div className="flex items-center gap-2 text-xs text-muted-foreground"><MapPin className="h-3.5 w-3.5" /> Thông tin nhận hàng</div><button type="button" onClick={() => void useMyInfo()} disabled={usingMyInfo} className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-primary/30 bg-primary/5 px-2.5 py-1.5 text-[10px] font-semibold text-primary disabled:opacity-60">{usingMyInfo ? <LoaderCircle className="h-3 w-3 animate-spin" /> : <UserRound className="h-3 w-3" />}{usingMyInfo ? "Đang lấy…" : "Tôi là người nhận"}</button></div>{recipientInfoNotice && <p role="status" className="rounded-lg bg-cream px-3 py-2 text-[11px] text-foreground/80">{recipientInfoNotice}</p>}<input required value={name} onChange={(event) => setName(event.target.value)} placeholder="Tên người nhận" className="w-full rounded-xl border border-border px-3 py-2 text-sm" /><input required type="tel" value={phone} onChange={(event) => setPhone(event.target.value)} placeholder="Số điện thoại" className="w-full rounded-xl border border-border px-3 py-2 text-sm" /><textarea required maxLength={400} value={address} onChange={(event) => setAddress(event.target.value)} placeholder="Số nhà, tên đường" rows={2} className="w-full rounded-xl border border-border px-3 py-2 text-sm" /><div className="grid grid-cols-2 gap-2"><select required value={deliveryProvinceName} onChange={(event) => { setDeliveryProvinceName(event.target.value); setDeliveryWardName(""); }} disabled={!ghnProvinces.length} className="w-full rounded-xl border border-border bg-white px-3 py-2 text-sm"><option value="">Tỉnh/thành</option>{ghnProvinces.map((item) => <option key={item.id} value={item.name}>{item.name}</option>)}</select><select required value={deliveryWardName} onChange={(event) => setDeliveryWardName(event.target.value)} disabled={!ghnWards.length} className="w-full rounded-xl border border-border bg-white px-3 py-2 text-sm"><option value="">Phường/xã</option>{ghnWards.map((item) => <option key={item.id} value={item.name}>{item.name}</option>)}</select></div>{shippingQuoteError && <p role="alert" className="rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-800">{shippingQuoteError}</p>}</div>
           <div className="bg-white rounded-2xl p-4 gt-shadow-soft border border-border space-y-3"><p className="text-xs text-muted-foreground">Phương thức thanh toán</p>
             <label className={`flex items-center gap-3 rounded-xl border p-3 cursor-pointer ${paymentMethod === "COD" ? "border-primary bg-primary/5" : "border-border"}`}><input type="radio" name="paymentMethod" value="COD" checked={paymentMethod === "COD"} onChange={() => setPaymentMethod("COD")} className="accent-green-600" /><span className="h-9 w-9 rounded-xl gt-gradient text-white grid place-items-center"><Banknote className="h-4 w-4" /></span><span className="flex-1"><span className="block text-sm font-semibold">Thanh toán khi nhận hàng</span><span className="block text-[11px] text-muted-foreground">Thanh toán tiền mặt khi nhận được hàng.</span></span></label>
             {payosEnabled ? <label className={`flex items-center gap-3 rounded-xl border p-3 cursor-pointer ${paymentMethod === "PAYOS" ? "border-primary bg-primary/5" : "border-border"}`}><input type="radio" name="paymentMethod" value="PAYOS" checked={paymentMethod === "PAYOS"} onChange={() => setPaymentMethod("PAYOS")} className="accent-green-600" /><span className="h-9 w-9 rounded-xl bg-cream text-primary grid place-items-center"><QrCode className="h-4 w-4" /></span><span className="flex-1"><span className="block text-sm font-semibold">Thanh toán qua PayOS</span><span className="block text-[11px] text-muted-foreground">Thanh toán cho Golden Time; sàn sẽ đối soát và trả tiền cho cửa hàng.</span></span></label>
