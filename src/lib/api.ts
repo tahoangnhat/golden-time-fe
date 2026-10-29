@@ -70,6 +70,11 @@ export type OrderDetail = {
 };
 export type OrderSummary = { id: number; shopId: number; shopName: string; status: string; total: number; paymentMethod: string; paymentStatus: string; createdAt: string; itemCount: number; trackingCode?: string | null; carrierStatus?: string | null; expectedDeliveryAt?: string | null };
 export type Review = { id: number; shopId: number; shopName: string; userId: number; author: string; rating: number; comment: string; createdAt: string; purchased: boolean };
+export type ProductReviewItem = { id: number; productId: number; userId: number; authorName: string; rating: number; comment?: string | null; createdAt: string; orderId?: number | null };
+export type ProductRatingDistribution = { star: number; count: number };
+export type ProductReviewSummary = { ratingAvg: number; reviewCount: number; distribution: ProductRatingDistribution[]; reviews: ProductReviewItem[] };
+export type ProductReviewEligibility = { eligible: boolean; alreadyReviewed: boolean; eligibleOrderId?: number | null };
+export type ProductReviewResponse = { id: number; productId: number; userId: number; authorName: string; rating: number; comment?: string | null; createdAt: string; orderId?: number | null };
 export type Article = {
   id: number; slug: string; title: string; category: string; emoji: string; gradient: string;
   description?: string | null; body: string; author: string; publishedAt?: string | null;
@@ -90,7 +95,8 @@ export type BusinessApplication = {
 };
 export type AdminProduct = { id: number; emoji: string; name: string; shop: string; price: number; stock: number; score?: number | null; status: string; category?: string | null; approvalStatus: string; productOrigin?: string | null; supplierName?: string | null; lotCode?: string | null; traceabilityProof?: string | null; reviewNote?: string | null };
 export type AdminOrder = { id: number; customer: string; shop: string; total: number; subtotal: number; shippingFee: number; status: string; payment: string; paymentStatus: string; note?: string | null; deliveryName?: string | null; deliveryPhone?: string | null; deliveryAddress?: string | null; createdAt: string; itemCount: number };
-export type AdminReview = { id: number; user: string; shop: string; rating: number; comment: string; createdAt: string; purchased: boolean };
+export type AdminReview = { id: number; user: string; shop: string; rating: number; createdAt: string; purchased: boolean };
+export type AdminProductReview = { id: number; productId: number; productName: string; shopName: string; author: string; rating: number; createdAt: string };
 export type AdminScan = { id: number; fruit?: string | null; emoji?: string | null; freshness?: number | null; quality?: number | null; confidence?: number | null; user: string; mode: string; createdAt: string };
 export type AdminNutrition = { id: number; slug: string; name: string; emoji: string; category?: string | null; calories?: number | null; vitaminC?: number | null; fiber?: number | null; sugar?: number | null; potassium?: number | null; water?: number | null; benefits?: string | null };
 export type AdminTrace = { batchCode: string; product: string; shop?: string | null; supplier?: string | null; area?: string | null; harvestDate?: string | null; intakeDate?: string | null; certificates?: string | null; certified: boolean; farm?: string | null; quantityKg?: number | null; packagingDate?: string | null; qualityCheckedAt?: string | null; qualityResult?: string | null; qualityScore?: number | null; qualityNote?: string | null; transportDate?: string | null; transportInfo?: string | null; batchStatus?: string | null };
@@ -104,6 +110,7 @@ export type AdminWithdrawalRequest = Omit<ShopWithdrawalRequest, "maskedAccountN
 export type ShopProduct = { id: number; fruitId: number | null; fruitName: string; emoji: string; category?: string | null; seasonal: boolean; prepared: boolean; displayName: string; pricePerKg: number; stockKg: number; aiScore?: number | null; status: string; batchCode?: string | null; imageUrl?: string | null; productOrigin?: string | null; supplierName?: string | null; lotCode?: string | null; traceabilityProof?: string | null; approvalStatus: string; reviewNote?: string | null; imageUrls?: string[] };
 export type ShopOrder = { id: number; customer: string; total: number; subtotal: number; shippingFee: number; status: string; payment: string; paymentStatus: string; deliveryName?: string | null; deliveryPhone?: string | null; deliveryAddress?: string | null; note?: string | null; createdAt: string; trackingCode?: string | null; carrierStatus?: string | null; carrierFee: number; expectedDeliveryAt?: string | null; items: { name: string; emoji: string; quantityKg: number; unitPrice: number; lineTotal: number }[] };
 export type ShopReview = { id: number; author: string; rating: number; comment: string; createdAt: string; purchased: boolean };
+export type ShopProductReview = { id: number; productId: number; productName: string; author: string; rating: number; comment?: string | null; createdAt: string };
 export type ShopTrace = { batchCode: string; product: string; origin?: string | null; supplier?: string | null; certified: boolean; harvestDate?: string | null; intakeDate?: string | null; certificates?: string | null; storageTemperature?: string | null; storageHumidity?: string | null; publicNote?: string | null };
 export type Farm = { id: number; shopId: number; name: string; address: string; managerName: string; phone: string; fruitTypes: string; areaHectares?: number | null; certifications?: string | null; certificationImageUrl?: string | null; imageUrl?: string | null; imageUrls?: string[]; status: "PENDING" | "APPROVED" | "REJECTED"; rejectionReason?: string | null; createdAt: string; updatedAt: string; reviewedAt?: string | null; shopName?: string | null };
 export type ShopBatch = { batchCode: string; product: string; productId?: number | null; shopId?: number | null; farmId?: number | null; quantityKg?: number | null; harvestDate?: string | null; packagingDate?: string | null; qualityCheckedAt?: string | null; qualityResult?: string | null; qualityScore?: number | null; qualityNote?: string | null; transportDate?: string | null; transportInfo?: string | null; batchStatus: string; createdAt: string; farmName?: string | null; farmStatus?: string | null; shopName?: string | null; origin?: string | null; reviewStatus: "PENDING_REVIEW" | "VERIFIED" | "NEEDS_CORRECTION"; reviewVersion: number; reviewNote?: string | null; reviewedAt?: string | null; evidenceUrls: string[] };
@@ -284,6 +291,9 @@ export const api = {
   orders: () => request<OrderSummary[]>("/orders/mine"),
   createReview: (payload: { shopId: number; orderId?: number; scanId?: number; rating: number; comment: string }) => request<Review>("/reviews", { method: "POST", body: JSON.stringify(payload) }),
   reviews: (shopId: number) => request<Review[]>(`/shops/${shopId}/reviews`),
+  productReviews: (productId: number) => request<ProductReviewSummary>(`/products/${productId}/reviews`),
+  productReviewEligibility: (productId: number) => request<ProductReviewEligibility>(`/products/${productId}/review-eligibility`),
+  createProductReview: (productId: number, payload: { rating: number; comment?: string | null }) => request<ProductReviewResponse>(`/products/${productId}/reviews`, { method: "POST", body: JSON.stringify(payload) }),
   paymentMethods: () => request<PaymentMethods>("/payment-methods"),
   articles: (filters: { q?: string; category?: string } = {}) => request<Article[]>(`/articles?${query(filters)}`),
   article: (slug: string) => request<Article>(`/articles/${encodeURIComponent(slug)}`),
@@ -338,6 +348,7 @@ export const api = {
   decideAdminProduct: (id: number, approved: boolean, note?: string) => request<{ id: number; approvalStatus: string; status: string; reviewNote?: string | null }>(`/admin/products/${id}/decision`, { method: "POST", body: JSON.stringify({ approved, note }) }),
   adminOrders: () => request<AdminOrder[]>("/admin/orders"),
   adminReviews: () => request<AdminReview[]>("/admin/reviews"),
+  adminProductReviews: () => request<AdminProductReview[]>("/admin/product-reviews"),
   adminScans: () => request<AdminScan[]>("/admin/scans"),
   adminNutrition: () => request<AdminNutrition[]>("/admin/nutrition"),
   adminTraceability: () => request<ShopBatch[]>("/admin/traceability/review-queue"),
@@ -372,6 +383,7 @@ export const api = {
   shopOrders: () => request<ShopOrder[]>("/shop/orders"),
   shipShopOrder: (id: number) => request<void>(`/shop/orders/${id}/ship`, { method: "POST" }),
   shopReviews: () => request<ShopReview[]>("/shop/reviews"),
+  shopProductReviews: () => request<ShopProductReview[]>("/shop/product-reviews"),
   shopTraceability: () => request<ShopTrace[]>("/shop/traceability"),
   shopFarms: () => request<Farm[]>("/shop/farms"),
   createFarm: (payload: Omit<Farm, "id" | "shopId" | "status" | "rejectionReason" | "createdAt" | "updatedAt" | "reviewedAt" | "shopName">) => request<Farm>("/shop/farms", { method: "POST", body: JSON.stringify(payload) }),
