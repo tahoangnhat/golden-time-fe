@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { ChevronLeft, ChevronRight, History, Settings, LogOut, Save, UserRound, Phone, Mail, LoaderCircle } from "lucide-react";
+import { ChevronLeft, ChevronRight, History, Settings, LogOut, Save, UserRound, Phone, Mail, LoaderCircle, Ticket } from "lucide-react";
 import { useEffect, useState, type FormEvent } from "react";
 import { PhoneShell, StatusBar } from "@/components/PhoneShell";
 import { api, clearAuth, hasAuth, logout, type UserProfile } from "@/lib/api";
@@ -14,6 +14,7 @@ function Profile() {
   const [user, setUser] = useState<UserProfile | null>(null);
   const [scanCount, setScanCount] = useState(0);
   const [orderCount, setOrderCount] = useState(0);
+  const [voucherCount, setVoucherCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [fullName, setFullName] = useState("");
@@ -30,6 +31,7 @@ function Profile() {
     }).catch(() => clearAuth()).finally(() => setLoading(false));
     api.scans().then((items) => setScanCount(items.length)).catch(() => setScanCount(0));
     api.orders().then((items) => setOrderCount(items.length)).catch(() => setOrderCount(0));
+    api.buyerMyVouchers("AVAILABLE").then((items) => setVoucherCount(items.length)).catch(() => setVoucherCount(0));
   }, []);
 
   async function saveProfile(event: FormEvent<HTMLFormElement>) {
@@ -52,8 +54,9 @@ function Profile() {
 
   const initials = user?.fullName.split(/\s+/).slice(-2).map((part) => part[0]).join("").toUpperCase() || "GT";
   const menu = [
-    { icon: History, label: "Lịch sử mua hàng", value: `${orderCount} đơn` },
-    { icon: Settings, label: "Cài đặt", value: "" },
+    { icon: History, label: "Lịch sử mua hàng", value: `${orderCount} đơn`, path: "/orders" },
+    { icon: Ticket, label: "Ví Voucher & Khuyến mãi", value: `${voucherCount} khả dụng`, path: "/vouchers" },
+    { icon: Settings, label: "Cài đặt", value: "", path: "" },
   ];
   return (
     <PhoneShell>
@@ -109,8 +112,8 @@ function Profile() {
         </div>
 
         <div className="mt-5 bg-white rounded-2xl gt-shadow-soft border border-border divide-y divide-border">
-          {menu.map(({ icon: Icon, label, value }) => (
-            <button key={label} onClick={() => { if (label === "Lịch sử mua hàng") nav({ to: "/orders" }); else setSettingsOpen(true); }} className="w-full flex items-center gap-3 p-4 text-left">
+          {menu.map(({ icon: Icon, label, value, path }) => (
+            <button key={label} onClick={() => { if (path) nav({ to: path }); else setSettingsOpen(true); }} className="w-full flex items-center gap-3 p-4 text-left">
               <span className="h-9 w-9 rounded-xl bg-cream grid place-items-center text-primary"><Icon className="h-4 w-4" /></span>
               <span className="flex-1 font-semibold text-sm">{label}</span>
               <span className="text-xs text-muted-foreground">{value}</span>

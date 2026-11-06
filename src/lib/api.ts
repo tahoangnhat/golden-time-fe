@@ -62,11 +62,68 @@ export type BatchTrace = {
 };
 export type OrderDetail = {
   id: number; shopId: number; shopName: string; status: string; paymentStatus: string; subtotal: number; shippingFee: number;
+  discountAmount?: number; voucherId?: number | null; buyerVoucherId?: number | null;
   total: number; paymentMethod: string; checkoutUrl?: string | null; qrCode?: string | null; paymentExpiresAt?: string | null;
   note?: string | null; deliveryName: string; deliveryPhone: string;
   deliveryAddress: string; createdAt: string; trackingCode?: string | null; carrierStatus?: string | null;
   carrierFee: number; expectedDeliveryAt?: string | null;
   items: { productId: number; name: string; emoji: string; quantityKg: number; unitPrice: number; lineTotal: number }[];
+};
+export type VoucherResponse = {
+  id: number;
+  code: string;
+  name: string;
+  description?: string | null;
+  discountType: "PERCENT" | "FIXED";
+  discountValue: number;
+  maxDiscountAmount?: number | null;
+  minOrderValue: number;
+  shopId: number;
+  shopName: string;
+  totalQuantity: number;
+  claimedCount: number;
+  usedCount: number;
+  perUserClaimLimit: number;
+  perUserUseLimit: number;
+  claimStartAt?: string | null;
+  claimEndAt?: string | null;
+  validFrom?: string | null;
+  validUntil: string;
+  enabled: boolean;
+  createdAt?: string | null;
+};
+export type BuyerVoucherView = {
+  buyerVoucherId: number;
+  voucherId: number;
+  code: string;
+  name: string;
+  description?: string | null;
+  discountType: "PERCENT" | "FIXED";
+  discountValue: number;
+  maxDiscountAmount?: number | null;
+  minOrderValue: number;
+  shopId: number;
+  shopName: string;
+  grantType: string;
+  status: "AVAILABLE" | "RESERVED" | "USED" | "EXPIRED" | "REVOKED";
+  validFrom?: string | null;
+  validUntil?: string | null;
+  claimedAt?: string | null;
+  usedAt?: string | null;
+};
+export type ApplicableVoucherItem = {
+  buyerVoucherId: number;
+  voucherId: number;
+  code: string;
+  name: string;
+  discountType: "PERCENT" | "FIXED";
+  discountValue: number;
+  maxDiscountAmount?: number | null;
+  minOrderValue: number;
+  shopId: number;
+  estimatedDiscount: number;
+  applicable: boolean;
+  reasonNotApplicable?: string | null;
 };
 export type OrderSummary = { id: number; shopId: number; shopName: string; status: string; total: number; paymentMethod: string; paymentStatus: string; createdAt: string; itemCount: number; trackingCode?: string | null; carrierStatus?: string | null; expectedDeliveryAt?: string | null };
 export type Review = { id: number; shopId: number; shopName: string; userId: number; author: string; rating: number; comment: string; createdAt: string; purchased: boolean };
@@ -282,7 +339,11 @@ export const api = {
   scans: () => request<ScanResult[]>("/scans/mine"),
   scanById: (id: number) => request<ScanResult>(`/scans/${id}`),
   trace: (batchCode: string) => request<BatchTrace>(`/trace/${encodeURIComponent(batchCode)}`),
-  createOrder: (payload: { items: { productId: number; quantityKg: number }[]; paymentMethod: string; deliveryName: string; deliveryPhone: string; deliveryAddress: string; deliveryProvinceName: string; deliveryWardName: string; note?: string }) => request<OrderDetail>("/orders", { method: "POST", body: JSON.stringify(payload) }),
+  createOrder: (payload: { items: { productId: number; quantityKg: number }[]; paymentMethod: string; deliveryName: string; deliveryPhone: string; deliveryAddress: string; deliveryProvinceName: string; deliveryWardName: string; note?: string; buyerVoucherId?: number }) => request<OrderDetail>("/orders", { method: "POST", body: JSON.stringify(payload) }),
+  buyerDiscoverVouchers: (shopId?: number) => request<VoucherResponse[]>(shopId ? `/buyer/vouchers/discover?shopId=${shopId}` : "/buyer/vouchers/discover"),
+  buyerClaimVoucher: (voucherId: number) => request<BuyerVoucherView>(`/buyer/vouchers/${voucherId}/claim`, { method: "POST" }),
+  buyerMyVouchers: (status?: string) => request<BuyerVoucherView[]>(status ? `/buyer/vouchers/mine?status=${encodeURIComponent(status)}` : "/buyer/vouchers/mine"),
+  buyerApplicableVouchers: (shopId: number, subtotal: number) => request<ApplicableVoucherItem[]>(`/buyer/vouchers/applicable?shopId=${shopId}&subtotal=${subtotal}`),
   ghnProvinces: () => request<GhnAddress[]>("/shipping/ghn/provinces"),
   ghnWards: (provinceId: number) => request<GhnAddress[]>(`/shipping/ghn/wards?provinceId=${provinceId}`),
   ghnQuote: (payload: { items: { productId: number; quantityKg: number }[]; paymentMethod: string; deliveryName: string; deliveryPhone: string; deliveryAddress: string; deliveryProvinceName: string; deliveryWardName: string }) => request<GhnShippingQuote>("/shipping/ghn/quote", { method: "POST", body: JSON.stringify(payload) }),

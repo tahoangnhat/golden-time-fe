@@ -29,6 +29,7 @@ import { Route as ScanRouteImport } from './routes/scan'
 import { Route as ShopRouteImport } from './routes/shop'
 import { Route as TraceRouteImport } from './routes/trace'
 import { Route as UpdatesRouteImport } from './routes/updates'
+import { Route as VouchersRouteImport } from './routes/vouchers'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as AdminAiScansRouteImport } from './routes/admin.ai-scans'
 import { Route as AdminArticlesRouteImport } from './routes/admin.articles'
@@ -161,6 +162,11 @@ const TraceRoute = TraceRouteImport.update({
 const UpdatesRoute = UpdatesRouteImport.update({
   id: '/updates',
   path: '/updates',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const VouchersRoute = VouchersRouteImport.update({
+  id: '/vouchers',
+  path: '/vouchers',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminIndexRoute = AdminIndexRouteImport.update({
@@ -350,6 +356,7 @@ export interface FileRoutesByFullPath {
   '/shop': typeof ShopRouteWithChildren
   '/trace': typeof TraceRoute
   '/updates': typeof UpdatesRoute
+  '/vouchers': typeof VouchersRoute
   '/admin/ai-scans': typeof AdminAiScansRoute
   '/admin/articles': typeof AdminArticlesRoute
   '/admin/dashboard': typeof AdminDashboardRoute
@@ -403,6 +410,7 @@ export interface FileRoutesByTo {
   '/scan': typeof ScanRoute
   '/trace': typeof TraceRoute
   '/updates': typeof UpdatesRoute
+  '/vouchers': typeof VouchersRoute
   '/admin/ai-scans': typeof AdminAiScansRoute
   '/admin/articles': typeof AdminArticlesRoute
   '/admin/dashboard': typeof AdminDashboardRoute
@@ -459,6 +467,7 @@ export interface FileRoutesById {
   '/shop': typeof ShopRouteWithChildren
   '/trace': typeof TraceRoute
   '/updates': typeof UpdatesRoute
+  '/vouchers': typeof VouchersRoute
   '/admin/ai-scans': typeof AdminAiScansRoute
   '/admin/articles': typeof AdminArticlesRoute
   '/admin/dashboard': typeof AdminDashboardRoute
@@ -516,6 +525,7 @@ export interface FileRouteTypes {
     | '/shop'
     | '/trace'
     | '/updates'
+    | '/vouchers'
     | '/admin/ai-scans'
     | '/admin/articles'
     | '/admin/dashboard'
@@ -569,6 +579,7 @@ export interface FileRouteTypes {
     | '/scan'
     | '/trace'
     | '/updates'
+    | '/vouchers'
     | '/admin/ai-scans'
     | '/admin/articles'
     | '/admin/dashboard'
@@ -624,6 +635,7 @@ export interface FileRouteTypes {
     | '/shop'
     | '/trace'
     | '/updates'
+    | '/vouchers'
     | '/admin/ai-scans'
     | '/admin/articles'
     | '/admin/dashboard'
@@ -680,6 +692,7 @@ export interface RootRouteChildren {
   ShopRoute: typeof ShopRouteWithChildren
   TraceRoute: typeof TraceRoute
   UpdatesRoute: typeof UpdatesRoute
+  VouchersRoute: typeof VouchersRoute
   AppLoginRoute: typeof AppLoginRoute
 }
 
@@ -823,6 +836,13 @@ declare module '@tanstack/react-router' {
       path: '/updates'
       fullPath: '/updates'
       preLoaderRoute: typeof UpdatesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/vouchers': {
+      id: '/vouchers'
+      path: '/vouchers'
+      fullPath: '/vouchers'
+      preLoaderRoute: typeof VouchersRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin/': {
@@ -1180,6 +1200,7 @@ const rootRouteChildren: RootRouteChildren = {
   ShopRoute: ShopRouteWithChildren,
   TraceRoute: TraceRoute,
   UpdatesRoute: UpdatesRoute,
+  VouchersRoute: VouchersRoute,
   AppLoginRoute: AppLoginRoute,
 }
 export const routeTree = rootRouteImport
