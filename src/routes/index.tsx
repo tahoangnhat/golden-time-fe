@@ -56,7 +56,7 @@ function HomePage() {
   return (
     <SiteShell>
       {/* HERO */}
-      <section className="relative isolate flex min-h-[640px] items-center overflow-hidden lg:min-h-[720px]">
+      <section className="golden-time-hero relative isolate flex min-h-[640px] items-center overflow-hidden lg:min-h-[720px]">
         <img
           src="/images/golden-time-hero.jpg"
           alt=""
@@ -71,8 +71,10 @@ function HomePage() {
               <Sparkles className="h-3.5 w-3.5" /> AI Fruit Intelligence · Made in Vietnam
             </div>
             <h1 className="text-4xl lg:text-6xl font-extrabold tracking-tight leading-[1.05]">
-              Chọn trái cây <br className="hidden lg:block" />
-              thông minh cùng <span className="text-primary">Golden Time</span>
+              <span className="hero-title-fade block">Chọn trái cây thông minh cùng</span>
+              <span className="block overflow-hidden pb-1">
+                <span className="hero-title-slide inline-block text-primary">Golden Time</span>
+              </span>
             </h1>
             <p className="mt-6 text-base lg:text-lg text-muted-foreground max-w-xl">
               Nền tảng giúp người dùng đánh giá chất lượng trái cây, xem dinh dưỡng, so sánh giá và mua trái
