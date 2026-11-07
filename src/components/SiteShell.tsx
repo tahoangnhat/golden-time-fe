@@ -9,7 +9,6 @@ import { BrandMark } from "@/components/BrandMark";
 const NAV = [
   { to: "/", label: "Trang chủ" },
   { to: "/knowledge", label: "Kiến thức" },
-  { to: "/updates", label: "Cập nhật ứng dụng" },
   { to: "/about", label: "Về Golden Time" },
   { to: "/contact", label: "Liên hệ" },
 ] as const;

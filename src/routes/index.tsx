@@ -1,8 +1,9 @@
+import { useEffect, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Sparkles, ArrowRight, BookOpen, Leaf, Clock } from "lucide-react";
 import { SiteShell, Section } from "@/components/SiteShell";
 import { DownloadAppDialog } from "@/components/DownloadAppDialog";
-import type { Article as ApiArticle } from "@/lib/api";
+import { api, type Article as ApiArticle } from "@/lib/api";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -21,6 +22,37 @@ export const Route = createFileRoute("/")({
 });
 
 function HomePage() {
+  const [latestArticles, setLatestArticles] = useState<ApiArticle[]>([]);
+  const [articlesLoading, setArticlesLoading] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    api.articles()
+      .then((articles) => {
+        if (cancelled) return;
+        const latest = articles
+          .filter((article) => article.published)
+          .sort((a, b) => {
+            const dateA = a.publishedAt ? new Date(a.publishedAt).getTime() : 0;
+            const dateB = b.publishedAt ? new Date(b.publishedAt).getTime() : 0;
+            return dateB - dateA;
+          })
+          .slice(0, 3);
+        setLatestArticles(latest);
+      })
+      .catch(() => {
+        if (!cancelled) setLatestArticles([]);
+      })
+      .finally(() => {
+        if (!cancelled) setArticlesLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   return (
     <SiteShell>
       {/* HERO */}
@@ -90,7 +122,78 @@ function HomePage() {
         </div>
       </section>
 
+      <section className="mx-auto max-w-7xl px-5 pb-20 lg:px-8" aria-labelledby="latest-content-title">
+        <div className="mb-5 flex items-end justify-between gap-4">
+          <div>
+            <h2 id="latest-content-title" className="text-xl font-extrabold tracking-tight text-foreground sm:text-2xl">
+              Our latest content
+            </h2>
+            <p className="mt-1.5 text-sm text-muted-foreground sm:text-base">
+              Check out what&apos;s new in our company !
+            </p>
+          </div>
+          <Link
+            to="/knowledge"
+            className="group mb-1 inline-flex shrink-0 items-center gap-2 text-sm font-semibold text-primary transition-colors hover:text-primary/75"
+          >
+            See all <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-1" />
+          </Link>
+        </div>
+
+        {articlesLoading ? (
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3" aria-label="Loading latest articles">
+            {[0, 1, 2].map((item) => (
+              <div key={item} className="aspect-[4/3] animate-pulse rounded-xl bg-muted" />
+            ))}
+          </div>
+        ) : latestArticles.length > 0 ? (
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {latestArticles.map((article) => (
+              <LatestContentCard key={article.id} article={article} />
+            ))}
+          </div>
+        ) : (
+          <p className="rounded-2xl border border-border bg-white px-5 py-8 text-center text-sm text-muted-foreground">
+            Bài viết mới sẽ được cập nhật tại đây.
+          </p>
+        )}
+      </section>
+
     </SiteShell>
+  );
+}
+
+function LatestContentCard({ article }: { article: ApiArticle }) {
+  return (
+    <Link
+      to="/knowledge/$slug"
+      params={{ slug: article.slug }}
+      className="group relative z-0 block aspect-[4/3] overflow-hidden rounded-xl bg-[#50524f] shadow-sm transition-[transform,box-shadow] duration-300 ease-out hover:z-10 hover:-translate-y-2 hover:scale-[1.025] hover:shadow-[0_22px_45px_-16px_rgba(20,35,23,0.5)] focus-visible:z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+    >
+      {article.coverUrl ? (
+        <img
+          src={article.coverUrl}
+          alt={article.coverAlt || article.title}
+          loading="lazy"
+          className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-110"
+        />
+      ) : (
+        <div className={`absolute inset-0 grid place-items-center bg-gradient-to-br ${article.gradient}`}>
+          <span className="text-8xl drop-shadow-lg transition-transform duration-700 ease-out group-hover:scale-110 group-hover:rotate-6">
+            {article.emoji}
+          </span>
+        </div>
+      )}
+      <div className="absolute inset-0 bg-black/55 transition-colors duration-300 group-hover:bg-black/65" />
+      <div className="absolute inset-0 grid place-items-center p-6 text-center sm:p-7">
+        <h3 className="line-clamp-4 max-w-[22rem] text-xl font-bold leading-tight tracking-tight text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.4)] transition-transform duration-300 group-hover:scale-[1.035] sm:text-2xl lg:text-[1.75rem]">
+          {article.title}
+        </h3>
+      </div>
+      <span className="absolute bottom-4 right-4 grid h-10 w-10 translate-y-2 place-items-center rounded-full bg-white/95 text-primary opacity-0 shadow-md transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100">
+        <ArrowRight className="h-4 w-4" />
+      </span>
+    </Link>
   );
 }
 
