@@ -1,29 +1,77 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Sparkles, ArrowRight, BookOpen, Leaf, Clock } from "lucide-react";
-import { SiteShell, Section } from "@/components/SiteShell";
-import { DownloadAppDialog } from "@/components/DownloadAppDialog";
+import {
+  Apple,
+  ArrowRight,
+  BarChart3,
+  Clock,
+  Leaf,
+  MapPin,
+  PackageCheck,
+  ScanLine,
+  ShoppingBasket,
+  Sparkles,
+  type LucideIcon,
+} from "lucide-react";
+import { SiteShell } from "@/components/SiteShell";
 import { api, type Article as ApiArticle } from "@/lib/api";
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Golden Time — Chọn trái cây thông minh cùng AI" },
+      { title: "Golden Time — Trái cây thông minh cùng AI" },
       {
         name: "description",
         content:
-          "Golden Time là nền tảng FoodTech Việt Nam giúp đánh giá chất lượng trái cây bằng AI, xem dinh dưỡng, so sánh giá và mua trái cây đáng tin cậy.",
+          "Golden Time là nền tảng công nghệ thực phẩm Việt Nam giúp đánh giá chất lượng trái cây bằng AI, xem dinh dưỡng, so sánh giá và mua trái cây đáng tin cậy.",
       },
-      { property: "og:title", content: "Golden Time — Chọn trái cây thông minh cùng AI" },
+      { property: "og:title", content: "Golden Time — Trái cây thông minh cùng AI" },
       { property: "og:description", content: "Quét AI · Dinh dưỡng · So sánh giá · Truy xuất nguồn gốc." },
     ],
   }),
   component: HomePage,
 });
 
+const homeFeatures: { icon: LucideIcon; title: string; description: string }[] = [
+  {
+    icon: ScanLine,
+    title: "Phân tích chất lượng bằng AI",
+    description: "Quét trái cây để xem độ tươi, độ chín và gợi ý lựa chọn nhanh hơn.",
+  },
+  {
+    icon: Apple,
+    title: "Dinh dưỡng trong từng loại quả",
+    description: "Tra cứu calo, vitamin và thông tin hữu ích cho khẩu phần của bạn.",
+  },
+  {
+    icon: BarChart3,
+    title: "So sánh giá trái cây",
+    description: "Tham khảo giá từ nhiều nguồn để chọn sản phẩm phù hợp ngân sách.",
+  },
+  {
+    icon: ShoppingBasket,
+    title: "Mua sắm tại cửa hàng đáng tin cậy",
+    description: "Tìm sản phẩm, xem thông tin cửa hàng và đặt hàng trực tiếp.",
+  },
+  {
+    icon: MapPin,
+    title: "Tìm cửa hàng gần bạn",
+    description: "Khám phá các cửa hàng trái cây quanh vị trí của bạn.",
+  },
+  {
+    icon: PackageCheck,
+    title: "Truy xuất nguồn gốc",
+    description: "Xem thông tin lô hàng, nơi cung cấp và các mốc kiểm tra.",
+  },
+];
+
 function HomePage() {
   const [latestArticles, setLatestArticles] = useState<ApiArticle[]>([]);
   const [articlesLoading, setArticlesLoading] = useState(true);
+  const heroRef = useRef<HTMLElement | null>(null);
+  const featuresRef = useRef<HTMLElement | null>(null);
+  const whySectionRef = useRef<HTMLElement | null>(null);
+  const whyTitleRef = useRef<HTMLHeadingElement | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -53,10 +101,62 @@ function HomePage() {
     };
   }, []);
 
+  useEffect(() => {
+    const section = heroRef.current;
+    if (!section) return;
+
+    if (!("IntersectionObserver" in window)) {
+      section.classList.add("is-visible");
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      ([entry]) => section.classList.toggle("is-visible", Boolean(entry?.isIntersecting)),
+      { threshold: 0.1 },
+    );
+    observer.observe(section);
+    return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    const section = featuresRef.current;
+    if (!section) return;
+
+    if (!("IntersectionObserver" in window)) {
+      section.classList.add("is-visible");
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      ([entry]) => section.classList.toggle("is-visible", Boolean(entry?.isIntersecting)),
+      { threshold: 0.12, rootMargin: "0px 0px -8% 0px" },
+    );
+    observer.observe(section);
+    return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    const section = whySectionRef.current;
+    const title = whyTitleRef.current;
+    if (!section || !title) return;
+
+    if (!("IntersectionObserver" in window)) {
+      section.classList.add("is-visible");
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      ([entry]) => section.classList.toggle("is-visible", Boolean(entry?.isIntersecting)),
+      { threshold: 0.5 },
+    );
+    observer.observe(title);
+    return () => observer.disconnect();
+  }, []);
+
   return (
     <SiteShell>
       {/* HERO */}
-      <section className="golden-time-hero relative isolate flex min-h-[640px] items-center overflow-hidden lg:min-h-[720px]">
+      <section ref={heroRef} className="golden-time-hero relative isolate flex min-h-[640px] items-center overflow-hidden lg:min-h-[720px]">
         <img
           src="/images/golden-time-hero.jpg"
           alt=""
@@ -68,10 +168,10 @@ function HomePage() {
         <div className="relative mx-auto w-full max-w-7xl px-5 py-16 lg:px-8 lg:py-24">
           <div className="max-w-3xl">
             <div className="inline-flex items-center gap-2 bg-white border border-border rounded-full px-3 py-1 text-xs font-semibold text-primary mb-6 gt-shadow-soft">
-              <Sparkles className="h-3.5 w-3.5" /> AI Fruit Intelligence · Made in Vietnam
+              <Sparkles className="h-3.5 w-3.5" /> Trí tuệ trái cây AI · Phát triển tại Việt Nam
             </div>
             <h1 className="text-4xl lg:text-6xl font-extrabold tracking-tight leading-[1.05]">
-              <span className="hero-title-fade block">Chọn trái cây thông minh cùng</span>
+              <span className="hero-title-fade block whitespace-nowrap text-[clamp(1.5rem,4vw,3.75rem)]">Trái cây thông minh cùng</span>
               <span className="block overflow-hidden pb-1">
                 <span className="hero-title-slide inline-block text-primary">Golden Time</span>
               </span>
@@ -80,46 +180,6 @@ function HomePage() {
               Nền tảng giúp người dùng đánh giá chất lượng trái cây, xem dinh dưỡng, so sánh giá và mua trái
               cây đáng tin cậy — tất cả trong một ứng dụng.
             </p>
-            <div className="mt-8 flex flex-wrap gap-3">
-              <Link
-                to="/knowledge"
-                className="inline-flex items-center gap-2 px-6 py-3.5 rounded-2xl bg-white border border-border text-foreground font-semibold hover:bg-cream"
-              >
-                <BookOpen className="h-5 w-5 text-primary" /> Đọc kiến thức trái cây
-              </Link>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section className="mx-auto max-w-7xl px-5 lg:px-8 pb-16">
-        <div className="rounded-3xl border border-border bg-white p-6 sm:p-8">
-          <h2 className="text-xl font-extrabold tracking-tight text-foreground">Golden Time và quyền truy cập Google</h2>
-          <p className="mt-3 max-w-4xl text-sm leading-7 text-muted-foreground">
-            Golden Time giúp người dùng phân tích ảnh trái cây bằng AI, tra cứu dinh dưỡng, tìm cửa hàng và đặt hàng; doanh nghiệp có thể đăng ký cửa hàng qua cổng đối tác. Khi tích hợp Gmail API được bật, Golden Time chỉ dùng quyền gửi thư để thông báo kết quả xét duyệt hồ sơ đến email doanh nghiệp đã đăng ký, không đọc hộp thư.
-          </p>
-          <Link to="/privacy" className="mt-4 inline-flex text-sm font-semibold text-primary underline underline-offset-4 hover:text-primary/80">
-            Đọc Chính sách quyền riêng tư
-          </Link>
-        </div>
-      </section>
-
-      <section className="mx-auto max-w-7xl px-5 lg:px-8 pb-16">
-        <div className="rounded-[2rem] bg-cream px-6 py-9 text-center sm:px-10 sm:py-11">
-          <h2 className="text-2xl font-extrabold tracking-tight text-foreground sm:text-3xl">
-            Golden Time trên điện thoại
-          </h2>
-          <p className="mx-auto mt-3 max-w-2xl text-sm leading-relaxed text-muted-foreground sm:text-base">
-            Quét trái cây, kiểm tra chất lượng và mua trái cây đáng tin cậy ngay trên điện thoại.
-          </p>
-          <div className="mt-6">
-            <DownloadAppDialog
-              trigger={
-                <button className="inline-flex h-11 items-center justify-center rounded-xl gt-gradient px-5 text-sm font-semibold text-white shadow-sm transition hover:brightness-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2">
-                  Tải ứng dụng
-                </button>
-              }
-            />
           </div>
         </div>
       </section>
@@ -128,22 +188,22 @@ function HomePage() {
         <div className="mb-5 flex items-end justify-between gap-4">
           <div>
             <h2 id="latest-content-title" className="text-xl font-extrabold tracking-tight text-foreground sm:text-2xl">
-              Our latest content
+              Nội dung mới nhất
             </h2>
             <p className="mt-1.5 text-sm text-muted-foreground sm:text-base">
-              Check out what&apos;s new in our company !
+              Khám phá nội dung mới nhất từ Golden Time.
             </p>
           </div>
           <Link
             to="/knowledge"
             className="group mb-1 inline-flex shrink-0 items-center gap-2 text-sm font-semibold text-primary transition-colors hover:text-primary/75"
           >
-            See all <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-1" />
+            Xem tất cả <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-1" />
           </Link>
         </div>
 
         {articlesLoading ? (
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3" aria-label="Loading latest articles">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3" aria-label="Đang tải bài viết mới nhất">
             {[0, 1, 2].map((item) => (
               <div key={item} className="aspect-[4/3] animate-pulse rounded-xl bg-muted" />
             ))}
@@ -159,6 +219,181 @@ function HomePage() {
             Bài viết mới sẽ được cập nhật tại đây.
           </p>
         )}
+      </section>
+
+      <section
+        ref={featuresRef}
+        className="home-features mx-auto grid max-w-7xl items-start gap-12 px-5 pb-24 pt-4 lg:grid-cols-[1.1fr_0.9fr] lg:gap-16 lg:px-8"
+        aria-labelledby="home-features-title"
+      >
+        <div>
+          <div className="home-feature-reveal max-w-2xl">
+            <p className="mb-3 inline-flex items-center gap-2 rounded-full bg-cream px-3 py-1.5 text-xs font-bold text-primary">
+              <Sparkles className="h-3.5 w-3.5" /> Khám phá Golden Time
+            </p>
+            <h2 id="home-features-title" className="text-3xl font-extrabold leading-tight tracking-tight text-foreground sm:text-4xl">
+              Mọi điều cần thiết để chọn trái cây thông minh hơn
+            </h2>
+            <p className="mt-4 max-w-xl text-sm leading-7 text-muted-foreground sm:text-base">
+              Từ quét AI đến tìm cửa hàng, Golden Time giúp bạn tự tin hơn trong từng lựa chọn.
+            </p>
+          </div>
+
+          <div className="mt-8 divide-y divide-border/80 border-b border-border/80">
+            {homeFeatures.map(({ icon: Icon, title, description }, index) => (
+              <article
+                key={title}
+                className="home-feature-reveal group flex gap-4 py-4 sm:gap-5 sm:py-5"
+                style={{ transitionDelay: `${index * 65}ms` }}
+              >
+                <span className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-cream text-primary transition duration-300 group-hover:scale-110 group-hover:bg-primary group-hover:text-white sm:h-[52px] sm:w-[52px]">
+                  <Icon className="h-5 w-5" strokeWidth={1.8} />
+                </span>
+                <div className="pt-0.5">
+                  <h3 className="text-base font-bold tracking-tight text-foreground sm:text-lg">{title}</h3>
+                  <p className="mt-1.5 max-w-xl text-sm leading-6 text-muted-foreground">{description}</p>
+                </div>
+              </article>
+            ))}
+          </div>
+
+          <Link
+            to="/scan"
+            className="home-feature-reveal group mt-6 inline-flex items-center gap-2 text-sm font-bold text-primary transition-colors hover:text-primary/75"
+            style={{ transitionDelay: "390ms" }}
+          >
+            Thử quét trái cây bằng AI <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-1" />
+          </Link>
+        </div>
+
+        <div className="home-feature-reveal relative mx-auto w-full max-w-[480px] lg:sticky lg:top-24" style={{ transitionDelay: "160ms" }}>
+          <div aria-hidden="true" className="absolute inset-7 rounded-full bg-[radial-gradient(circle,#e9f2d7_0%,#f5f7eb_54%,rgba(255,255,255,0)_76%)]" />
+          <div className="relative overflow-hidden rounded-[30px] border border-[#e4ebd9] bg-[#f6f8f0] p-4 shadow-[0_25px_65px_-35px_rgba(25,65,36,0.28)] sm:rounded-[36px] sm:p-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <span className="grid h-9 w-9 place-items-center rounded-xl bg-white text-lg shadow-sm">🍊</span>
+                <span>
+                  <span className="block text-xs font-extrabold text-foreground">Golden Time</span>
+                  <span className="mt-0.5 block text-[10px] text-muted-foreground">Trí tuệ trái cây AI</span>
+                </span>
+              </div>
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-white px-3 py-1.5 text-[9px] font-bold uppercase tracking-wide text-primary shadow-sm">
+                <span className="h-1.5 w-1.5 rounded-full bg-primary" /> AI đang quét
+              </span>
+            </div>
+
+            <div className="relative mt-5 grid min-h-[290px] place-items-center overflow-hidden rounded-[25px] bg-[linear-gradient(145deg,#e8f0d8,#f8f5df_53%,#f7dfb0)] sm:min-h-[340px] sm:rounded-[30px]">
+              <div aria-hidden="true" className="absolute inset-0 bg-[radial-gradient(circle_at_50%_43%,rgba(255,255,255,0.82),transparent_59%)]" />
+              <div aria-hidden="true" className="absolute left-[13%] top-[18%] h-2 w-2 rounded-full bg-white/80" />
+              <div aria-hidden="true" className="absolute right-[17%] top-[25%] h-3 w-3 rounded-full bg-white/80" />
+              <span aria-hidden="true" className="relative z-10 -rotate-6 text-[135px] drop-shadow-[0_18px_14px_rgba(77,81,40,0.24)] transition-transform duration-700 hover:rotate-0 hover:scale-110 sm:text-[165px]">🥭</span>
+              <span aria-hidden="true" className="absolute left-[16%] top-[20%] h-14 w-14 rounded-tl-xl border-l-[3px] border-t-[3px] border-white/90" />
+              <span aria-hidden="true" className="absolute right-[16%] top-[20%] h-14 w-14 rounded-tr-xl border-r-[3px] border-t-[3px] border-white/90" />
+              <span aria-hidden="true" className="absolute bottom-[18%] left-[16%] h-14 w-14 rounded-bl-xl border-b-[3px] border-l-[3px] border-white/90" />
+              <span aria-hidden="true" className="absolute bottom-[18%] right-[16%] h-14 w-14 rounded-br-xl border-b-[3px] border-r-[3px] border-white/90" />
+              <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between rounded-2xl border border-white/80 bg-white/90 px-4 py-3 shadow-sm backdrop-blur">
+                <span>
+                  <span className="block text-[9px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">Minh họa kết quả quét</span>
+                  <span className="mt-1 block text-sm font-extrabold text-foreground">Xoài · Tươi tốt</span>
+                </span>
+                <span className="rounded-xl bg-[#edf5df] px-3 py-2 text-xs font-extrabold text-primary">92/100</span>
+              </div>
+            </div>
+
+            <div className="mt-4 grid grid-cols-3 gap-2.5">
+              {[
+                ["Chất lượng", "AI đánh giá", "🌿"],
+                ["Dinh dưỡng", "Thông tin quả", "🍃"],
+                ["Giá tốt", "So sánh nhanh", "📊"],
+              ].map(([label, detail, emoji]) => (
+                <div key={label} className="rounded-2xl border border-[#e9ecdf] bg-white/90 p-3 text-center">
+                  <span aria-hidden="true" className="text-base">{emoji}</span>
+                  <p className="mt-1 text-[10px] font-extrabold text-foreground">{label}</p>
+                  <p className="mt-0.5 text-[9px] text-muted-foreground">{detail}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div className="absolute -left-2 top-[15%] hidden items-center gap-2 rounded-2xl border border-white bg-white/95 px-3 py-2.5 shadow-lg sm:flex">
+            <span className="grid h-9 w-9 place-items-center rounded-xl bg-[#fff1d8] text-lg">🍎</span>
+            <span><span className="block text-[9px] text-muted-foreground">Lựa chọn tươi ngon</span><span className="mt-0.5 block text-[11px] font-extrabold">Chọn quả ngon</span></span>
+          </div>
+          <div className="absolute -right-2 bottom-[15%] hidden items-center gap-2 rounded-2xl border border-white bg-white/95 px-3 py-2.5 shadow-lg sm:flex">
+            <span className="grid h-9 w-9 place-items-center rounded-xl bg-[#edf5df] text-lg">🛒</span>
+            <span><span className="block text-[9px] text-muted-foreground">Cửa hàng gần bạn</span><span className="mt-0.5 block text-[11px] font-extrabold">Mua sắm tiện lợi</span></span>
+          </div>
+        </div>
+      </section>
+
+      <section
+        ref={whySectionRef}
+        className="why-choose mx-auto grid max-w-7xl items-center gap-10 px-5 pb-24 pt-2 lg:grid-cols-[1fr_0.9fr] lg:gap-16 lg:px-8"
+        aria-labelledby="why-choose-title"
+      >
+        <div className="max-w-2xl">
+          <h2
+            ref={whyTitleRef}
+            id="why-choose-title"
+            className="why-choose-title text-3xl font-extrabold leading-tight tracking-tight text-foreground sm:text-4xl"
+          >
+            Tại sao nên chọn Golden Time?
+          </h2>
+          <ul className="relative mt-8 space-y-5 before:absolute before:bottom-4 before:left-[11px] before:top-4 before:w-px before:bg-border">
+            {[
+              "Nhận diện và đánh giá chất lượng trái cây bằng AI",
+              "So sánh giá thị trường từ nhiều nguồn",
+              "Tra cứu thông tin dinh dưỡng chi tiết, dễ hiểu",
+              "Xem độ tươi, độ chín và hướng dẫn bảo quản",
+            ].map((benefit) => (
+              <li key={benefit} className="relative flex items-start gap-4">
+                <span className="relative z-10 mt-0.5 grid h-6 w-6 shrink-0 place-items-center rounded-full bg-[#fff2df]">
+                  <span className="h-2 w-2 rounded-full bg-[#fb8500]" />
+                </span>
+                <p className="pt-1 text-sm font-semibold leading-6 text-foreground sm:text-base">{benefit}</p>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        <div aria-hidden="true" className="hidden w-full max-w-[480px] justify-self-end lg:block">
+          <svg viewBox="0 0 480 360" className="h-auto w-full" fill="none">
+            <g fill="#F2F0F5">
+              <path d="M408 72h72v72h-72z" />
+              <path d="m336 144 72-72v72z" />
+              <path d="M408 144h72v72h-72z" />
+              <path d="m264 216 72-72v72z" />
+              <path d="M336 216h72v72h-72z" />
+              <path d="m408 216 72 72h-72z" />
+              <path d="M192 288h72v72h-72z" />
+              <path d="m264 288 72-72v72z" />
+              <path d="M336 288h72v72h-72z" />
+              <path d="m408 288 72 72h-72z" />
+            </g>
+            <g fill="#5F9861">
+              <path d="m408 144 72 72h-72z" />
+              <path d="m336 216 72 72h-72z" />
+              <path d="M264 288h72v72h-72z" />
+              <path d="m120 288 72 72h-72z" />
+            </g>
+            <g fill="#FB8500">
+              <path d="m408 0 72 72h-72z" />
+              <path d="m192 288 72 72h-72z" />
+              <path d="m408 288 72 72h-72z" />
+            </g>
+          </svg>
+        </div>
+      </section>
+
+      <section className="mx-auto max-w-7xl px-5 pb-16 lg:px-8">
+        <div className="rounded-3xl border border-border bg-white p-6 sm:p-8">
+          <h2 className="text-xl font-extrabold tracking-tight text-foreground">Golden Time và quyền truy cập Google</h2>
+          <p className="mt-3 max-w-4xl text-sm leading-7 text-muted-foreground">
+            Golden Time giúp người dùng phân tích ảnh trái cây bằng AI, tra cứu dinh dưỡng, tìm cửa hàng và đặt hàng; doanh nghiệp có thể đăng ký cửa hàng qua cổng đối tác. Khi tích hợp Gmail API được bật, Golden Time chỉ dùng quyền gửi thư để thông báo kết quả xét duyệt hồ sơ đến email doanh nghiệp đã đăng ký, không đọc hộp thư.
+          </p>
+          <Link to="/privacy" className="mt-4 inline-flex text-sm font-semibold text-primary underline underline-offset-4 hover:text-primary/80">
+            Đọc Chính sách quyền riêng tư
+          </Link>
+        </div>
       </section>
 
     </SiteShell>

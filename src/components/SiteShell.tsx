@@ -19,7 +19,7 @@ export function Logo({ className }: { className?: string }) {
       <BrandMark className="h-10 w-10 rounded-2xl bg-white p-1.5 object-contain gt-shadow transition-transform group-hover:scale-105" />
       <div className="leading-tight">
         <div className="font-extrabold tracking-tight text-[17px]">Golden Time</div>
-        <div className="text-[10px] text-muted-foreground -mt-0.5 font-medium">AI Fruit Intelligence</div>
+        <div className="text-[10px] text-muted-foreground -mt-0.5 font-medium">Trí tuệ trái cây AI</div>
       </div>
     </Link>
   );
@@ -116,8 +116,8 @@ export function SiteFooter() {
       </div>
       <div className="border-t border-white/10">
         <div className="mx-auto max-w-7xl px-5 lg:px-8 py-5 text-xs text-white/60 flex flex-wrap items-center justify-between gap-2">
-          <div>© 2026 Golden Time. All rights reserved.</div>
-          <div>Made with 🍊 in Vietnam</div>
+          <div>© 2026 Golden Time. Bảo lưu mọi quyền.</div>
+          <div>Được làm bằng 🍊 tại Việt Nam</div>
         </div>
       </div>
     </footer>
