@@ -88,12 +88,13 @@ function KnowledgeIndexPage() {
             aria-hidden="true"
             className="absolute inset-0 h-full w-full object-cover object-center"
           />
+          <div aria-hidden="true" className="absolute inset-0 bg-[#343832]/45" />
           <div className="relative mx-auto flex h-full max-w-7xl items-center px-5 sm:px-9 lg:px-8">
             <div className="max-w-4xl">
-              <h1 className="text-3xl font-extrabold tracking-tight text-[#173d26] sm:text-4xl lg:text-[2.75rem]">
+              <h1 className="text-3xl font-extrabold tracking-tight text-white drop-shadow-sm sm:text-4xl lg:text-[2.75rem]">
                 Kiến thức trái cây &amp; dinh dưỡng
               </h1>
-              <p className="mt-3 max-w-3xl text-sm leading-relaxed text-[#173d26] sm:text-base">
+              <p className="mt-3 max-w-3xl text-sm leading-relaxed text-white/95 drop-shadow-sm sm:text-base">
                 Tổng hợp bài viết giúp bạn chọn, bảo quản và sử dụng trái cây thông minh hơn mỗi ngày.
               </p>
             </div>
