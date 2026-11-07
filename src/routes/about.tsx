@@ -69,10 +69,9 @@ function AboutPage() {
           <div
             aria-hidden="true"
             data-about-image
-            className="absolute inset-y-0 right-0 w-full bg-cover bg-[center_58%] will-change-transform sm:w-[58%]"
+            className="absolute inset-0 w-full bg-cover bg-center will-change-transform"
             style={{
-              backgroundImage:
-                "linear-gradient(90deg, #606562 0%, rgb(96 101 98 / 20%) 28%, rgb(20 31 23 / 55%) 100%), url('/images/golden-time-hero.jpg')",
+              backgroundImage: "url('/images/about-banner.png')",
             }}
           />
           <div className="relative mx-auto flex min-h-[190px] max-w-7xl items-center px-5 py-10 sm:min-h-[220px] lg:px-8">

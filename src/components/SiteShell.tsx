@@ -19,7 +19,6 @@ export function Logo({ className }: { className?: string }) {
       <BrandMark className="h-10 w-10 rounded-2xl bg-white p-1.5 object-contain gt-shadow transition-transform group-hover:scale-105" />
       <div className="leading-tight">
         <div className="font-extrabold tracking-tight text-[17px]">Golden Time</div>
-        <div className="text-[10px] text-muted-foreground -mt-0.5 font-medium">Trí tuệ trái cây AI</div>
       </div>
     </Link>
   );

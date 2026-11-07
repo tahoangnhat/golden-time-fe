@@ -12,7 +12,6 @@ function ContactPage() {
     <SiteShell>
       <Section>
         <SectionHeading
-          eyebrow="Liên hệ"
           title="Thông tin liên hệ"
           subtitle="Liên hệ Golden Time về tài khoản, đơn hàng, hồ sơ doanh nghiệp hoặc quyền riêng tư."
         />
