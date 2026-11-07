@@ -86,9 +86,6 @@ function AboutPage() {
 
         <div className="mx-auto max-w-6xl px-5 pb-20 pt-12 sm:pt-16 lg:px-8">
           <section className="py-3 text-center sm:py-5">
-            <p className="text-xs font-bold uppercase tracking-[0.2em] text-primary sm:text-sm">
-              Golden Time
-            </p>
             <h2 className="mt-3 text-2xl font-extrabold uppercase tracking-tight text-foreground sm:text-3xl lg:text-4xl">
               Câu chuyện phía sau Golden Time
             </h2>

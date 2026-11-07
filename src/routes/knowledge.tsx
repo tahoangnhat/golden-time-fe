@@ -2,7 +2,6 @@ import { createFileRoute, Outlet, useRouterState } from "@tanstack/react-router"
 import { useEffect, useMemo, useState } from "react";
 import {
   Apple,
-  BookOpen,
   CalendarDays,
   HeartPulse,
   LayoutGrid,
@@ -11,7 +10,6 @@ import {
   PackageCheck,
   Search,
   ShoppingBasket,
-  Sparkles,
   Utensils,
   type LucideIcon,
 } from "lucide-react";
@@ -82,40 +80,28 @@ function KnowledgeIndexPage() {
 
   return (
     <SiteShell>
-      <section className="px-5 py-8 lg:px-8 lg:py-10">
-        <div className="mx-auto max-w-7xl">
-          <section className="relative isolate min-h-[190px] overflow-hidden rounded-[2rem] border border-[#e4edcf] bg-[#f2f7e4] sm:min-h-[210px]">
-            <img
-              src="/images/knowledge-banner-photo.avif"
-              alt=""
-              aria-hidden="true"
-              className="absolute inset-0 h-full w-full object-cover object-center opacity-55"
-            />
-            <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-r from-[#f4f8e8]/95 via-[#f4f8e8]/85 to-[#fff7d9]/55" />
-            <div className="relative z-10 flex min-h-[190px] items-center px-6 py-7 sm:min-h-[210px] sm:px-9 lg:px-12">
-              <div className="max-w-2xl">
-                <div className="mb-3 inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-primary">
-                  <Leaf className="h-4 w-4" /> Kiến thức
-                </div>
-                <h1 className="text-2xl font-extrabold tracking-tight text-[#173d26] sm:text-3xl lg:text-4xl">
-                  Kiến thức trái cây &amp; dinh dưỡng
-                </h1>
-                <p className="mt-3 max-w-xl text-sm leading-relaxed text-foreground/70 sm:text-base">
-                  Tổng hợp bài viết giúp bạn chọn, bảo quản và sử dụng trái cây thông minh hơn mỗi ngày.
-                </p>
-              </div>
-              <div aria-hidden="true" className="absolute right-8 top-1/2 hidden h-40 w-60 -translate-y-1/2 items-center justify-center sm:flex lg:right-14">
-                <div className="absolute bottom-3 left-9 h-24 w-40 rotate-[-5deg] rounded-b-[2rem] border-b-4 border-[#37744b] bg-[#fffdf2]/90 shadow-lg" />
-                <BookOpen className="relative z-10 h-24 w-24 text-[#37744b] drop-shadow-sm" strokeWidth={1.5} />
-                <span className="absolute bottom-1 left-3 text-4xl drop-shadow">🍊</span>
-                <span className="absolute right-5 top-1 text-4xl drop-shadow">🍎</span>
-                <span className="absolute bottom-0 right-2 text-4xl drop-shadow">🥭</span>
-                <Sparkles className="absolute left-2 top-3 h-6 w-6 text-amber-400" />
-              </div>
+      <section className="pb-8">
+        <header className="relative isolate h-[200px] w-full overflow-hidden bg-[#edf0df] sm:h-[205px]">
+          <img
+            src="/images/knowledge-banner-photo.avif"
+            alt=""
+            aria-hidden="true"
+            className="absolute inset-0 h-full w-full object-cover object-center"
+          />
+          <div className="relative mx-auto flex h-full max-w-7xl items-center px-5 sm:px-9 lg:px-8">
+            <div className="max-w-4xl">
+              <h1 className="text-3xl font-extrabold tracking-tight text-[#173d26] sm:text-4xl lg:text-[2.75rem]">
+                Kiến thức trái cây &amp; dinh dưỡng
+              </h1>
+              <p className="mt-3 max-w-3xl text-sm leading-relaxed text-[#173d26] sm:text-base">
+                Tổng hợp bài viết giúp bạn chọn, bảo quản và sử dụng trái cây thông minh hơn mỗi ngày.
+              </p>
             </div>
-          </section>
+          </div>
+        </header>
 
-          <div className="mt-5 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+        <div className="mx-auto max-w-7xl px-5 pt-6 lg:px-8">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <div className="flex gap-2 overflow-x-auto pb-1" aria-label="Lọc bài viết theo chủ đề">
               {categories.map((item) => {
                 const Icon = CATEGORY_ICONS[item] ?? Leaf;

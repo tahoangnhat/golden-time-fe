@@ -269,12 +269,12 @@ html.golden-time-android-app .gt-phone-status-bar { display: none; }
 
 .home-features .home-feature-reveal {
   opacity: 0;
-  transform: scale(0.92) translateY(14px);
+  transform: scale(0.86) translateY(8px);
   transition: opacity 520ms ease, transform 620ms cubic-bezier(0.2, 0.75, 0.25, 1);
   will-change: opacity, transform;
 }
 
-.home-features.is-visible .home-feature-reveal {
+.home-features .home-feature-reveal.is-visible {
   opacity: 1;
   transform: scale(1) translateY(0);
 }
@@ -295,7 +295,7 @@ html.golden-time-android-app .gt-phone-status-bar { display: none; }
   .golden-time-hero .hero-title-fade,
   .golden-time-hero .hero-title-slide,
   .home-features .home-feature-reveal,
-  .home-features.is-visible .home-feature-reveal,
+  .home-features .home-feature-reveal.is-visible,
   .why-choose .why-choose-title,
   .why-choose.is-visible .why-choose-title {
     animation: none;

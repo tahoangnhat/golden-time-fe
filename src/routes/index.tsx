@@ -121,16 +121,24 @@ function HomePage() {
     const section = featuresRef.current;
     if (!section) return;
 
+    const items = section.querySelectorAll<HTMLElement>(".home-feature-reveal");
+
     if (!("IntersectionObserver" in window)) {
-      section.classList.add("is-visible");
+      items.forEach((item) => item.classList.add("is-visible"));
       return;
     }
 
     const observer = new IntersectionObserver(
-      ([entry]) => section.classList.toggle("is-visible", Boolean(entry?.isIntersecting)),
-      { threshold: 0.12, rootMargin: "0px 0px -8% 0px" },
+      (entries) => {
+        entries.forEach((entry) => {
+          if (!entry.isIntersecting) return;
+          entry.target.classList.add("is-visible");
+          observer.unobserve(entry.target);
+        });
+      },
+      { threshold: 0.18, rootMargin: "0px 0px -6% 0px" },
     );
-    observer.observe(section);
+    items.forEach((item) => observer.observe(item));
     return () => observer.disconnect();
   }, []);
 
@@ -236,10 +244,10 @@ function HomePage() {
             {homeFeatures.map(({ icon: Icon, title, description }, index) => (
               <article
                 key={title}
-                className="home-feature-reveal group flex gap-4 py-4 sm:gap-5 sm:py-5"
-                style={{ transitionDelay: `${index * 65}ms` }}
+                className="home-feature-reveal flex gap-4 py-4 sm:gap-5 sm:py-5"
+                style={{ transitionDelay: `${index * 75}ms` }}
               >
-                <span className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-cream text-primary transition duration-300 group-hover:scale-110 group-hover:bg-primary group-hover:text-white sm:h-[52px] sm:w-[52px]">
+                <span className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-cream text-primary sm:h-[52px] sm:w-[52px]">
                   <Icon className="h-5 w-5" strokeWidth={1.8} />
                 </span>
                 <div className="pt-0.5">
