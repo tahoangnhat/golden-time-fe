@@ -86,7 +86,7 @@ function KnowledgeIndexPage() {
         <div className="mx-auto max-w-7xl">
           <section className="relative isolate min-h-[190px] overflow-hidden rounded-[2rem] border border-[#e4edcf] bg-[#f2f7e4] sm:min-h-[210px]">
             <img
-              src="/images/knowledge-banner-bg.jpg"
+              src="/images/knowledge-banner-photo.avif"
               alt=""
               aria-hidden="true"
               className="absolute inset-0 h-full w-full object-cover object-center opacity-55"

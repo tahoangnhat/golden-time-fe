@@ -1,3 +1,4 @@
+import { useEffect, useRef } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Apple, BarChart3, MapPin, Sparkles } from "lucide-react";
 import { SiteShell } from "@/components/SiteShell";
@@ -31,22 +32,55 @@ const TOOLS = [
 ];
 
 function AboutPage() {
+  const bannerRef = useRef<HTMLElement>(null);
+
+  useEffect(() => {
+    const banner = bannerRef.current;
+    if (!banner || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+    const title = banner.querySelector<HTMLElement>("[data-about-title]");
+    const image = banner.querySelector<HTMLElement>("[data-about-image]");
+    let frame = 0;
+
+    const updateParallax = () => {
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(() => {
+        const offset = Math.min(Math.max(window.scrollY, 0), 260);
+        if (title) {
+          title.style.transform = `translate3d(0, ${offset * 0.12}px, 0)`;
+          title.style.opacity = String(1 - offset / 700);
+        }
+        if (image) image.style.transform = `translate3d(0, ${offset * 0.08}px, 0) scale(1.06)`;
+      });
+    };
+
+    window.addEventListener("scroll", updateParallax, { passive: true });
+    updateParallax();
+    return () => {
+      window.removeEventListener("scroll", updateParallax);
+      cancelAnimationFrame(frame);
+    };
+  }, []);
+
   return (
     <SiteShell>
       <div className="bg-white text-foreground">
-        <section className="relative isolate min-h-[190px] overflow-hidden bg-[#606562] sm:min-h-[220px]">
+        <section ref={bannerRef} className="relative isolate min-h-[190px] overflow-hidden bg-[#606562] sm:min-h-[220px]">
           <div
             aria-hidden="true"
-            className="absolute inset-y-0 right-0 w-full bg-cover bg-[center_58%] sm:w-[58%]"
+            data-about-image
+            className="absolute inset-y-0 right-0 w-full bg-cover bg-[center_58%] will-change-transform sm:w-[58%]"
             style={{
               backgroundImage:
-                "linear-gradient(90deg, #606562 0%, rgb(96 101 98 / 30%) 28%, rgb(20 31 23 / 8%) 100%), url('/images/golden-time-hero.jpg')",
+                "linear-gradient(90deg, #606562 0%, rgb(96 101 98 / 20%) 28%, rgb(20 31 23 / 55%) 100%), url('/images/golden-time-hero.jpg')",
             }}
           />
           <div className="relative mx-auto flex min-h-[190px] max-w-7xl items-center px-5 py-10 sm:min-h-[220px] lg:px-8">
-            <h1 className="text-4xl font-extrabold tracking-tight text-white drop-shadow-sm sm:text-5xl lg:text-6xl">
-              Về chúng tôi
-            </h1>
+            <div data-about-title className="will-change-transform">
+              <h1 className="text-4xl font-extrabold tracking-tight text-white drop-shadow-sm sm:text-5xl lg:text-6xl">
+                Golden Time
+              </h1>
+            </div>
           </div>
         </section>
 

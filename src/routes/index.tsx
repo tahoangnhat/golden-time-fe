@@ -10,7 +10,6 @@ import {
   PackageCheck,
   ScanLine,
   ShoppingBasket,
-  Sparkles,
   type LucideIcon,
 } from "lucide-react";
 import { SiteShell } from "@/components/SiteShell";
@@ -167,9 +166,6 @@ function HomePage() {
         <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-background/65" />
         <div className="relative mx-auto w-full max-w-7xl px-5 py-16 lg:px-8 lg:py-24">
           <div className="max-w-3xl">
-            <div className="inline-flex items-center gap-2 bg-white border border-border rounded-full px-3 py-1 text-xs font-semibold text-primary mb-6 gt-shadow-soft">
-              <Sparkles className="h-3.5 w-3.5" /> Trí tuệ trái cây AI · Phát triển tại Việt Nam
-            </div>
             <h1 className="text-4xl lg:text-6xl font-extrabold tracking-tight leading-[1.05]">
               <span className="hero-title-fade block whitespace-nowrap text-[clamp(1.5rem,4vw,3.75rem)]">Trái cây thông minh cùng</span>
               <span className="block overflow-hidden pb-1">
@@ -228,9 +224,6 @@ function HomePage() {
       >
         <div>
           <div className="home-feature-reveal max-w-2xl">
-            <p className="mb-3 inline-flex items-center gap-2 rounded-full bg-cream px-3 py-1.5 text-xs font-bold text-primary">
-              <Sparkles className="h-3.5 w-3.5" /> Khám phá Golden Time
-            </p>
             <h2 id="home-features-title" className="text-3xl font-extrabold leading-tight tracking-tight text-foreground sm:text-4xl">
               Mọi điều cần thiết để chọn trái cây thông minh hơn
             </h2>
@@ -256,14 +249,6 @@ function HomePage() {
               </article>
             ))}
           </div>
-
-          <Link
-            to="/scan"
-            className="home-feature-reveal group mt-6 inline-flex items-center gap-2 text-sm font-bold text-primary transition-colors hover:text-primary/75"
-            style={{ transitionDelay: "390ms" }}
-          >
-            Thử quét trái cây bằng AI <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-1" />
-          </Link>
         </div>
 
         <div className="home-feature-reveal relative mx-auto w-full max-w-[480px] lg:sticky lg:top-24" style={{ transitionDelay: "160ms" }}>
