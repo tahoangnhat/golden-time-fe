@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { Search, ScanLine, BarChart3, ShoppingBag, MapPin, Bell, Star } from "lucide-react";
+import { Search, ScanLine, ShoppingBag, MapPin, Bell, Star } from "lucide-react";
 import { useEffect, useState, type FormEvent } from "react";
 import { PhoneShell, StatusBar } from "@/components/PhoneShell";
 import { BrandMark } from "@/components/BrandMark";
@@ -13,7 +13,6 @@ export const Route = createFileRoute("/home")({
 
 const quickActions = [
   { to: "/scan", icon: ScanLine, label: "Quét AI", color: "gt-gradient text-white" },
-  { to: "/compare", icon: BarChart3, label: "So sánh giá", color: "bg-accent text-accent-foreground" },
   { to: "/shop", icon: ShoppingBag, label: "Mua ngay", color: "bg-[oklch(0.94_0.12_55)] text-[oklch(0.4_0.15_55)]" },
   { to: "/map", icon: MapPin, label: "Bản đồ", color: "bg-secondary text-secondary-foreground" },
 ] as const;
@@ -54,7 +53,7 @@ function Home() {
           </div>
         </Link>
 
-        <div className="mt-5 grid grid-cols-4 gap-3">
+        <div className="mt-5 grid grid-cols-3 gap-3">
           {quickActions.map(({ to, icon: Icon, label, color }) => (
             <Link key={label} to={to} className="flex flex-col items-center gap-2">
               <span className={`h-14 w-14 rounded-2xl grid place-items-center ${color} gt-shadow-soft`}>
