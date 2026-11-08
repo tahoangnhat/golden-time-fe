@@ -33,6 +33,26 @@ export type Shop = {
   productCount: number; distanceKm?: number | null;
 };
 export type PaymentMethods = { codEnabled: boolean; payosEnabled: boolean };
+export type PremiumHealthProfile = {
+  ageGroup?: string | null; heightCm?: number | null; weightKg?: number | null;
+  allergies?: string | null; chronicConditions?: string | null; medications?: string | null;
+  healthGoals?: string | null; notProvidedFields: string[];
+};
+export type PremiumOverview = {
+  priceVnd: number; payosConfigured: boolean; geminiConfigured: boolean; premiumActive: boolean; expiresAt?: string | null;
+  healthProfile?: PremiumHealthProfile | null;
+};
+export type PremiumPayment = {
+  orderCode: number; amountVnd: number; status: "PENDING" | "PAID" | "CANCELLED" | "EXPIRED";
+  checkoutUrl?: string | null; qrCode?: string | null; expiresAt: string; paidAt?: string | null;
+};
+export type PremiumRecommendation = {
+  productId: number; displayName: string; fruitName: string; emoji: string; shopName: string;
+  pricePerKg: number; stockKg: number; reason: string; caution: string; productUrl: string;
+};
+export type PremiumRecommendationResponse = {
+  recommendations: PremiumRecommendation[]; aiEnhanced: boolean; message: string; safetyNote: string;
+};
 export type GhnAddress = { id: number; name: string };
 export type GhnShippingQuote = { shippingFee: number; expectedDeliveryAt?: string | null };
 export type NearbyChainShop = { id: string; name: string; address?: string | null; latitude: number; longitude: number };
@@ -419,7 +439,16 @@ export const api = {
   adminFarms: () => request<Farm[]>("/admin/farms"),
   decideFarm: (id: number, approved: boolean, reason?: string) => request<Farm>(`/admin/farms/${id}/decision`, { method: "POST", body: JSON.stringify({ approved, reason }) }),
   adminPriceSources: () => request<AdminPriceSource[]>("/admin/prices/sources"),
+  adminPremiumPrice: () => request<{ priceVnd: number }>("/admin/premium-settings"),
+  updateAdminPremiumPrice: (priceVnd: number) => request<{ priceVnd: number }>("/admin/premium-settings", { method: "PUT", body: JSON.stringify({ priceVnd }) }),
   refreshPrices: () => request<{ sources: number; updated: number; failed: number; completedAt: string }>("/admin/prices/refresh", { method: "POST" }),
+  premiumStatus: () => request<PremiumOverview>("/premium/status"),
+  createPremiumPayment: () => request<PremiumPayment>("/premium/payments", { method: "POST" }),
+  premiumPaymentStatus: (orderCode: number) => request<PremiumPayment>(`/premium/payments/${orderCode}`),
+  premiumHealthProfile: () => request<PremiumHealthProfile | null>("/premium/health-profile"),
+  savePremiumHealthProfile: (payload: PremiumHealthProfile & { consentToSave: boolean }) => request<PremiumHealthProfile>("/premium/health-profile", { method: "PUT", body: JSON.stringify(payload) }),
+  deletePremiumHealthProfile: () => request<void>("/premium/health-profile", { method: "DELETE" }),
+  premiumRecommendations: (payload: { profile: PremiumHealthProfile; consentToAi: boolean; saveProfileConsent: boolean }) => request<PremiumRecommendationResponse>("/premium/recommendations", { method: "POST", body: JSON.stringify(payload) }),
   shopProfile: () => request<ShopProfile>("/shop/profile"),
   updateShopProfile: (payload: { name?: string; address: string; latitude: number; longitude: number; businessEmail?: string; businessPhone?: string; taxCode?: string; representativeName?: string; representativePhone?: string; logoUrl?: string; pickupProvinceName?: string; pickupWardName?: string }) => request<ShopProfile>("/shop/profile", { method: "PUT", body: JSON.stringify(payload) }),
   shopWallet: () => request<WalletSummary>("/shop/wallet"),

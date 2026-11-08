@@ -36,7 +36,7 @@ function PrivacyPage() {
             Chính sách này giải thích cách Golden Time thu thập và sử dụng thông tin khi bạn truy cập website,
             ứng dụng, bản đồ cửa hàng và cổng doanh nghiệp.
           </p>
-          <p className="mt-4 text-xs font-medium text-muted-foreground">Cập nhật lần cuối: 26/10/2026</p>
+          <p className="mt-4 text-xs font-medium text-muted-foreground">Cập nhật lần cuối: 08/11/2026</p>
         </header>
 
         <div className="space-y-5">
@@ -47,6 +47,7 @@ function PrivacyPage() {
               <li><strong className="text-foreground">Tài khoản:</strong> họ tên, email, số điện thoại nếu bạn cung cấp, thông tin đăng nhập và trạng thái phiên. Mật khẩu được lưu dưới dạng mã băm, không lưu ở dạng văn bản đọc được.</li>
               <li><strong className="text-foreground">Đơn hàng:</strong> tên, số điện thoại, địa chỉ giao hàng, ghi chú, mặt hàng, số lượng, giá trị, phương thức thanh toán và trạng thái đơn.</li>
               <li><strong className="text-foreground">Lượt quét và đánh giá:</strong> ảnh trái cây bạn tải lên, kết quả phân tích, lịch sử quét, điểm sao và nội dung đánh giá. Tên hiển thị có thể xuất hiện cùng đánh giá công khai về cửa hàng.</li>
+              <li><strong className="text-foreground">Hồ sơ sức khỏe Premium:</strong> nhóm tuổi, chiều cao, cân nặng, dị ứng, bệnh nền, thuốc đang dùng và mục tiêu dinh dưỡng nếu bạn chủ động nhập. Các trường đều tùy chọn. Chúng tôi chỉ lưu hồ sơ khi bạn bật lựa chọn đồng ý lưu; nếu không, dữ liệu chỉ được xử lý cho yêu cầu gợi ý hiện tại.</li>
               <li><strong className="text-foreground">Hồ sơ đối tác:</strong> tên doanh nghiệp, mã số đăng ký, tên người liên hệ, email, số điện thoại, địa chỉ, mật khẩu và giấy phép kinh doanh được tải lên để xét duyệt.</li>
               <li><strong className="text-foreground">Thông tin lưu trên thiết bị:</strong> phiên đăng nhập, giỏ hàng và một số dữ liệu cần thiết để tiếp tục thao tác. Website dùng bộ nhớ trình duyệt và cookie phiên đăng nhập cho các chức năng này.</li>
             </ul>
@@ -73,6 +74,7 @@ function PrivacyPage() {
               <li>Tạo và bảo vệ tài khoản; cung cấp các chức năng quét trái cây, tra cứu, mua hàng, đánh giá và quản lý cửa hàng.</li>
               <li>Xử lý đơn hàng, chuyển thông tin giao nhận cần thiết cho cửa hàng được chọn và cập nhật trạng thái đơn.</li>
               <li>Gửi ảnh đến nhà cung cấp dịch vụ phân tích AI mà Golden Time cấu hình để tạo kết quả quét; lưu ảnh và kết quả thành lịch sử quét khi phân tích thành công.</li>
+              <li>Dùng thông tin sức khỏe bạn cung cấp để xếp hạng sản phẩm trái cây còn hàng theo dữ liệu dinh dưỡng và tạo giải thích gợi ý Premium, chỉ khi bạn chủ động đồng ý gửi thông tin cho AI.</li>
               <li>Xét duyệt hồ sơ doanh nghiệp, tạo tài khoản cửa hàng khi hồ sơ được chấp nhận và gửi email thông báo kết quả.</li>
               <li>Duy trì hoạt động, bảo vệ hệ thống, phát hiện lỗi và xử lý yêu cầu hỗ trợ.</li>
             </ul>
@@ -83,7 +85,8 @@ function PrivacyPage() {
             <p className={paragraphClass}>Golden Time chỉ chia sẻ thông tin cần thiết để cung cấp tính năng bạn yêu cầu:</p>
             <ul className={listClass}>
               <li>Cửa hàng nhận đơn có thể xem thông tin người nhận, địa chỉ giao hàng, mặt hàng và ghi chú cần thiết để xử lý đơn.</li>
-              <li>Nhà cung cấp AI nhận ảnh trái cây để phân tích. OpenStreetMap nhận yêu cầu tải ô bản đồ, tìm địa chỉ cửa hàng và truy vấn các chuỗi trong bán kính 10 km quanh vị trí hiện tại của bạn.</li>
+              <li>Nhà cung cấp AI nhận ảnh trái cây để phân tích. Riêng gợi ý sức khỏe Premium, Google Gemini chỉ nhận các trường sức khỏe bạn đã nhập và danh sách sản phẩm/dinh dưỡng cần thiết sau khi bạn đánh dấu đồng ý; Golden Time không gửi tên, email hay ID tài khoản. Yêu cầu Interactions API tắt lưu tương tác (`store=false`). Tính năng này chỉ nên được cấu hình bằng API key thuộc dự án Google đã bật thanh toán: theo <a className="font-semibold text-primary underline underline-offset-4" href="https://ai.google.dev/gemini-api/terms" target="_blank" rel="noreferrer">điều khoản Gemini API trả phí</a>, Google không dùng prompt và phản hồi để cải thiện sản phẩm. Ở gói API miễn phí, nội dung có thể được dùng để cải thiện sản phẩm theo <a className="font-semibold text-primary underline underline-offset-4" href="https://ai.google.dev/gemini-api/docs/pricing" target="_blank" rel="noreferrer">chính sách gói API</a>. Hồ sơ đã lưu trong Golden Time được mã hóa và có thể sửa hoặc xóa.</li>
+              <li>OpenStreetMap nhận yêu cầu tải ô bản đồ, tìm địa chỉ cửa hàng và truy vấn các chuỗi trong bán kính 10 km quanh vị trí hiện tại của bạn.</li>
               <li>Khi tích hợp Gmail API được bật, Golden Time dùng quyền gửi thư để gửi email thông báo kết quả xét duyệt hồ sơ doanh nghiệp. Tích hợp này không dùng để đọc hộp thư của người dùng.</li>
               <li>Nhà cung cấp hạ tầng, cơ sở dữ liệu và lưu trữ xử lý dữ liệu cần thiết để vận hành dịch vụ.</li>
             </ul>
@@ -95,7 +98,7 @@ function PrivacyPage() {
           <section className={sectionClass}>
             <h2 className={headingClass}>5. Lưu trữ và bảo vệ thông tin</h2>
             <p className={paragraphClass}>
-              Thông tin được lưu trong cơ sở dữ liệu và hệ thống lưu trữ phục vụ Golden Time. Chúng tôi lưu thông tin trong khoảng thời gian cần thiết để cung cấp dịch vụ, xử lý đơn hàng và hồ sơ đối tác, giải quyết khiếu nại hoặc đáp ứng nghĩa vụ hợp pháp. Một số hồ sơ giao dịch có thể cần được giữ lại sau khi bạn ngừng sử dụng dịch vụ.
+              Thông tin được lưu trong cơ sở dữ liệu và hệ thống lưu trữ phục vụ Golden Time. Hồ sơ sức khỏe Premium được lưu riêng dưới dạng mã hóa AES-GCM, chỉ khi bạn bật lựa chọn lưu; bạn có thể sửa hoặc xóa hồ sơ tại trang Premium. Nếu bạn không đồng ý lưu, thông tin chỉ được dùng để xử lý yêu cầu gợi ý hiện tại và không được lưu thành hồ sơ. Chúng tôi lưu các thông tin khác trong khoảng thời gian cần thiết để cung cấp dịch vụ, xử lý đơn hàng và hồ sơ đối tác, giải quyết khiếu nại hoặc đáp ứng nghĩa vụ hợp pháp. Một số hồ sơ giao dịch có thể cần được giữ lại sau khi bạn ngừng sử dụng dịch vụ.
             </p>
             <p className={paragraphClass}>
               Chúng tôi áp dụng các biện pháp phù hợp để bảo vệ thông tin, bao gồm mã hóa một chiều mật khẩu và giới hạn quyền truy cập theo vai trò. Không có phương thức truyền hoặc lưu trữ nào bảo đảm an toàn tuyệt đối.
@@ -106,6 +109,7 @@ function PrivacyPage() {
             <h2 className={headingClass}>6. Quyền và lựa chọn của bạn</h2>
             <ul className={listClass}>
               <li>Bạn có thể yêu cầu xem, cập nhật hoặc xóa thông tin cá nhân bằng cách gửi email cho Golden Time.</li>
+              <li>Bạn có thể sửa hoặc xóa hồ sơ sức khỏe Premium ngay trên trang Premium. Tắt lựa chọn lưu để không lưu lần nhập tiếp theo; việc này không xóa hồ sơ đã lưu trước đó.</li>
               <li>Bạn có thể từ chối hoặc thu hồi quyền vị trí trong cài đặt của trình duyệt; tính năng tìm cửa hàng gần bạn khi đó có thể không hoạt động.</li>
               <li>Bạn có thể đăng xuất để kết thúc phiên trên thiết bị đang dùng. Dữ liệu giỏ hàng lưu trong trình duyệt có thể được xóa bằng cách xóa dữ liệu website của trình duyệt.</li>
             </ul>

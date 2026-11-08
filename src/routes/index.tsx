@@ -4,12 +4,15 @@ import {
   Apple,
   ArrowRight,
   BarChart3,
+  Camera,
   Clock,
   Leaf,
   MapPin,
   PackageCheck,
   ScanLine,
   ShoppingBasket,
+  Sparkles,
+  UserRound,
   type LucideIcon,
 } from "lucide-react";
 import { SiteShell } from "@/components/SiteShell";
@@ -64,11 +67,19 @@ const homeFeatures: { icon: LucideIcon; title: string; description: string }[] =
   },
 ];
 
+const guideSteps: { icon: LucideIcon; number: string; title: string; description: string }[] = [
+  { icon: UserRound, number: "01", title: "Đăng nhập", description: "Đăng nhập để lưu kết quả quét vào tài khoản của bạn." },
+  { icon: Camera, number: "02", title: "Chụp hoặc tải ảnh", description: "Mở Quét trái cây, chụp trực tiếp hoặc chọn ảnh rõ nét từ thiết bị." },
+  { icon: ScanLine, number: "03", title: "Phân tích bằng AI", description: "Nhấn Phân tích ngay để xem đánh giá khi dịch vụ AI đã sẵn sàng." },
+  { icon: BarChart3, number: "04", title: "Khám phá kết quả", description: "Xem chất lượng, độ tươi, độ chín rồi tra cứu dinh dưỡng hoặc giá." },
+];
+
 function HomePage() {
   const [latestArticles, setLatestArticles] = useState<ApiArticle[]>([]);
   const [articlesLoading, setArticlesLoading] = useState(true);
   const heroRef = useRef<HTMLElement | null>(null);
   const featuresRef = useRef<HTMLElement | null>(null);
+  const guideRef = useRef<HTMLElement | null>(null);
   const whySectionRef = useRef<HTMLElement | null>(null);
   const whyTitleRef = useRef<HTMLHeadingElement | null>(null);
 
@@ -135,6 +146,28 @@ function HomePage() {
         });
       },
       { threshold: 0.18, rootMargin: "0px 0px -6% 0px" },
+    );
+    items.forEach((item) => observer.observe(item));
+    return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    const section = guideRef.current;
+    if (!section) return;
+
+    const items = section.querySelectorAll<HTMLElement>(".home-guide-reveal");
+    if (!("IntersectionObserver" in window)) {
+      items.forEach((item) => item.classList.add("is-visible"));
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          entry.target.classList.toggle("is-visible", entry.isIntersecting);
+        });
+      },
+      { threshold: 0.18, rootMargin: "0px 0px -5% 0px" },
     );
     items.forEach((item) => observer.observe(item));
     return () => observer.disconnect();
@@ -312,6 +345,82 @@ function HomePage() {
           <div className="absolute -right-2 bottom-[15%] hidden items-center gap-2 rounded-2xl border border-white bg-white/95 px-3 py-2.5 shadow-lg sm:flex">
             <span className="grid h-9 w-9 place-items-center rounded-xl bg-[#edf5df] text-lg">🛒</span>
             <span><span className="block text-[9px] text-muted-foreground">Cửa hàng gần bạn</span><span className="mt-0.5 block text-[11px] font-extrabold">Mua sắm tiện lợi</span></span>
+          </div>
+        </div>
+      </section>
+
+      <section
+        ref={guideRef}
+        className="home-guide mx-auto max-w-7xl px-5 pb-24 pt-2 lg:px-8"
+        aria-labelledby="home-guide-title"
+      >
+        <div className="overflow-hidden rounded-[30px] bg-[#f7f8f3] px-5 py-8 sm:rounded-[38px] sm:px-9 sm:py-10 lg:px-12 lg:py-12">
+          <div className="grid items-center gap-8 lg:grid-cols-[0.9fr_1.1fr] lg:gap-14">
+            <div className="home-guide-reveal max-w-xl">
+              <span className="inline-flex items-center gap-2 rounded-full bg-white px-3 py-1.5 text-[11px] font-bold text-primary shadow-sm">
+                <Sparkles className="h-3.5 w-3.5" /> Hướng dẫn nhanh
+              </span>
+              <h2 id="home-guide-title" className="mt-4 text-3xl font-extrabold leading-tight tracking-tight text-foreground sm:text-4xl">
+                Bắt đầu với Golden Time thật dễ dàng
+              </h2>
+              <p className="mt-3 text-sm leading-7 text-muted-foreground sm:text-base">
+                Làm theo bốn bước đơn giản để quét trái cây và tìm hiểu thêm về lựa chọn của bạn.
+              </p>
+              <Link
+                to="/scan"
+                className="group mt-6 inline-flex items-center gap-2 rounded-xl gt-gradient px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:brightness-105"
+              >
+                Bắt đầu quét trái cây <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+              </Link>
+            </div>
+
+            <div className="home-guide-reveal relative mx-auto w-full max-w-[520px]" style={{ transitionDelay: "100ms" }}>
+              <div className="absolute inset-8 rounded-full bg-[radial-gradient(circle,#e5efd5_0%,rgba(229,239,213,0)_72%)]" />
+              <div className="relative mx-auto max-w-[390px] rounded-[28px] border border-white bg-white p-3 shadow-[0_22px_60px_-30px_rgba(38,67,43,0.3)] sm:rounded-[32px] sm:p-4">
+                <div className="flex items-center justify-between px-1 pb-3">
+                  <span className="text-xs font-extrabold text-foreground">Kết quả phân tích</span>
+                  <span className="rounded-full bg-[#edf5df] px-2.5 py-1 text-[9px] font-bold text-primary">Màn hình minh họa</span>
+                </div>
+                <div className="relative grid min-h-[180px] place-items-center overflow-hidden rounded-[22px] bg-[linear-gradient(145deg,#edf4df,#fff4dc_58%,#f8ddb0)] sm:min-h-[210px]">
+                  <span aria-hidden="true" className="absolute left-[12%] top-[14%] h-10 w-10 rounded-tl-xl border-l-2 border-t-2 border-white/90" />
+                  <span aria-hidden="true" className="absolute right-[12%] top-[14%] h-10 w-10 rounded-tr-xl border-r-2 border-t-2 border-white/90" />
+                  <span aria-hidden="true" className="absolute bottom-[14%] left-[12%] h-10 w-10 rounded-bl-xl border-b-2 border-l-2 border-white/90" />
+                  <span aria-hidden="true" className="absolute bottom-[14%] right-[12%] h-10 w-10 rounded-br-xl border-b-2 border-r-2 border-white/90" />
+                  <span aria-hidden="true" className="text-[100px] drop-shadow-[0_15px_12px_rgba(90,75,41,0.2)] sm:text-[120px]">🥭</span>
+                  <span className="absolute bottom-2.5 left-2.5 rounded-xl border border-white/80 bg-white/90 px-3 py-2 text-[10px] font-bold text-foreground shadow-sm">Xoài · Tươi tốt</span>
+                  <span className="absolute bottom-2.5 right-2.5 rounded-xl bg-white/90 px-3 py-2 text-[10px] font-extrabold text-primary shadow-sm">92/100</span>
+                </div>
+                <div className="mt-3 grid grid-cols-3 gap-2">
+                  {[["Độ tươi", "Cao"], ["Độ chín", "Vừa ăn"], ["Độ ngọt", "Tự nhiên"]].map(([label, value]) => (
+                    <div key={label} className="rounded-xl bg-[#f8f8f5] px-2 py-2.5 text-center">
+                      <p className="text-[9px] text-muted-foreground">{label}</p>
+                      <p className="mt-1 text-[10px] font-bold text-foreground">{value}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div className="absolute -right-1 top-[12%] hidden items-center gap-2 rounded-2xl border border-white bg-white px-3 py-2.5 shadow-lg sm:flex">
+                <span className="grid h-8 w-8 place-items-center rounded-xl bg-[#fff1d8] text-[#dd8413]"><Camera className="h-4 w-4" /></span>
+                <span className="text-[10px] font-bold text-foreground">Chụp ảnh dễ dàng</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-9 grid gap-3 sm:grid-cols-2 lg:mt-12 lg:grid-cols-4">
+            {guideSteps.map(({ icon: Icon, number, title, description }, index) => (
+              <article
+                key={number}
+                className="home-guide-reveal group relative rounded-[22px] border border-transparent bg-white/75 p-4 transition-[transform,box-shadow,border-color] duration-300 hover:-translate-y-1 hover:border-[#cfe0b9] hover:shadow-[0_15px_35px_-20px_rgba(41,75,42,0.35)] sm:p-5"
+                style={{ transitionDelay: `${index * 80}ms` }}
+              >
+                <span className="grid h-11 w-11 place-items-center rounded-xl bg-[#f0f1f3] text-foreground transition-colors duration-300 group-hover:bg-primary group-hover:text-white">
+                  <Icon className="h-5 w-5" strokeWidth={1.8} />
+                </span>
+                <p className="mt-4 text-[10px] font-extrabold uppercase tracking-[0.12em] text-muted-foreground">Bước {number}</p>
+                <h3 className="mt-1.5 text-base font-extrabold tracking-tight text-foreground">{title}</h3>
+                <p className="mt-2 text-xs leading-5 text-muted-foreground">{description}</p>
+              </article>
+            ))}
           </div>
         </div>
       </section>
