@@ -122,12 +122,6 @@ function Profile() {
           ))}
         </div>
 
-        <a href="/premium" className="mt-4 flex items-center gap-3 rounded-2xl border border-green-100 bg-white p-4 gt-shadow-soft">
-          <span className="grid h-9 w-9 place-items-center rounded-xl bg-cream text-primary">✦</span>
-          <span className="flex-1"><strong className="block text-sm">Premium & gợi ý sức khỏe</strong><span className="text-xs text-muted-foreground">Trái cây phù hợp từ sản phẩm đang bán</span></span>
-          <ChevronRight className="h-4 w-4 text-muted-foreground" />
-        </a>
-
         {user && <button onClick={() => { void logout(); nav({ to: "/" }); }} className="mt-4 w-full py-3 rounded-2xl bg-white border border-border font-semibold text-sm flex items-center justify-center gap-2 text-muted-foreground"><LogOut className="h-4 w-4" /> Đăng xuất</button>}
         <p className="text-center text-[11px] text-muted-foreground mt-3">Golden Time</p>
         <div className="h-4" />

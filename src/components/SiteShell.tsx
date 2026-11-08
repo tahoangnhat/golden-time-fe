@@ -11,7 +11,6 @@ const NAV = [
   { to: "/about", label: "Về chúng tôi" },
   { to: "/knowledge", label: "Kiến thức" },
   { to: "/contact", label: "Liên hệ" },
-  { to: "/premium", label: "Premium" },
 ] as const;
 
 export function Logo({ className }: { className?: string }) {

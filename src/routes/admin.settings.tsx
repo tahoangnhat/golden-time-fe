@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useState, type FormEvent } from "react";
+import { useEffect, useState } from "react";
 import { AdminShell, SectionCard } from "@/components/AdminShell";
 import { api, type AdminPriceSource } from "@/lib/api";
 
@@ -11,11 +11,6 @@ function AdminSettings() {
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState("");
   const [refreshMessage, setRefreshMessage] = useState("");
-  const [premiumPrice, setPremiumPrice] = useState("");
-  const [premiumLoading, setPremiumLoading] = useState(true);
-  const [premiumSaving, setPremiumSaving] = useState(false);
-  const [premiumMessage, setPremiumMessage] = useState("");
-  const [premiumError, setPremiumError] = useState("");
 
   async function loadSources() {
     setLoading(true);
@@ -25,30 +20,6 @@ function AdminSettings() {
   }
 
   useEffect(() => { void loadSources(); }, []);
-
-  useEffect(() => {
-    api.adminPremiumPrice()
-      .then((setting) => setPremiumPrice(String(setting.priceVnd)))
-      .catch((cause) => setPremiumError(cause instanceof Error ? cause.message : "Không tải được giá Premium."))
-      .finally(() => setPremiumLoading(false));
-  }, []);
-
-  async function savePremiumPrice(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const amount = Number(premiumPrice);
-    if (!Number.isSafeInteger(amount) || amount < 0 || amount > 999_999_999) {
-      setPremiumError("Nhập số tiền nguyên từ 0 đến 999.999.999 VND.");
-      return;
-    }
-    setPremiumSaving(true); setPremiumError(""); setPremiumMessage("");
-    try {
-      const saved = await api.updateAdminPremiumPrice(amount);
-      setPremiumPrice(String(saved.priceVnd));
-      setPremiumMessage(saved.priceVnd === 0 ? "Đã tạm tắt bán gói Premium." : "Đã cập nhật giá Premium.");
-    } catch (cause) {
-      setPremiumError(cause instanceof Error ? cause.message : "Không thể lưu giá Premium.");
-    } finally { setPremiumSaving(false); }
-  }
 
   async function refreshSources() {
     setRefreshing(true); setError(""); setRefreshMessage("");
@@ -82,18 +53,6 @@ function AdminSettings() {
         </div>
       </SectionCard>
       <div className="space-y-4">
-        <SectionCard title="Gói Premium · 30 ngày">
-          <p className="text-sm text-muted-foreground">Giá do Admin cấu hình. Đặt 0 để tạm tắt mua gói. Thanh toán một lần qua PayOS; hệ thống chỉ cấp hoặc gia hạn 30 ngày sau khi PayOS xác nhận.</p>
-          <form onSubmit={(event) => void savePremiumPrice(event)} className="mt-4 space-y-3">
-            <label className="block text-sm font-semibold" htmlFor="premium-price">Giá bán (VND)</label>
-            <div className="flex gap-2">
-              <input id="premium-price" type="number" min="0" max="999999999" step="1" required disabled={premiumLoading} value={premiumPrice} onChange={(event) => setPremiumPrice(event.target.value)} className="h-11 min-w-0 flex-1 rounded-xl border border-border bg-white px-3 text-sm outline-none focus:border-primary" />
-              <button type="submit" disabled={premiumSaving || premiumLoading} className="rounded-xl gt-gradient px-4 text-sm font-semibold text-white disabled:opacity-60">{premiumSaving ? "Đang lưu…" : "Lưu giá"}</button>
-            </div>
-          </form>
-          {premiumError && <p role="alert" className="mt-3 rounded-xl bg-red-50 p-3 text-sm text-red-700">{premiumError}</p>}
-          {premiumMessage && <p role="status" className="mt-3 rounded-xl bg-green-50 p-3 text-sm text-green-800">{premiumMessage}</p>}
-        </SectionCard>
         <SectionCard title="Dịch vụ AI"><p className="text-sm text-muted-foreground">Phân tích ảnh chỉ hoạt động khi cấu hình AI_SERVICE_URL. Kết quả không được tự tạo khi dịch vụ chưa có.</p></SectionCard>
         <SectionCard title="Thanh toán"><p className="text-sm text-muted-foreground">PayOS và GHN dùng tài khoản trung tâm của sàn qua cấu hình máy chủ. Khách thanh toán PayOS cho Golden Time; COD được GHN báo đã chuyển tiền qua webhook. Ví Shop ghi doanh thu sau khi khách xác nhận đã nhận hàng và khoản tiền đã đối soát. Admin quản lý hoa hồng, xử lý các đơn COD đối soát thủ công và ghi nhận khoản trả Shop.</p></SectionCard>
         <SectionCard title="Thiết lập nền tảng"><p className="text-sm text-muted-foreground">Phí, chính sách đối tác, nội dung thông báo và quản lý tài khoản quản trị chưa có API lưu cấu hình.</p></SectionCard>

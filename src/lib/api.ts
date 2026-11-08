@@ -173,6 +173,9 @@ export type BusinessApplication = {
 };
 export type AdminProduct = { id: number; emoji: string; name: string; shop: string; price: number; stock: number; score?: number | null; status: string; category?: string | null; approvalStatus: string; productOrigin?: string | null; supplierName?: string | null; lotCode?: string | null; traceabilityProof?: string | null; reviewNote?: string | null; farmId?: number | null; farmName?: string | null; farmAddress?: string | null; orderDate?: string | null; transportDate?: string | null; receivedDate?: string | null; evidenceImageUrl?: string | null };
 export type AdminOrder = { id: number; customer: string; shop: string; total: number; subtotal: number; shippingFee: number; status: string; payment: string; paymentStatus: string; note?: string | null; deliveryName?: string | null; deliveryPhone?: string | null; deliveryAddress?: string | null; createdAt: string; itemCount: number };
+export type AdminPremiumMember = { userId: number; fullName: string; email: string; expiresAt: string; lastPaymentOrderCode?: number | null; updatedAt: string };
+export type AdminPremiumPayment = { orderCode: number; userId: number; fullName: string; email: string; amountVnd: number; status: "PENDING" | "PAID" | "CANCELLED" | "EXPIRED"; reference?: string | null; createdAt: string; paidAt?: string | null; expiresAt: string };
+export type AdminPremiumOverview = { membership: { activeMembers: number; totalMembers: number }; payments: { paidCount: number; pendingCount: number; paidRevenue: number }; members: AdminPremiumMember[]; paymentHistory: AdminPremiumPayment[] };
 export type AdminProductReview = { id: number; productId: number; productName: string; shopName: string; author: string; rating: number; createdAt: string };
 export type AdminScan = { id: number; fruit?: string | null; emoji?: string | null; freshness?: number | null; quality?: number | null; confidence?: number | null; user: string; mode: string; createdAt: string };
 export type AdminTrace = { batchCode: string; product: string; shop?: string | null; supplier?: string | null; area?: string | null; harvestDate?: string | null; intakeDate?: string | null; certificates?: string | null; certified: boolean; farm?: string | null; quantityKg?: number | null; packagingDate?: string | null; qualityCheckedAt?: string | null; qualityResult?: string | null; qualityScore?: number | null; qualityNote?: string | null; transportDate?: string | null; transportInfo?: string | null; batchStatus?: string | null };
@@ -443,6 +446,7 @@ export const api = {
   adminPriceSources: () => request<AdminPriceSource[]>("/admin/prices/sources"),
   adminPremiumPrice: () => request<{ priceVnd: number }>("/admin/premium-settings"),
   updateAdminPremiumPrice: (priceVnd: number) => request<{ priceVnd: number }>("/admin/premium-settings", { method: "PUT", body: JSON.stringify({ priceVnd }) }),
+  adminPremiumOverview: () => request<AdminPremiumOverview>("/admin/premium"),
   refreshPrices: () => request<{ sources: number; updated: number; failed: number; completedAt: string }>("/admin/prices/refresh", { method: "POST" }),
   premiumStatus: () => request<PremiumOverview>("/premium/status"),
   createPremiumPayment: () => request<PremiumPayment>("/premium/payments", { method: "POST" }),
