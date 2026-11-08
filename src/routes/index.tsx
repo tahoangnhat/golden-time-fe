@@ -289,62 +289,13 @@ function HomePage() {
           </div>
         </div>
 
-        <div className="home-feature-reveal relative mx-auto w-full max-w-[480px] lg:sticky lg:top-24" style={{ transitionDelay: "160ms" }}>
-          <div aria-hidden="true" className="absolute inset-7 rounded-full bg-[radial-gradient(circle,#e9f2d7_0%,#f5f7eb_54%,rgba(255,255,255,0)_76%)]" />
-          <div className="relative overflow-hidden rounded-[30px] border border-[#e4ebd9] bg-[#f6f8f0] p-4 shadow-[0_25px_65px_-35px_rgba(25,65,36,0.28)] sm:rounded-[36px] sm:p-6">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2.5">
-                <span className="grid h-9 w-9 place-items-center rounded-xl bg-white text-lg shadow-sm">🍊</span>
-                <span>
-                  <span className="block text-xs font-extrabold text-foreground">Golden Time</span>
-                  <span className="mt-0.5 block text-[10px] text-muted-foreground">Trí tuệ trái cây AI</span>
-                </span>
-              </div>
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-white px-3 py-1.5 text-[9px] font-bold uppercase tracking-wide text-primary shadow-sm">
-                <span className="h-1.5 w-1.5 rounded-full bg-primary" /> AI đang quét
-              </span>
-            </div>
-
-            <div className="relative mt-5 grid min-h-[290px] place-items-center overflow-hidden rounded-[25px] bg-[linear-gradient(145deg,#e8f0d8,#f8f5df_53%,#f7dfb0)] sm:min-h-[340px] sm:rounded-[30px]">
-              <div aria-hidden="true" className="absolute inset-0 bg-[radial-gradient(circle_at_50%_43%,rgba(255,255,255,0.82),transparent_59%)]" />
-              <div aria-hidden="true" className="absolute left-[13%] top-[18%] h-2 w-2 rounded-full bg-white/80" />
-              <div aria-hidden="true" className="absolute right-[17%] top-[25%] h-3 w-3 rounded-full bg-white/80" />
-              <span aria-hidden="true" className="relative z-10 -rotate-6 text-[135px] drop-shadow-[0_18px_14px_rgba(77,81,40,0.24)] transition-transform duration-700 hover:rotate-0 hover:scale-110 sm:text-[165px]">🥭</span>
-              <span aria-hidden="true" className="absolute left-[16%] top-[20%] h-14 w-14 rounded-tl-xl border-l-[3px] border-t-[3px] border-white/90" />
-              <span aria-hidden="true" className="absolute right-[16%] top-[20%] h-14 w-14 rounded-tr-xl border-r-[3px] border-t-[3px] border-white/90" />
-              <span aria-hidden="true" className="absolute bottom-[18%] left-[16%] h-14 w-14 rounded-bl-xl border-b-[3px] border-l-[3px] border-white/90" />
-              <span aria-hidden="true" className="absolute bottom-[18%] right-[16%] h-14 w-14 rounded-br-xl border-b-[3px] border-r-[3px] border-white/90" />
-              <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between rounded-2xl border border-white/80 bg-white/90 px-4 py-3 shadow-sm backdrop-blur">
-                <span>
-                  <span className="block text-[9px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">Minh họa kết quả quét</span>
-                  <span className="mt-1 block text-sm font-extrabold text-foreground">Xoài · Tươi tốt</span>
-                </span>
-                <span className="rounded-xl bg-[#edf5df] px-3 py-2 text-xs font-extrabold text-primary">92/100</span>
-              </div>
-            </div>
-
-            <div className="mt-4 grid grid-cols-3 gap-2.5">
-              {[
-                ["Chất lượng", "AI đánh giá", "🌿"],
-                ["Dinh dưỡng", "Thông tin quả", "🍃"],
-                ["Giá tốt", "So sánh nhanh", "📊"],
-              ].map(([label, detail, emoji]) => (
-                <div key={label} className="rounded-2xl border border-[#e9ecdf] bg-white/90 p-3 text-center">
-                  <span aria-hidden="true" className="text-base">{emoji}</span>
-                  <p className="mt-1 text-[10px] font-extrabold text-foreground">{label}</p>
-                  <p className="mt-0.5 text-[9px] text-muted-foreground">{detail}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-          <div className="absolute -left-2 top-[15%] hidden items-center gap-2 rounded-2xl border border-white bg-white/95 px-3 py-2.5 shadow-lg sm:flex">
-            <span className="grid h-9 w-9 place-items-center rounded-xl bg-[#fff1d8] text-lg">🍎</span>
-            <span><span className="block text-[9px] text-muted-foreground">Lựa chọn tươi ngon</span><span className="mt-0.5 block text-[11px] font-extrabold">Chọn quả ngon</span></span>
-          </div>
-          <div className="absolute -right-2 bottom-[15%] hidden items-center gap-2 rounded-2xl border border-white bg-white/95 px-3 py-2.5 shadow-lg sm:flex">
-            <span className="grid h-9 w-9 place-items-center rounded-xl bg-[#edf5df] text-lg">🛒</span>
-            <span><span className="block text-[9px] text-muted-foreground">Cửa hàng gần bạn</span><span className="mt-0.5 block text-[11px] font-extrabold">Mua sắm tiện lợi</span></span>
-          </div>
+        <div className="home-feature-reveal mx-auto w-full max-w-[480px] lg:sticky lg:top-24" style={{ transitionDelay: "160ms" }}>
+          <img
+            src="/images/fruit-quality-scan.png"
+            alt="Quét thanh long bằng Golden Time để xem chất lượng và thông tin trái cây"
+            loading="lazy"
+            className="h-auto w-full rounded-[30px] object-cover shadow-[0_25px_65px_-35px_rgba(25,65,36,0.3)] sm:rounded-[36px]"
+          />
         </div>
       </section>
 
