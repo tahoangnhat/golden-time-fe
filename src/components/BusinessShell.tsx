@@ -6,7 +6,6 @@ import {
   ShoppingBag,
   WalletCards,
   Boxes,
-  Tag,
   Star,
   Store,
   LifeBuoy,
@@ -27,8 +26,7 @@ const NAV = [
   { to: "/business/wallet", label: "Ví doanh thu", icon: WalletCards },
   { to: "/business/inventory", label: "Tồn kho", icon: Boxes },
   { to: "/business/farms", label: "Nông trại", icon: Sprout },
-  { to: "/business/promotions", label: "Khuyến mãi", icon: Tag },
-  { to: "/business/reviews", label: "Đánh giá", icon: Star },
+  { to: "/business/reviews", label: "Đánh giá sản phẩm", icon: Star },
   { to: "/business/profile", label: "Hồ sơ doanh nghiệp", icon: Store },
   { to: "/business/support", label: "Hỗ trợ", icon: LifeBuoy },
 ];

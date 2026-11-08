@@ -33,6 +33,7 @@ const TOOLS = [
 
 function AboutPage() {
   const bannerRef = useRef<HTMLElement>(null);
+  const toolsRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
     const banner = bannerRef.current;
@@ -60,6 +61,28 @@ function AboutPage() {
       window.removeEventListener("scroll", updateParallax);
       cancelAnimationFrame(frame);
     };
+  }, []);
+
+  useEffect(() => {
+    const section = toolsRef.current;
+    if (!section) return;
+
+    const cards = section.querySelectorAll<HTMLElement>(".about-tool-reveal");
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches || !("IntersectionObserver" in window)) {
+      cards.forEach((card) => card.classList.add("is-visible"));
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          entry.target.classList.toggle("is-visible", entry.isIntersecting);
+        });
+      },
+      { threshold: 0.18, rootMargin: "0px 0px -6% 0px" },
+    );
+    cards.forEach((card) => observer.observe(card));
+    return () => observer.disconnect();
   }, []);
 
   return (
@@ -120,7 +143,7 @@ function AboutPage() {
             </ul>
           </section>
 
-          <section className="mx-auto mt-9 max-w-6xl py-3 sm:mt-11 sm:py-5">
+          <section ref={toolsRef} className="about-tools mx-auto mt-9 max-w-6xl py-3 sm:mt-11 sm:py-5">
             <div className="text-center">
               <h2 className="text-2xl font-extrabold uppercase tracking-tight text-foreground sm:text-3xl">
                 Những điều bạn có thể khám phá
@@ -131,8 +154,8 @@ function AboutPage() {
               </p>
             </div>
             <div className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-              {TOOLS.map(({ icon: Icon, label, detail }) => (
-                <div key={label} className="rounded-2xl border border-border/70 bg-[#fbfcf9] p-5 text-center">
+              {TOOLS.map(({ icon: Icon, label, detail }, index) => (
+                <div key={label} style={{ transitionDelay: index * 90 + "ms" }} className="about-tool-reveal rounded-2xl border border-border/70 bg-[#fbfcf9] p-5 text-center transition-[border-color,box-shadow] duration-300 hover:border-emerald-200 hover:shadow-lg">
                   <div className="mx-auto grid h-11 w-11 place-items-center rounded-full bg-cream text-primary">
                     <Icon aria-hidden="true" className="h-5 w-5" />
                   </div>
@@ -155,7 +178,7 @@ function AboutPage() {
               to="/contact"
               className="mt-7 inline-flex items-center justify-center rounded-full bg-orange-accent px-6 py-3 text-sm font-bold text-white shadow-sm transition hover:brightness-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-accent focus-visible:ring-offset-2"
             >
-              Kết nối với Golden Time
+              Kết nối với chúng tôi
             </Link>
           </section>
         </div>

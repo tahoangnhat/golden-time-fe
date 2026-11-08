@@ -20,7 +20,7 @@ function Dashboard() {
       <StatCard label="Đơn đang chờ" value={data?.pendingOrders.toLocaleString("vi-VN") ?? "—"} tone="orange" icon={ShoppingBag} />
       <StatCard label="Sản phẩm" value={data?.products.toLocaleString("vi-VN") ?? "—"} tone="primary" icon={Package} />
       <StatCard label="Hết hàng" value={data?.soldOut.toLocaleString("vi-VN") ?? "—"} tone="orange" icon={AlertTriangle} />
-      <StatCard label="Đánh giá trung bình" value={data ? `${Number(data.rating).toFixed(1)} ★` : "—"} hint={`${data?.reviewCount ?? 0} đánh giá`} tone="yellow" icon={Star} />
+      <StatCard label="Điểm từ đơn hàng" value={data?.ratingCount ? `${Number(data.rating).toFixed(1)} ★` : "—"} hint={`${data?.ratingCount ?? 0} đơn đã được chấm điểm`} tone="yellow" icon={Star} />
     </div>
     <div className="mt-6 grid lg:grid-cols-3 gap-4">
       <section className="lg:col-span-2 bg-white rounded-2xl p-5 border border-border gt-shadow-soft"><h3 className="font-bold">Giá trị đơn 7 ngày</h3><p className="text-xs text-muted-foreground">Loại trừ đơn đã hủy · VNĐ</p>
