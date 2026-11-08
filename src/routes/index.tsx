@@ -11,7 +11,6 @@ import {
   PackageCheck,
   ScanLine,
   ShoppingBasket,
-  Sparkles,
   UserRound,
   type LucideIcon,
 } from "lucide-react";
@@ -357,52 +356,21 @@ function HomePage() {
         <div className="overflow-hidden rounded-[30px] bg-[#f7f8f3] px-5 py-8 sm:rounded-[38px] sm:px-9 sm:py-10 lg:px-12 lg:py-12">
           <div className="grid items-center gap-8 lg:grid-cols-[0.9fr_1.1fr] lg:gap-14">
             <div className="home-guide-reveal max-w-xl">
-              <span className="inline-flex items-center gap-2 rounded-full bg-white px-3 py-1.5 text-[11px] font-bold text-primary shadow-sm">
-                <Sparkles className="h-3.5 w-3.5" /> Hướng dẫn nhanh
-              </span>
-              <h2 id="home-guide-title" className="mt-4 text-3xl font-extrabold leading-tight tracking-tight text-foreground sm:text-4xl">
+              <h2 id="home-guide-title" className="text-3xl font-extrabold leading-tight tracking-tight text-foreground sm:text-4xl">
                 Bắt đầu với Golden Time thật dễ dàng
               </h2>
               <p className="mt-3 text-sm leading-7 text-muted-foreground sm:text-base">
                 Làm theo bốn bước đơn giản để quét trái cây và tìm hiểu thêm về lựa chọn của bạn.
               </p>
-              <Link
-                to="/scan"
-                className="group mt-6 inline-flex items-center gap-2 rounded-xl gt-gradient px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:brightness-105"
-              >
-                Bắt đầu quét trái cây <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-              </Link>
             </div>
 
-            <div className="home-guide-reveal relative mx-auto w-full max-w-[520px]" style={{ transitionDelay: "100ms" }}>
-              <div className="absolute inset-8 rounded-full bg-[radial-gradient(circle,#e5efd5_0%,rgba(229,239,213,0)_72%)]" />
-              <div className="relative mx-auto max-w-[390px] rounded-[28px] border border-white bg-white p-3 shadow-[0_22px_60px_-30px_rgba(38,67,43,0.3)] sm:rounded-[32px] sm:p-4">
-                <div className="flex items-center justify-between px-1 pb-3">
-                  <span className="text-xs font-extrabold text-foreground">Kết quả phân tích</span>
-                  <span className="rounded-full bg-[#edf5df] px-2.5 py-1 text-[9px] font-bold text-primary">Màn hình minh họa</span>
-                </div>
-                <div className="relative grid min-h-[180px] place-items-center overflow-hidden rounded-[22px] bg-[linear-gradient(145deg,#edf4df,#fff4dc_58%,#f8ddb0)] sm:min-h-[210px]">
-                  <span aria-hidden="true" className="absolute left-[12%] top-[14%] h-10 w-10 rounded-tl-xl border-l-2 border-t-2 border-white/90" />
-                  <span aria-hidden="true" className="absolute right-[12%] top-[14%] h-10 w-10 rounded-tr-xl border-r-2 border-t-2 border-white/90" />
-                  <span aria-hidden="true" className="absolute bottom-[14%] left-[12%] h-10 w-10 rounded-bl-xl border-b-2 border-l-2 border-white/90" />
-                  <span aria-hidden="true" className="absolute bottom-[14%] right-[12%] h-10 w-10 rounded-br-xl border-b-2 border-r-2 border-white/90" />
-                  <span aria-hidden="true" className="text-[100px] drop-shadow-[0_15px_12px_rgba(90,75,41,0.2)] sm:text-[120px]">🥭</span>
-                  <span className="absolute bottom-2.5 left-2.5 rounded-xl border border-white/80 bg-white/90 px-3 py-2 text-[10px] font-bold text-foreground shadow-sm">Xoài · Tươi tốt</span>
-                  <span className="absolute bottom-2.5 right-2.5 rounded-xl bg-white/90 px-3 py-2 text-[10px] font-extrabold text-primary shadow-sm">92/100</span>
-                </div>
-                <div className="mt-3 grid grid-cols-3 gap-2">
-                  {[["Độ tươi", "Cao"], ["Độ chín", "Vừa ăn"], ["Độ ngọt", "Tự nhiên"]].map(([label, value]) => (
-                    <div key={label} className="rounded-xl bg-[#f8f8f5] px-2 py-2.5 text-center">
-                      <p className="text-[9px] text-muted-foreground">{label}</p>
-                      <p className="mt-1 text-[10px] font-bold text-foreground">{value}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-              <div className="absolute -right-1 top-[12%] hidden items-center gap-2 rounded-2xl border border-white bg-white px-3 py-2.5 shadow-lg sm:flex">
-                <span className="grid h-8 w-8 place-items-center rounded-xl bg-[#fff1d8] text-[#dd8413]"><Camera className="h-4 w-4" /></span>
-                <span className="text-[10px] font-bold text-foreground">Chụp ảnh dễ dàng</span>
-              </div>
+            <div className="home-guide-reveal mx-auto w-full max-w-[620px]" style={{ transitionDelay: "100ms" }}>
+              <img
+                src="/images/fruit-scan-guide.png"
+                alt="Người dùng quét quả cam bằng Golden Time và xem thông tin chất lượng, độ tươi, độ ngọt"
+                loading="lazy"
+                className="h-auto w-full rounded-[24px] object-cover shadow-[0_22px_60px_-30px_rgba(38,67,43,0.3)] sm:rounded-[30px]"
+              />
             </div>
           </div>
 
