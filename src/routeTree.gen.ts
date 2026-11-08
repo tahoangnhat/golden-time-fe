@@ -63,6 +63,7 @@ import { Route as BusinessWalletRouteImport } from './routes/business.wallet'
 import { Route as KnowledgeSlugRouteImport } from './routes/knowledge.$slug'
 import { Route as ShopIndexRouteImport } from './routes/shop.index'
 import { Route as ShopProductIdRouteImport } from './routes/shop.$productId'
+import { Route as ShopOriginProductIdRouteImport } from './routes/shop.origin.$productId'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -334,6 +335,11 @@ const ShopProductIdRoute = ShopProductIdRouteImport.update({
   path: '/$productId',
   getParentRoute: () => ShopRoute,
 } as any)
+const ShopOriginProductIdRoute = ShopOriginProductIdRouteImport.update({
+  id: '/origin/$productId',
+  path: '/origin/$productId',
+  getParentRoute: () => ShopRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -390,6 +396,7 @@ export interface FileRoutesByFullPath {
   '/shop/$productId': typeof ShopProductIdRoute
   '/admin/': typeof AdminIndexRoute
   '/shop/': typeof ShopIndexRoute
+  '/shop/origin/$productId': typeof ShopOriginProductIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -444,6 +451,7 @@ export interface FileRoutesByTo {
   '/shop/$productId': typeof ShopProductIdRoute
   '/admin': typeof AdminIndexRoute
   '/shop': typeof ShopIndexRoute
+  '/shop/origin/$productId': typeof ShopOriginProductIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -501,6 +509,7 @@ export interface FileRoutesById {
   '/shop/$productId': typeof ShopProductIdRoute
   '/admin/': typeof AdminIndexRoute
   '/shop/': typeof ShopIndexRoute
+  '/shop/origin/$productId': typeof ShopOriginProductIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -559,6 +568,7 @@ export interface FileRouteTypes {
     | '/shop/$productId'
     | '/admin/'
     | '/shop/'
+    | '/shop/origin/$productId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -613,6 +623,7 @@ export interface FileRouteTypes {
     | '/shop/$productId'
     | '/admin'
     | '/shop'
+    | '/shop/origin/$productId'
   id:
     | '__root__'
     | '/'
@@ -669,6 +680,7 @@ export interface FileRouteTypes {
     | '/shop/$productId'
     | '/admin/'
     | '/shop/'
+    | '/shop/origin/$productId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -1076,6 +1088,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ShopProductIdRouteImport
       parentRoute: typeof ShopRoute
     }
+    '/shop/origin/$productId': {
+      id: '/shop/origin/$productId'
+      path: '/origin/$productId'
+      fullPath: '/shop/origin/$productId'
+      preLoaderRoute: typeof ShopOriginProductIdRouteImport
+      parentRoute: typeof ShopRoute
+    }
   }
 }
 
@@ -1170,11 +1189,13 @@ const KnowledgeRouteWithChildren = KnowledgeRoute._addFileChildren(
 interface ShopRouteChildren {
   ShopProductIdRoute: typeof ShopProductIdRoute
   ShopIndexRoute: typeof ShopIndexRoute
+  ShopOriginProductIdRoute: typeof ShopOriginProductIdRoute
 }
 
 const ShopRouteChildren: ShopRouteChildren = {
   ShopProductIdRoute: ShopProductIdRoute,
   ShopIndexRoute: ShopIndexRoute,
+  ShopOriginProductIdRoute: ShopOriginProductIdRoute,
 }
 
 const ShopRouteWithChildren = ShopRoute._addFileChildren(ShopRouteChildren)

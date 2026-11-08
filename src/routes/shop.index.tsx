@@ -52,7 +52,7 @@ function Shop() {
   }), [category, near, products]);
   function add(product: Product) {
     if (!cart.add(product, 0.5)) return toast.error("Giỏ hàng chỉ nhận sản phẩm từ một cửa hàng. Hãy xóa giỏ hàng trước khi đổi cửa hàng.");
-    toast.success(`Đã thêm 0,5 kg (1 phần) ${product.displayName} vào giỏ.`);
+    toast.success(`Đã thêm 0,5 kg ${product.displayName} vào giỏ.`);
   }
   async function toggleNear() {
     if (near) { setNear(false); return; }

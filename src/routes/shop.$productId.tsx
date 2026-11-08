@@ -47,7 +47,7 @@ function ProductDetail() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [imageIndex, setImageIndex] = useState(0);
-  const [portionKg, setPortionKg] = useState(0.5);
+  const [quantityKg, setQuantityKg] = useState(0.5);
   const cart = useCart();
 
   // Product reviews state
@@ -191,8 +191,8 @@ function ProductDetail() {
   function addToCart() {
     if (!product) return;
     if (Number(product.stockKg) <= 0) return toast.error("Sản phẩm hiện đã hết hàng.");
-    if (!cart.add(product, portionKg)) return toast.error("Giỏ hàng chỉ nhận sản phẩm từ một cửa hàng. Hãy xóa giỏ hàng trước khi đổi cửa hàng.");
-    toast.success(`Đã thêm ${portionKg} kg (${Math.round(portionKg / 0.5)} phần) ${product.displayName} vào giỏ.`);
+    if (!cart.add(product, quantityKg)) return toast.error("Giỏ hàng chỉ nhận sản phẩm từ một cửa hàng. Hãy xóa giỏ hàng trước khi đổi cửa hàng.");
+    toast.success(`Đã thêm ${quantityKg} kg ${product.displayName} vào giỏ.`);
   }
 
   const images = product?.imageUrls?.length
@@ -279,7 +279,7 @@ function ProductDetail() {
               <p className="mt-3 text-2xl font-extrabold text-primary">
                 {product.pricePerKg.toLocaleString("vi-VN")}đ <span className="text-sm font-semibold text-muted-foreground">/ kg</span>
                 <span className="block text-xs font-normal text-muted-foreground mt-0.5">
-                  ({Math.round(product.pricePerKg * 0.5).toLocaleString("vi-VN")}đ / phần 0,5 kg)
+                  ({Math.round(product.pricePerKg * 0.5).toLocaleString("vi-VN")}đ / 0,5 kg)
                 </span>
               </p>
             </div>
@@ -296,20 +296,11 @@ function ProductDetail() {
                 <span className="inline-flex shrink-0 items-center gap-2 text-muted-foreground"><Store className="h-4 w-4" />Cửa hàng</span>
                 <span className="text-right font-semibold">{product.shopName}</span>
               </div>
-              {product.farmName && (
-                <>
-                  <div className="my-3 border-t border-border" />
-                  <div className="flex items-start justify-between gap-3 text-sm">
-                    <span className="inline-flex shrink-0 items-center gap-2 text-muted-foreground"><MapPin className="h-4 w-4" />Nông trại</span>
-                    <span className="text-right font-semibold">{product.farmName}{product.farmAddress && <span className="mt-1 block text-xs font-normal text-muted-foreground">{product.farmAddress}</span>}</span>
-                  </div>
-                  <div className="mt-3 space-y-2 text-xs">
-                    {product.orderDate && <div className="flex justify-between gap-3"><span className="text-muted-foreground">Ngày đặt hàng</span><span className="font-semibold">{formatDate(product.orderDate)}</span></div>}
-                    {product.transportDate && <div className="flex justify-between gap-3"><span className="text-muted-foreground">Ngày dự kiến nhận hàng</span><span className="font-semibold">{formatDate(product.transportDate)}</span></div>}
-                    {product.receivedDate && <div className="flex justify-between gap-3"><span className="text-muted-foreground">Ngày nhận thực tế</span><span className="font-semibold">{formatDate(product.receivedDate)}</span></div>}
-                  </div>
-                </>
-              )}
+              <div className="my-3 border-t border-border" />
+              <Link to="/shop/origin/$productId" params={{ productId: String(product.id) }} className="flex w-full items-center justify-between gap-3 rounded-xl bg-emerald-50 px-3 py-3 text-sm font-bold text-emerald-800 transition-colors hover:bg-emerald-100">
+                <span className="inline-flex items-center gap-2"><MapPin className="h-4 w-4" />Xem nguồn gốc</span>
+                <ChevronRight className="h-4 w-4" />
+              </Link>
               {product.distanceKm != null && (
                 <div className="mt-3 flex items-center justify-between gap-3 text-sm">
                   <span className="inline-flex items-center gap-2 text-muted-foreground"><MapPin className="h-4 w-4" />Khoảng cách</span>
@@ -331,29 +322,26 @@ function ProductDetail() {
               <div className="mt-4 rounded-2xl border border-border bg-white p-4 gt-shadow-soft">
                 <div className="flex items-center justify-between gap-2">
                   <div>
-                    <span className="text-xs font-semibold text-muted-foreground">Chọn khẩu phần mua</span>
-                    <p className="text-[11px] text-muted-foreground mt-0.5">Quy chuẩn 0,5 kg / phần</p>
+                    <span className="text-xs font-semibold text-muted-foreground">Chọn khối lượng</span>
+                    <p className="text-[11px] text-muted-foreground mt-0.5">Mỗi bước tăng hoặc giảm: 0,5 kg</p>
                   </div>
                   <div className="flex items-center gap-1.5 bg-cream rounded-full p-1 border border-border">
                     <button
                       type="button"
-                      disabled={portionKg <= 0.5}
-                      onClick={() => setPortionKg((prev) => Math.max(0.5, Math.round((prev - 0.5) * 10) / 10))}
+                      disabled={quantityKg <= 0.5}
+                      onClick={() => setQuantityKg((prev) => Math.max(0.5, Math.round((prev - 0.5) * 10) / 10))}
                       className="h-8 w-8 grid place-items-center rounded-full bg-white border border-border disabled:opacity-40"
                       aria-label="Giảm 0,5 kg"
                     >
                       <Minus className="h-3.5 w-3.5" />
                     </button>
                     <span className="min-w-16 text-center text-xs font-bold leading-tight">
-                      {portionKg} kg
-                      <span className="block text-[9px] font-normal text-muted-foreground">
-                        {Math.round(portionKg / 0.5)} phần
-                      </span>
+                      {quantityKg} kg
                     </span>
                     <button
                       type="button"
-                      disabled={portionKg >= Number(product.stockKg)}
-                      onClick={() => setPortionKg((prev) => Math.min(Number(product.stockKg), Math.round((prev + 0.5) * 10) / 10))}
+                      disabled={quantityKg >= Number(product.stockKg)}
+                      onClick={() => setQuantityKg((prev) => Math.min(Number(product.stockKg), Math.round((prev + 0.5) * 10) / 10))}
                       className="h-8 w-8 grid place-items-center rounded-full gt-gradient text-white disabled:opacity-40"
                       aria-label="Tăng 0,5 kg"
                     >
@@ -362,16 +350,16 @@ function ProductDetail() {
                   </div>
                 </div>
                 <div className="mt-3 pt-3 border-t border-border flex items-center justify-between text-xs">
-                  <span className="text-muted-foreground">Tạm tính ({portionKg} kg):</span>
+                  <span className="text-muted-foreground">Tạm tính ({quantityKg} kg):</span>
                   <span className="font-extrabold text-primary text-base">
-                    {Math.round(product.pricePerKg * portionKg).toLocaleString("vi-VN")}đ
+                    {Math.round(product.pricePerKg * quantityKg).toLocaleString("vi-VN")}đ
                   </span>
                 </div>
               </div>
             )}
 
             <button type="button" disabled={Number(product.stockKg) <= 0} onClick={addToCart} className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-2xl gt-gradient py-3.5 text-sm font-bold text-white gt-shadow disabled:cursor-not-allowed disabled:opacity-50">
-              <ShoppingCart className="h-4 w-4" />Thêm {portionKg} kg vào giỏ hàng • {Math.round(product.pricePerKg * portionKg).toLocaleString("vi-VN")}đ
+              <ShoppingCart className="h-4 w-4" />Thêm {quantityKg} kg vào giỏ hàng • {Math.round(product.pricePerKg * quantityKg).toLocaleString("vi-VN")}đ
             </button>
 
             {/* Product Reviews Section */}
