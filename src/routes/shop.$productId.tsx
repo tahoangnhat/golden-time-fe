@@ -212,7 +212,7 @@ function ProductDetail() {
 
   return (
     <PhoneShell>
-      <StatusBar title="Chi tiết sản phẩm" right={<Link to="/cart" aria-label="Giỏ hàng" className="relative"><ShoppingCart className="h-4 w-4" />{cart.items.length > 0 && <span className="absolute -right-2 -top-2 grid h-4 min-w-4 place-items-center rounded-full bg-primary px-1 text-[9px] text-white">{cart.items.length}</span>}</Link>} />
+      <StatusBar title="Chi tiết sản phẩm" />
       <div className="px-5 pb-5">
         <div className="mb-3 flex items-center justify-between">
           <Link to="/shop" aria-label="Quay lại cửa hàng" className="grid h-9 w-9 place-items-center rounded-full border border-border bg-white"><ChevronLeft className="h-5 w-5" /></Link>
