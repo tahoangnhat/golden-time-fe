@@ -370,6 +370,7 @@ export const api = {
   ghnWards: (provinceId: number) => request<GhnAddress[]>(`/shipping/ghn/wards?provinceId=${provinceId}`),
   ghnQuote: (payload: { items: { productId: number; quantityKg: number }[]; paymentMethod: string; deliveryName: string; deliveryPhone: string; deliveryAddress: string; deliveryProvinceName: string; deliveryWardName: string }) => request<GhnShippingQuote>("/shipping/ghn/quote", { method: "POST", body: JSON.stringify(payload) }),
   order: (id: number) => request<OrderDetail>(`/orders/${id}`),
+  syncOrderPayment: (id: number) => request<OrderDetail>(`/orders/${id}/sync-payment`, { method: "POST" }),
   confirmOrderReceived: (id: number) => request<{ walletCredited: boolean }>(`/orders/${id}/confirm-received`, { method: "POST" }),
   cancelPayment: (id: number) => request<void>(`/orders/${id}/cancel-payment`, { method: "POST" }),
   orders: () => request<OrderSummary[]>("/orders/mine"),

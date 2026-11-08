@@ -169,7 +169,7 @@ function Cart() {
     let timeoutId: number | undefined;
     const refreshOrder = async () => {
       try {
-        const latest = await api.order(orderCode);
+        const latest = await api.syncOrderPayment(orderCode);
         if (!active) return;
         setPaymentReturnOrder(latest);
         if (latest.paymentStatus !== "PENDING" && intervalId) window.clearInterval(intervalId);
@@ -232,7 +232,7 @@ function Cart() {
           <button type="button" disabled={busy} onClick={async () => {
             if (!paymentReturnOrder) return;
             setBusy(true); setError("");
-            try { setPaymentReturnOrder(await api.order(paymentReturnOrder.id)); }
+            try { setPaymentReturnOrder(await api.syncOrderPayment(paymentReturnOrder.id)); }
             catch (cause) { setError(cause instanceof ApiError ? cause.message : "Không tải được trạng thái thanh toán."); }
             finally { setBusy(false); }
           }} className="mt-2 w-full py-3 rounded-2xl bg-cream font-semibold disabled:opacity-50">Kiểm tra trạng thái</button>
