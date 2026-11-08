@@ -296,6 +296,20 @@ function ProductDetail() {
                 <span className="inline-flex shrink-0 items-center gap-2 text-muted-foreground"><Store className="h-4 w-4" />Cửa hàng</span>
                 <span className="text-right font-semibold">{product.shopName}</span>
               </div>
+              {product.farmName && (
+                <>
+                  <div className="my-3 border-t border-border" />
+                  <div className="flex items-start justify-between gap-3 text-sm">
+                    <span className="inline-flex shrink-0 items-center gap-2 text-muted-foreground"><MapPin className="h-4 w-4" />Nông trại</span>
+                    <span className="text-right font-semibold">{product.farmName}{product.farmAddress && <span className="mt-1 block text-xs font-normal text-muted-foreground">{product.farmAddress}</span>}</span>
+                  </div>
+                  <div className="mt-3 space-y-2 text-xs">
+                    {product.orderDate && <div className="flex justify-between gap-3"><span className="text-muted-foreground">Ngày đặt hàng</span><span className="font-semibold">{formatDate(product.orderDate)}</span></div>}
+                    {product.transportDate && <div className="flex justify-between gap-3"><span className="text-muted-foreground">Ngày vận chuyển</span><span className="font-semibold">{formatDate(product.transportDate)}</span></div>}
+                    {product.receivedDate && <div className="flex justify-between gap-3"><span className="text-muted-foreground">Ngày nhận hàng</span><span className="font-semibold">{formatDate(product.receivedDate)}</span></div>}
+                  </div>
+                </>
+              )}
               {product.distanceKm != null && (
                 <div className="mt-3 flex items-center justify-between gap-3 text-sm">
                   <span className="inline-flex items-center gap-2 text-muted-foreground"><MapPin className="h-4 w-4" />Khoảng cách</span>

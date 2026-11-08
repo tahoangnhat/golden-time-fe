@@ -33,12 +33,13 @@ function BusinessRegister() {
     if (password !== confirmPassword) return setError("Mật khẩu xác nhận chưa khớp.");
     if (address.trim().length < 5) return setError("Vui lòng nhập địa chỉ kinh doanh đầy đủ.");
     if (!logoFile) return setError("Vui lòng tải logo doanh nghiệp lên.");
-    if (licenseFile && licenseFile.size > 10 * 1024 * 1024) return setError("Tệp giấy phép không được vượt quá 10 MB.");
+    if (!licenseFile) return setError("Vui lòng tải giấy phép kinh doanh lên.");
+    if (licenseFile.size > 10 * 1024 * 1024) return setError("Tệp giấy phép không được vượt quá 10 MB.");
     if (logoFile && logoFile.size > 10 * 1024 * 1024) return setError("Logo không được vượt quá 10 MB.");
     if (!location) return setError("Vui lòng chọn địa chỉ và ghim vị trí cửa hàng trên bản đồ.");
     setBusy(true);
     try {
-      await api.submitBusinessApplication({ businessName, taxCode, contactName, representativePhone, email, phone, address, password, licenseFile: licenseFile ?? undefined, logoFile,
+      await api.submitBusinessApplication({ businessName, taxCode, contactName, representativePhone, email, phone, address, password, licenseFile, logoFile,
         latitude: location.lat, longitude: location.lng });
       setSubmitted(true);
     } catch (cause) {
@@ -79,7 +80,7 @@ function BusinessRegister() {
           <label className="block"><span className="text-xs font-semibold">Mật khẩu</span><input required type="password" minLength={8} maxLength={128} autoComplete="new-password" value={password} onChange={(event) => setPassword(event.target.value)} className="mt-1 h-11 w-full rounded-xl border border-border px-3" /></label>
           <label className="block"><span className="text-xs font-semibold">Nhập lại mật khẩu</span><input required type="password" minLength={8} maxLength={128} autoComplete="new-password" value={confirmPassword} onChange={(event) => setConfirmPassword(event.target.value)} className="mt-1 h-11 w-full rounded-xl border border-border px-3" /></label>
           <label className="block md:col-span-2"><span className="text-xs font-semibold">Logo doanh nghiệp *</span><span className="mt-1 flex min-h-12 cursor-pointer items-center gap-3 rounded-xl border border-dashed border-border px-4 py-3 text-sm hover:bg-cream"><Upload className="h-4 w-4 shrink-0 text-primary" /><span className="truncate">{logoFile?.name || "Tải ảnh PNG, JPG hoặc WebP lên (tối đa 10 MB)"}</span><input type="file" accept="image/png,image/jpeg,image/webp" onChange={(event) => setLogoFile(event.target.files?.[0] ?? null)} className="sr-only" /></span></label>
-          <label className="block md:col-span-2"><span className="text-xs font-semibold">Giấy phép kinh doanh (không bắt buộc)</span><span className="mt-1 flex min-h-12 cursor-pointer items-center gap-3 rounded-xl border border-dashed border-border px-4 py-3 text-sm hover:bg-cream"><Upload className="h-4 w-4 shrink-0 text-primary" /><span className="truncate">{licenseFile?.name || "Tải tệp PDF, PNG hoặc JPG lên (tối đa 10 MB)"}</span><input type="file" accept="application/pdf,image/png,image/jpeg,.pdf,.png,.jpg,.jpeg" onChange={(event) => setLicenseFile(event.target.files?.[0] ?? null)} className="sr-only" /></span></label>
+          <label className="block md:col-span-2"><span className="text-xs font-semibold">Giấy phép kinh doanh *</span><span className="mt-1 flex min-h-12 cursor-pointer items-center gap-3 rounded-xl border border-dashed border-border px-4 py-3 text-sm hover:bg-cream"><Upload className="h-4 w-4 shrink-0 text-primary" /><span className="truncate">{licenseFile?.name || "Bắt buộc · Tải tệp PDF, PNG hoặc JPG lên (tối đa 10 MB)"}</span><input type="file" accept="application/pdf,image/png,image/jpeg,.pdf,.png,.jpg,.jpeg" aria-required="true" onChange={(event) => setLicenseFile(event.target.files?.[0] ?? null)} className="sr-only" /></span></label>
           {error && <p role="alert" className="md:col-span-2 rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
           <button disabled={busy} className="md:col-span-2 inline-flex h-12 items-center justify-center gap-2 rounded-xl gt-gradient font-semibold text-white gt-shadow disabled:opacity-60">{busy ? <><LoaderCircle className="h-4 w-4 animate-spin" /> Đang gửi hồ sơ…</> : "Gửi hồ sơ đăng ký"}</button>
         </form>

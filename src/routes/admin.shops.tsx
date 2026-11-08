@@ -2,9 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { MapPin, Search, Star } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { AdminShell, AdminTable, FilterBar, SectionCard, StatusBadge } from "@/components/AdminShell";
-import { LocationPicker } from "@/components/LocationPicker";
 import { api, type AdminShop, type BusinessApplication } from "@/lib/api";
-import type { Coordinates } from "@/lib/geo";
 
 export const Route = createFileRoute("/admin/shops")({ component: AdminShops });
 
@@ -16,9 +14,6 @@ function AdminShops() {
   const [applicationError, setApplicationError] = useState("");
   const [applicationNotice, setApplicationNotice] = useState("");
   const [reasons, setReasons] = useState<Record<number, string>>({});
-  const [applicationLocations, setApplicationLocations] = useState<Record<number, Coordinates | null>>({});
-  const [applicationAddresses, setApplicationAddresses] = useState<Record<number, string>>({});
-  const [locationPickerApplicationId, setLocationPickerApplicationId] = useState<number | null>(null);
   const [busyId, setBusyId] = useState<number | null>(null);
   useEffect(() => {
     api.adminShops().then(setShops).catch((cause) => setError(cause instanceof Error ? cause.message : "Không tải được cửa hàng."));
@@ -27,10 +22,8 @@ function AdminShops() {
   const filtered = useMemo(() => shops.filter((shop) => `${shop.name} ${shop.owner ?? ""} ${shop.address ?? ""}`.toLowerCase().includes(query.toLowerCase())), [shops, query]);
   const pendingApplications = applications.filter((application) => application.status === "PENDING");
 
-  function applicationLocation(application: BusinessApplication): Coordinates | null {
-    if (Object.hasOwn(applicationLocations, application.id)) return applicationLocations[application.id];
-    if (application.latitude == null || application.longitude == null) return null;
-    return { lat: application.latitude, lng: application.longitude };
+  function hasApplicationLocation(application: BusinessApplication): boolean {
+    return application.latitude != null && application.longitude != null;
   }
 
   async function openLicense(application: BusinessApplication) {
@@ -56,21 +49,15 @@ function AdminShops() {
       setApplicationError("Lý do từ chối là bắt buộc.");
       return;
     }
-    const location = applicationLocation(application);
-    if (approved && !location) {
-      setApplicationError("Hãy chọn vị trí cửa hàng trên bản đồ trước khi chấp nhận hồ sơ.");
-      setLocationPickerApplicationId(application.id);
+    if (approved && !hasApplicationLocation(application)) {
+      setApplicationError("Hồ sơ chưa có tọa độ cửa hàng. Hãy yêu cầu doanh nghiệp cập nhật thông tin đăng ký.");
       return;
     }
     setApplicationError("");
     setApplicationNotice("");
     setBusyId(application.id);
     try {
-      const updated = await api.decideBusinessApplication(application.id, approved, reason || undefined, location && {
-        latitude: location.lat,
-        longitude: location.lng,
-        address: applicationAddresses[application.id] ?? application.address,
-      });
+      const updated = await api.decideBusinessApplication(application.id, approved, reason || undefined);
       setApplications((current) => current.map((item) => item.id === updated.id ? updated : item));
       if (updated.notificationSent === false) {
         setApplicationNotice("Quyết định đã được lưu nhưng email chưa gửi được. Sau khi cấu hình Gmail API, hãy bấm Gửi lại email.");
@@ -78,8 +65,6 @@ function AdminShops() {
         setApplicationNotice("Quyết định đã được lưu và email thông báo đã gửi.");
       }
       if (approved) {
-        setApplicationLocations((current) => ({ ...current, [application.id]: null }));
-        setLocationPickerApplicationId(null);
         setShops(await api.adminShops());
       }
     } catch (cause) {
@@ -110,7 +95,7 @@ function AdminShops() {
     <SectionCard title={`Hồ sơ đăng ký doanh nghiệp (${pendingApplications.length} chờ duyệt)`}>
       {applicationError && <p role="alert" className="mb-3 rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">{applicationError}</p>}
       {applicationNotice && <p role="status" className="mb-3 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">{applicationNotice}</p>}
-      <p className="mb-3 text-xs text-muted-foreground">Địa chỉ và ghim vị trí được tìm bằng OpenStreetMap. Admin có thể kiểm tra hoặc chỉnh lại trước khi chấp nhận.</p>
+      <p className="mb-3 text-xs text-muted-foreground">Địa chỉ và vị trí được doanh nghiệp gửi khi đăng ký. Admin chỉ có thể xem và xác minh thông tin này.</p>
       <div className="space-y-4">
         {applications.map((application) => <article key={application.id} className="rounded-2xl border border-border p-4">
           <div className="flex flex-wrap items-start justify-between gap-3">
@@ -129,27 +114,21 @@ function AdminShops() {
             <p><span className="text-muted-foreground">Email:</span> {application.email}</p>
             <p><span className="text-muted-foreground">Điện thoại:</span> {application.phone}</p>
             <p><span className="text-muted-foreground">Điện thoại đại diện:</span> {application.representativePhone || "—"}</p>
-            <p className="sm:col-span-2"><span className="text-muted-foreground">Địa chỉ:</span> {applicationAddresses[application.id] ?? application.address}</p>
+            <p className="sm:col-span-2"><span className="text-muted-foreground">Địa chỉ:</span> {application.address}</p>
           </div>
           {application.licenseOriginalName && <button onClick={() => void openLicense(application)} className="mt-3 rounded-lg border border-border px-3 py-2 text-xs font-semibold text-primary hover:bg-cream">Tải giấy phép: {application.licenseOriginalName}</button>}
           {application.status !== "PENDING" && application.notificationSent !== true && <button disabled={busyId === application.id} onClick={() => void resendNotification(application)} className="ml-2 mt-3 rounded-lg border border-border px-3 py-2 text-xs font-semibold text-primary hover:bg-cream disabled:opacity-50">{busyId === application.id ? "Đang gửi…" : "Gửi lại email"}</button>}
           {application.status === "PENDING" ? <>
             <div className="mt-4 rounded-xl bg-cream/70 p-3">
-              <p className="text-xs font-semibold">Vị trí cửa hàng</p>
-              <button type="button" onClick={() => setLocationPickerApplicationId((current) => current === application.id ? null : application.id)} className="mt-2 inline-flex items-center gap-2 rounded-lg border border-border bg-white px-3 py-2 text-xs font-semibold text-primary hover:bg-cream">
-                <MapPin className="h-4 w-4" />{locationPickerApplicationId === application.id ? "Đóng chọn vị trí" : applicationLocation(application) ? "Sửa địa chỉ / vị trí" : "Chọn địa chỉ / vị trí"}
-              </button>
-              {locationPickerApplicationId === application.id && <LocationPicker
-                address={applicationAddresses[application.id] ?? application.address}
-                value={applicationLocation(application)}
-                onAddressChange={(value) => setApplicationAddresses((current) => ({ ...current, [application.id]: value }))}
-                onChange={(value) => setApplicationLocations((current) => ({ ...current, [application.id]: value }))}
-              />}
+              <p className="text-xs font-semibold">Vị trí cửa hàng do doanh nghiệp cung cấp</p>
+              <p className="mt-2 flex items-start gap-2 text-sm text-muted-foreground"><MapPin className="mt-0.5 h-4 w-4 shrink-0 text-primary" />{hasApplicationLocation(application)
+                ? `${application.latitude}, ${application.longitude}`
+                : "Chưa có tọa độ được gửi."}</p>
             </div>
             <label className="mt-4 block"><span className="text-xs font-semibold">Lý do từ chối (bắt buộc khi từ chối)</span><textarea value={reasons[application.id] ?? ""} onChange={(event) => setReasons((current) => ({ ...current, [application.id]: event.target.value }))} rows={2} maxLength={1000} className="mt-1 w-full rounded-xl border border-border px-3 py-2 text-sm" /></label>
             <div className="mt-3 flex flex-wrap justify-end gap-2">
               <button disabled={busyId === application.id} onClick={() => void decide(application, false)} className="rounded-xl border border-red-200 px-4 py-2 text-sm font-semibold text-red-700 disabled:opacity-50">Từ chối</button>
-              <button disabled={busyId === application.id} onClick={() => void decide(application, true)} className="rounded-xl gt-gradient px-4 py-2 text-sm font-semibold text-white disabled:opacity-50">{busyId === application.id ? "Đang xử lý…" : "Chấp nhận"}</button>
+              <button disabled={busyId === application.id || !hasApplicationLocation(application)} title={!hasApplicationLocation(application) ? "Hồ sơ chưa có tọa độ cửa hàng" : undefined} onClick={() => void decide(application, true)} className="rounded-xl gt-gradient px-4 py-2 text-sm font-semibold text-white disabled:opacity-50">{busyId === application.id ? "Đang xử lý…" : "Chấp nhận"}</button>
             </div>
           </> : application.status === "REJECTED" && application.rejectionReason && <p className="mt-3 rounded-lg bg-red-50 p-3 text-xs text-red-700">Lý do từ chối: {application.rejectionReason}</p>}
         </article>)}
