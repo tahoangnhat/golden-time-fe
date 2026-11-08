@@ -115,6 +115,7 @@ function AdminShops() {
             <p><span className="text-muted-foreground">Điện thoại:</span> {application.phone}</p>
             <p><span className="text-muted-foreground">Điện thoại đại diện:</span> {application.representativePhone || "—"}</p>
             <p className="sm:col-span-2"><span className="text-muted-foreground">Địa chỉ:</span> {application.address}</p>
+            <p className="sm:col-span-2"><span className="text-muted-foreground">Địa chỉ lấy hàng GHN:</span> {application.pickupAddress || "Chưa cung cấp"}{application.pickupProvinceName && ` · ${application.pickupProvinceName}`}{application.pickupWardName && ` · ${application.pickupWardName}`}</p>
           </div>
           {application.licenseOriginalName && <button onClick={() => void openLicense(application)} className="mt-3 rounded-lg border border-border px-3 py-2 text-xs font-semibold text-primary hover:bg-cream">Tải giấy phép: {application.licenseOriginalName}</button>}
           {application.status !== "PENDING" && application.notificationSent !== true && <button disabled={busyId === application.id} onClick={() => void resendNotification(application)} className="ml-2 mt-3 rounded-lg border border-border px-3 py-2 text-xs font-semibold text-primary hover:bg-cream disabled:opacity-50">{busyId === application.id ? "Đang gửi…" : "Gửi lại email"}</button>}

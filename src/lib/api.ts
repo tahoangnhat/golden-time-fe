@@ -167,6 +167,7 @@ export type AdminShop = { id: number; name: string; address?: string | null; lat
 export type BusinessApplication = {
   id: number; businessName: string; registrationNumber?: string | null; taxCode?: string | null; contactName: string;
   representativePhone?: string | null; email: string; phone: string; address: string;
+  pickupAddress?: string | null; pickupProvinceName?: string | null; pickupWardName?: string | null;
   licenseOriginalName?: string | null; licenseContentType?: string | null; logoUrl?: string | null; status: "PENDING" | "APPROVED" | "REJECTED";
   rejectionReason?: string | null; createdAt: string; reviewedAt?: string | null; shopId?: number | null; notificationSent?: boolean | null;
   latitude?: number | null; longitude?: number | null;
@@ -180,7 +181,7 @@ export type AdminNutrition = { id: number; slug: string; name: string; emoji: st
 export type AdminTrace = { batchCode: string; product: string; shop?: string | null; supplier?: string | null; area?: string | null; harvestDate?: string | null; intakeDate?: string | null; certificates?: string | null; certified: boolean; farm?: string | null; quantityKg?: number | null; packagingDate?: string | null; qualityCheckedAt?: string | null; qualityResult?: string | null; qualityScore?: number | null; qualityNote?: string | null; transportDate?: string | null; transportInfo?: string | null; batchStatus?: string | null };
 export type AdminPriceSource = { id: number; retailer: string; fruit: string; productName: string; sourceUrl: string; enabled: boolean; lastAttemptAt?: string | null; lastSuccessAt?: string | null; lastError?: string | null };
 export type AdminOverview = { users: number; shops: number; orders: number; orderValueToday: number; scansToday: number; confirmedPercent: number; topFruits: { name: string; scans: number }[]; topShops: { name: string; orders: number; orderValue: number }[]; pendingOrders: number; daily: { date: string; orderValue: number; scans: number }[] };
-export type ShopProfile = { id: number; name: string; address?: string | null; latitude: number; longitude: number; status: string; description?: string | null; rating: number; reviewCount: number; businessEmail?: string | null; businessPhone?: string | null; taxCode?: string | null; representativeName?: string | null; representativePhone?: string | null; logoUrl?: string | null; pickupProvinceName?: string | null; pickupWardName?: string | null };
+export type ShopProfile = { id: number; name: string; address?: string | null; latitude: number; longitude: number; status: string; description?: string | null; rating: number; reviewCount: number; businessEmail?: string | null; businessPhone?: string | null; taxCode?: string | null; representativeName?: string | null; representativePhone?: string | null; logoUrl?: string | null; pickupAddress?: string | null; pickupProvinceName?: string | null; pickupWardName?: string | null };
 export type WalletSummary = { shopId: number; shopName: string; commissionTier: "NEW_SHOP" | "STANDARD" | "LARGE_PARTNER" | "CUSTOM"; commissionRate: number; approvedAt?: string | null; balance: number; reservedAmount: number; availableBalance: number; grossSales: number; commissions: number; payouts: number };
 export type WalletTransaction = { id: number; orderId?: number | null; entryType: "ORDER_SALE" | "COMMISSION_FEE" | "PAYOUT"; amount: number; grossAmount?: number | null; commissionRate?: number | null; commissionAmount?: number | null; externalReference?: string | null; description?: string | null; createdAt: string };
 export type ShopWithdrawalRequest = { id: number; shopId: number; shopName: string; amount: number; status: "PENDING" | "APPROVED" | "REJECTED" | "PAID" | "CANCELLED"; bankCode: string; bankName: string; accountName: string; maskedAccountNumber: string; requestedAt: string; reviewedAt?: string | null; reviewNote?: string | null; paidAt?: string | null; transferReference?: string | null; transferNote?: string | null };
@@ -457,7 +458,7 @@ export const api = {
   deletePremiumHealthProfile: () => request<void>("/premium/health-profile", { method: "DELETE" }),
   premiumRecommendations: (payload: { profile: PremiumHealthProfile; consentToAi: boolean; saveProfileConsent: boolean }) => request<PremiumRecommendationResponse>("/premium/recommendations", { method: "POST", body: JSON.stringify(payload) }),
   shopProfile: () => request<ShopProfile>("/shop/profile"),
-  updateShopProfile: (payload: { name?: string; address: string; latitude: number; longitude: number; businessEmail?: string; businessPhone?: string; taxCode?: string; representativeName?: string; representativePhone?: string; logoUrl?: string; pickupProvinceName?: string; pickupWardName?: string }) => request<ShopProfile>("/shop/profile", { method: "PUT", body: JSON.stringify(payload) }),
+  updateShopProfile: (payload: { name?: string; address: string; latitude: number; longitude: number; businessEmail?: string; businessPhone?: string; taxCode?: string; representativeName?: string; representativePhone?: string; logoUrl?: string; pickupAddress?: string; pickupProvinceName?: string; pickupWardName?: string }) => request<ShopProfile>("/shop/profile", { method: "PUT", body: JSON.stringify(payload) }),
   shopWallet: () => request<WalletSummary>("/shop/wallet"),
   shopWalletTransactions: () => request<WalletTransaction[]>("/shop/wallet/transactions"),
   shopWithdrawalRequests: () => request<ShopWithdrawalRequest[]>("/shop/wallet/withdrawal-requests"),
@@ -491,7 +492,7 @@ export const api = {
   createBatch: (payload: BatchWritePayload) => request<ShopBatch>("/shop/batches", { method: "POST", body: JSON.stringify(payload) }),
   updateBatch: (batchCode: string, payload: BatchWritePayload) => request<ShopBatch>(`/shop/batches/${encodeURIComponent(batchCode)}`, { method: "PUT", body: JSON.stringify(payload) }),
   shopOverview: () => request<ShopOverview>("/shop/overview"),
-  submitBusinessApplication: (payload: { businessName: string; taxCode?: string; contactName: string; representativePhone: string; email: string; phone: string; address: string; password: string; licenseFile: File; logoFile: File; latitude: number; longitude: number }) => {
+  submitBusinessApplication: (payload: { businessName: string; taxCode?: string; contactName: string; representativePhone: string; email: string; phone: string; address: string; pickupAddress: string; pickupProvinceName: string; pickupWardName: string; password: string; licenseFile: File; logoFile: File; latitude: number; longitude: number }) => {
     const form = new FormData();
     form.set("businessName", payload.businessName);
     if (payload.taxCode) form.set("taxCode", payload.taxCode);
@@ -500,6 +501,9 @@ export const api = {
     form.set("email", payload.email);
     form.set("phone", payload.phone);
     form.set("address", payload.address);
+    form.set("pickupAddress", payload.pickupAddress);
+    form.set("pickupProvinceName", payload.pickupProvinceName);
+    form.set("pickupWardName", payload.pickupWardName);
     form.set("latitude", String(payload.latitude));
     form.set("longitude", String(payload.longitude));
     form.set("password", payload.password);
