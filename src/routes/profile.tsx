@@ -212,7 +212,7 @@ function Profile() {
           ))}
         </div>
 
-        <section className="mt-4 overflow-hidden rounded-2xl border border-green-200 bg-white gt-shadow-soft">
+        <section id="premium-registration" className="mt-4 overflow-hidden rounded-2xl border border-green-200 bg-white gt-shadow-soft">
           <div className="flex items-start gap-3 p-4">
             <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-cream text-primary"><Crown className="h-5 w-5" /></span>
             <div className="min-w-0 flex-1">
