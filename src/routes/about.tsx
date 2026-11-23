@@ -75,7 +75,7 @@ function AboutPage() {
   return (
     <SiteShell>
       <div ref={pageRef} className="about-page overflow-hidden bg-[#fffdf7] text-[#18351f]">
-        <section className="about-banner relative isolate mx-auto mt-7 min-h-[230px] max-w-[1440px] overflow-hidden sm:mt-10 sm:min-h-[290px]">
+        <section className="about-banner relative isolate mt-7 min-h-[230px] w-full overflow-hidden sm:mt-10 sm:min-h-[290px]">
           <img
             src="/images/about-fruit-market.jpg"
             alt="Quầy trái cây nhiều màu sắc"
