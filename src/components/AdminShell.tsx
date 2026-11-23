@@ -16,12 +16,12 @@ import {
   LogOut,
   Menu,
   X,
-  Bell,
   Search,
   ChevronDown,
 } from "lucide-react";
 import { api, logout, type UserProfile } from "@/lib/api";
 import { BrandMark } from "@/components/BrandMark";
+import { NotificationBell } from "@/components/NotificationBell";
 
 export const ADMIN_NAV = [
   { to: "/admin/dashboard", label: "Tổng quan", icon: LayoutDashboard },
@@ -117,9 +117,7 @@ export function AdminShell({
                 className="flex-1 bg-transparent outline-none text-sm"
               />
             </div>
-            <button className="relative h-9 w-9 grid place-items-center rounded-lg hover:bg-muted">
-              <Bell className="h-5 w-5" />
-            </button>
+            <NotificationBell />
             <Link to="/admin/wallets" title="Mở quản lý ví và hoa hồng" className="flex h-9 items-center gap-2 rounded-xl border border-border bg-cream px-2.5 hover:border-primary/40 hover:bg-primary/5">
               <WalletCards className="h-4 w-4 shrink-0 text-primary" />
               <span className="leading-tight"><span className="block text-[9px] text-muted-foreground">Tổng phải trả Shop</span><strong className="block max-w-28 truncate text-xs">{walletTotal === null ? "—" : `${walletTotal.toLocaleString("vi-VN")}₫`}</strong></span>

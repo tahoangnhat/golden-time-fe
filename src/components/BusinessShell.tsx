@@ -12,12 +12,12 @@ import {
   LogOut,
   Menu,
   X,
-  Bell,
   Search,
   Sprout,
 } from "lucide-react";
 import { api, logout, type ShopProfile } from "@/lib/api";
 import { BrandMark } from "@/components/BrandMark";
+import { NotificationBell } from "@/components/NotificationBell";
 
 const NAV = [
   { to: "/business/dashboard", label: "Tổng quan", icon: LayoutDashboard },
@@ -115,9 +115,7 @@ export function BusinessShell({
                 className="flex-1 bg-transparent outline-none text-sm"
               />
             </div>
-            <button className="relative h-9 w-9 grid place-items-center rounded-lg hover:bg-muted">
-              <Bell className="h-5 w-5" />
-            </button>
+            <NotificationBell />
             <Link to="/business/wallet" title="Mở ví doanh thu" className="flex h-9 items-center gap-2 rounded-xl border border-border bg-cream px-2.5 hover:border-primary/40 hover:bg-primary/5">
               <WalletCards className="h-4 w-4 shrink-0 text-primary" />
               <span className="leading-tight"><span className="block text-[9px] text-muted-foreground">Số dư ví</span><strong className="block max-w-28 truncate text-xs">{walletBalance === null ? "—" : `${walletBalance.toLocaleString("vi-VN")}₫`}</strong></span>

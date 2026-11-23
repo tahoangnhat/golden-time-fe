@@ -14,6 +14,8 @@ export class ApiError extends Error {
 }
 
 export type UserProfile = { id: number; email: string; phone?: string | null; fullName: string; role: "USER" | "SHOP_OWNER" | "ADMIN" };
+export type NotificationItem = { id: number; type: string; title: string; message: string; targetPath?: string | null; createdAt: string; readAt?: string | null; read: boolean };
+export type NotificationInbox = { items: NotificationItem[]; unreadCount: number };
 export type AuthResponse = { accessToken: string; tokenType: string; expiresInSeconds: number; refreshExpiresInSeconds: number; user: UserProfile };
 export type Fruit = { id: number; slug: string; name: string; emoji: string; category?: string | null };
 export type FruitNutrition = Fruit & {
@@ -345,6 +347,9 @@ export const api = {
   login: async (identifier: string, password: string) => saveAuth(await request<AuthResponse>("/auth/login", { method: "POST", body: JSON.stringify({ identifier, password }) })),
   register: async (payload: { email: string; fullName: string; password: string; phone: string }) => saveAuth(await request<AuthResponse>("/auth/register", { method: "POST", body: JSON.stringify(payload) })),
   me: () => request<UserProfile>("/auth/me"),
+  notificationInbox: (limit = 20) => request<NotificationInbox>(`/notifications?limit=${limit}`),
+  markNotificationRead: (id: number) => request<void>(`/notifications/${id}/read`, { method: "PATCH" }),
+  markAllNotificationsRead: () => request<{ updatedCount: number }>("/notifications/read-all", { method: "POST" }),
   updateMe: (payload: { fullName: string; phone?: string | null }) => request<UserProfile>("/auth/me", { method: "PUT", body: JSON.stringify(payload) }),
   fruits: (q?: string) => request<Fruit[]>(`/fruits${q ? `?${query({ q })}` : ""}`),
   fruit: (slug: string) => request<FruitNutrition>(`/fruits/${encodeURIComponent(slug)}`),
