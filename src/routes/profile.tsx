@@ -195,10 +195,9 @@ function Profile() {
               <p className="text-xs text-white/85">{user?.email || "Dùng ứng dụng Golden Time để đồng bộ dữ liệu"}</p>
             </div>
           </div>
-          <div className="relative mt-4 grid grid-cols-3 gap-2 text-center">
+          <div className="relative mt-4 grid grid-cols-2 gap-2 text-center">
             <div className="bg-white/15 rounded-xl py-2"><p className="font-extrabold">{scanCount}</p><p className="text-[10px] opacity-80">Lần quét</p></div>
             <div className="bg-white/15 rounded-xl py-2"><p className="font-extrabold">{orderCount}</p><p className="text-[10px] opacity-80">Đơn hàng</p></div>
-            <div className="bg-white/15 rounded-xl py-2"><p className="font-extrabold">—</p><p className="text-[10px] opacity-80">Trái cây/tuần</p></div>
           </div>
         </div>
 
