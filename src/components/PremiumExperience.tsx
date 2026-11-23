@@ -132,7 +132,7 @@ export function PremiumExperience({ onBack }: { onBack: () => void }) {
       <section className="mb-4 rounded-3xl border border-green-200 bg-gradient-to-br from-cream via-white to-green-50 p-5 gt-shadow-soft">
         <div className="flex items-center gap-2 text-primary"><Crown className="h-5 w-5" /><span className="text-xs font-extrabold uppercase tracking-wide">Golden Time Premium</span></div>
         <h1 className="mt-2 text-xl font-extrabold">{pageTitle}</h1>
-        <p className="mt-1 text-xs leading-5 text-muted-foreground">Làm bài test để nhận gợi ý cá nhân hóa. Bạn cũng có thể mở trợ lý AI từ nút nổi ở góc màn hình trên mọi trang trong app.</p>
+        <p className="mt-1 text-xs leading-5 text-muted-foreground">Làm bài test để nhận gợi ý cá nhân hóa. Bạn cũng có thể mở trợ lý AI từ nút nổi ở góc màn hình trên mọi trang.</p>
       </section>
 
       {recommendation && <div className="mb-4 grid grid-cols-2 gap-1 rounded-2xl border border-border bg-white p-1 gt-shadow-soft">
@@ -181,7 +181,7 @@ export function PremiumExperience({ onBack }: { onBack: () => void }) {
             <input type="checkbox" checked={aiConsent} onChange={(event) => setAiConsent(event.target.checked)} className="mt-0.5 accent-green-700" />
             <span><strong>Đồng ý dùng Gemini cho gợi ý trái cây.</strong> Chỉ các trường sức khỏe đã nhập và dữ liệu sản phẩm cần thiết được gửi tới Gemini. Không gửi tên, email hay ID tài khoản. Trợ lý chat nổi sẽ xin quyền riêng trước khi gửi nội dung chat.</span>
           </label>
-          <div className="flex items-start gap-2 rounded-xl bg-cream p-3 text-[11px] leading-5 text-muted-foreground"><ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-primary" />Trợ lý AI Premium chỉ giữ hội thoại trong phiên app hiện tại, không lưu vào tài khoản Golden Time.</div>
+          <div className="flex items-start gap-2 rounded-xl bg-cream p-3 text-[11px] leading-5 text-muted-foreground"><ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-primary" />Trợ lý AI Premium chỉ giữ hội thoại trong phiên hiện tại, không lưu vào tài khoản Golden Time.</div>
           {savedProfileExists && <button type="button" onClick={() => void deleteSavedProfile()} disabled={busy} className="inline-flex items-center gap-1.5 text-xs font-semibold text-red-700 disabled:opacity-60"><Trash2 className="h-3.5 w-3.5" /> Xóa hồ sơ đã lưu</button>}
         </section>
 
@@ -205,7 +205,7 @@ export function PremiumExperience({ onBack }: { onBack: () => void }) {
           </div>
           <p className="mt-3 rounded-xl bg-cream p-3 text-[11px] leading-5 text-muted-foreground">{recommendation?.safetyNote}</p>
         </section>
-        <div className="flex items-start gap-2 rounded-xl bg-cream p-3 text-xs leading-5 text-muted-foreground"><MessageCircle className="mt-0.5 h-4 w-4 shrink-0 text-primary" />Chạm nút trợ lý AI hình tròn nổi ở góc dưới màn hình để bắt đầu chat. Nút này đi cùng bạn khi chuyển trang trong app.</div>
+        <div className="flex items-start gap-2 rounded-xl bg-cream p-3 text-xs leading-5 text-muted-foreground"><MessageCircle className="mt-0.5 h-4 w-4 shrink-0 text-primary" />Chạm nút trợ lý AI hình tròn nổi ở góc dưới màn hình để bắt đầu chat. Nút này đi cùng bạn khi chuyển trang.</div>
         {error && <p role="alert" className="rounded-xl border border-red-200 bg-red-50 px-3 py-2.5 text-sm text-red-700">{error}</p>}
       </div>}
     </div>

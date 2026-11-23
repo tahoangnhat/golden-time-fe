@@ -42,15 +42,23 @@ export function PremiumAssistantFloat({ bottomNavVisible = true }: { bottomNavVi
   const [safetyNote, setSafetyNote] = useState("");
 
   useEffect(() => {
-    const inAndroidApp = new URLSearchParams(window.location.search).get("platform") === "android"
-      || window.sessionStorage.getItem("golden-time-platform") === "android";
-    if (!inAndroidApp || !hasAuth()) return;
+    if (!hasAuth()) return;
 
     let active = true;
     const refreshMembership = () => {
       Promise.all([api.premiumStatus(), api.me()]).then(([status, user]) => {
         if (!active) return;
-        bindPremiumAssistantOwner(user.id);
+        const accountChanged = bindPremiumAssistantOwner(user.id);
+        if (accountChanged) {
+          setOpen(false);
+          setProfile(null);
+          setRecommendedProductIds([]);
+          setMessages([]);
+          setAiConsent(false);
+          setDraft("");
+          setError("");
+          setSafetyNote("");
+        }
         setAvailable(status.premiumActive);
         setGeminiConfigured(status.geminiConfigured);
       }).catch(() => {
@@ -147,7 +155,7 @@ export function PremiumAssistantFloat({ bottomNavVisible = true }: { bottomNavVi
               <input type="checkbox" checked={aiConsent} disabled={!geminiConfigured} onChange={(event) => updateConsent(event.target.checked)} className="mt-0.5 accent-green-700" />
               <span>{aiConsent ? "Đã đồng ý gửi thông tin sức khỏe đã nhập và nội dung chat tới Gemini. Bỏ chọn để dừng gửi tin nhắn tiếp theo." : "Đồng ý gửi các trường sức khỏe đã nhập, câu hỏi và vài lượt chat gần nhất tới Gemini. Không gửi tên, email hoặc ID tài khoản."}</span>
             </label>
-            <div className="mt-2 flex items-start gap-1.5 text-[10px] leading-4 text-muted-foreground"><ShieldCheck className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary" />Chat chỉ lưu tạm trong phiên app, không lưu thành lịch sử tài khoản.</div>
+            <div className="mt-2 flex items-start gap-1.5 text-[10px] leading-4 text-muted-foreground"><ShieldCheck className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary" />Chat chỉ giữ trong phiên hiện tại, không lưu thành lịch sử tài khoản.</div>
           </div>
 
           <div className="min-h-0 flex-1 space-y-3 overflow-y-auto bg-cream/40 px-4 py-4">

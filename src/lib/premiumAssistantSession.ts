@@ -18,12 +18,13 @@ let session: PremiumAssistantSession = {
   aiConsent: false,
 };
 
-export function bindPremiumAssistantOwner(ownerId: number) {
+export function bindPremiumAssistantOwner(ownerId: number): boolean {
   if (session.ownerId !== null && session.ownerId !== ownerId) {
     session = { ownerId, messages: [], profile: null, recommendedProductIds: [], aiConsent: false };
-    return;
+    return true;
   }
   session = { ...session, ownerId };
+  return false;
 }
 
 export function readPremiumAssistantSession(): PremiumAssistantSession {

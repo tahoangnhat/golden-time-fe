@@ -31,11 +31,7 @@ function Profile() {
   const [premiumError, setPremiumError] = useState("");
   const [premiumPlan, setPremiumPlan] = useState<"MONTHLY" | "YEARLY">("MONTHLY");
   const [premiumMode, setPremiumMode] = useState(false);
-  const [isAndroidApp, setIsAndroidApp] = useState(false);
   useEffect(() => {
-    const isAndroidAppEntry = new URLSearchParams(window.location.search).get("platform") === "android"
-      || window.sessionStorage.getItem("golden-time-platform") === "android";
-    setIsAndroidApp(isAndroidAppEntry);
     if (!hasAuth()) { setLoading(false); setPremiumLoading(false); return; }
     let active = true;
     api.me().then((profile) => {
@@ -47,10 +43,6 @@ function Profile() {
     api.scans().then((items) => setScanCount(items.length)).catch(() => setScanCount(0));
     api.orders().then((items) => setOrderCount(items.length)).catch(() => setOrderCount(0));
     api.buyerMyVouchers("AVAILABLE").then((items) => setVoucherCount(items.length)).catch(() => setVoucherCount(0));
-    if (!isAndroidAppEntry) {
-      setPremiumLoading(false);
-      return () => { active = false; };
-    }
     const params = new URLSearchParams(window.location.search);
     const payment = params.get("payment");
     const orderCode = Number(params.get("orderCode"));
@@ -69,6 +61,11 @@ function Profile() {
         if (active) setPremiumLoading(false);
       }
     };
+    const refreshWhenVisible = () => {
+      if (document.visibilityState === "visible") void refreshPremium();
+    };
+    window.addEventListener("focus", refreshWhenVisible);
+    document.addEventListener("visibilitychange", refreshWhenVisible);
     if (orderCode > 0 && (payment === "returned" || payment === "cancelled")) {
       const checkPayment = async () => {
         setPremiumLoading(true);
@@ -103,7 +100,11 @@ function Profile() {
     } else {
       void refreshPremium();
     }
-    return () => { active = false; };
+    return () => {
+      active = false;
+      window.removeEventListener("focus", refreshWhenVisible);
+      document.removeEventListener("visibilitychange", refreshWhenVisible);
+    };
   }, []);
 
   async function registerPremium(planCode: "MONTHLY" | "YEARLY" = premiumPlan) {
@@ -212,7 +213,7 @@ function Profile() {
           ))}
         </div>
 
-        {isAndroidApp && <section className="mt-4 overflow-hidden rounded-2xl border border-green-200 bg-white gt-shadow-soft">
+        <section className="mt-4 overflow-hidden rounded-2xl border border-green-200 bg-white gt-shadow-soft">
           <div className="flex items-start gap-3 p-4">
             <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-cream text-primary"><Crown className="h-5 w-5" /></span>
             <div className="min-w-0 flex-1">
@@ -220,6 +221,7 @@ function Profile() {
                 <h2 className="font-extrabold text-sm">Golden Time Premium</h2>
                 {premium?.premiumActive && <span className="rounded-full bg-green-50 px-2.5 py-1 text-[10px] font-bold text-green-700">ĐANG HOẠT ĐỘNG</span>}
               </div>
+              <p className="mt-1 text-[11px] leading-4 text-muted-foreground">Gói gắn với tài khoản Golden Time, dùng được trên web và app.</p>
               <p className="mt-1 text-xs leading-5 text-muted-foreground">{premium?.premiumActive && premium.expiresAt
                 ? `Gói của bạn có hiệu lực đến ${new Date(premium.expiresAt).toLocaleDateString("vi-VN")}.`
                 : "Bài test sức khỏe, gợi ý trái cây đang bán và chat dinh dưỡng với Gemini; gói không tự gia hạn."}</p>
@@ -250,7 +252,7 @@ function Profile() {
               </>}
             </div>
           </div>
-        </section>}
+        </section>
 
         {user && <button onClick={() => { void logout(); nav({ to: "/" }); }} className="mt-4 w-full py-3 rounded-2xl bg-white border border-border font-semibold text-sm flex items-center justify-center gap-2 text-muted-foreground"><LogOut className="h-4 w-4" /> Đăng xuất</button>}
         <p className="text-center text-[11px] text-muted-foreground mt-3">Golden Time</p>
