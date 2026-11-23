@@ -10,7 +10,6 @@ import {
   ShoppingBasket,
   Sparkles,
   Store,
-  Tag,
   Users,
 } from "lucide-react";
 import { SiteShell } from "@/components/SiteShell";
@@ -39,7 +38,6 @@ const AUDIENCES = [
 const DISCOVERIES = [
   { icon: Sparkles, label: "Khám phá trái cây", description: "Thử phân tích hình ảnh trái cây bằng AI." },
   { icon: Apple, label: "Tìm hiểu dinh dưỡng", description: "Tra cứu thông tin dinh dưỡng và kiến thức hữu ích." },
-  { icon: Tag, label: "Tham khảo giá", description: "Xem mức giá và thời điểm nguồn dữ liệu được cập nhật." },
   { icon: MapPin, label: "Tìm nguồn hàng", description: "Khám phá cửa hàng và thông tin truy xuất sản phẩm." },
 ];
 
@@ -75,7 +73,7 @@ function AboutPage() {
   return (
     <SiteShell>
       <div ref={pageRef} className="about-page overflow-hidden bg-[#fffdf7] text-[#18351f]">
-        <section className="about-banner relative isolate mt-7 min-h-[230px] w-full overflow-hidden sm:mt-10 sm:min-h-[290px]">
+        <section className="about-banner relative isolate min-h-[230px] w-full overflow-hidden sm:min-h-[290px]">
           <img
             src="/images/about-fruit-market.jpg"
             alt="Quầy trái cây nhiều màu sắc"

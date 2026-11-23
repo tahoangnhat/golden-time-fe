@@ -24,10 +24,10 @@ export const Route = createFileRoute("/")({
       {
         name: "description",
         content:
-          "Golden Time là nền tảng công nghệ thực phẩm Việt Nam giúp đánh giá chất lượng trái cây bằng AI, xem dinh dưỡng, so sánh giá và mua trái cây đáng tin cậy.",
+          "Golden Time là nền tảng công nghệ thực phẩm Việt Nam giúp đánh giá chất lượng trái cây bằng AI, xem thông tin dinh dưỡng và mua trái cây đáng tin cậy.",
       },
       { property: "og:title", content: "Golden Time — Trái cây thông minh cùng AI" },
-      { property: "og:description", content: "Quét AI · Dinh dưỡng · So sánh giá · Truy xuất nguồn gốc." },
+      { property: "og:description", content: "Quét AI · Dinh dưỡng · Mua trái cây · Truy xuất nguồn gốc." },
     ],
   }),
   component: HomePage,
@@ -43,11 +43,6 @@ const homeFeatures: { icon: LucideIcon; title: string; description: string }[] =
     icon: Apple,
     title: "Dinh dưỡng trong từng loại quả",
     description: "Tra cứu calo, vitamin và thông tin hữu ích cho khẩu phần của bạn.",
-  },
-  {
-    icon: BarChart3,
-    title: "So sánh giá trái cây",
-    description: "Tham khảo giá từ nhiều nguồn để chọn sản phẩm phù hợp ngân sách.",
   },
   {
     icon: ShoppingBasket,
@@ -70,7 +65,7 @@ const guideSteps: { icon: LucideIcon; number: string; title: string; description
   { icon: UserRound, number: "01", title: "Đăng nhập", description: "Đăng nhập để lưu kết quả quét vào tài khoản của bạn." },
   { icon: Camera, number: "02", title: "Chụp hoặc tải ảnh", description: "Mở Quét trái cây, chụp trực tiếp hoặc chọn ảnh rõ nét từ thiết bị." },
   { icon: ScanLine, number: "03", title: "Phân tích bằng AI", description: "Nhấn Phân tích ngay để xem đánh giá khi dịch vụ AI đã sẵn sàng." },
-  { icon: BarChart3, number: "04", title: "Khám phá kết quả", description: "Xem chất lượng, độ tươi, độ chín rồi tra cứu dinh dưỡng hoặc giá." },
+  { icon: BarChart3, number: "04", title: "Khám phá kết quả", description: "Xem chất lượng, độ tươi, độ chín rồi tra cứu dinh dưỡng hoặc chọn mua trái cây." },
 ];
 
 function HomePage() {
@@ -191,7 +186,7 @@ function HomePage() {
   }, []);
 
   return (
-    <SiteShell>
+    <SiteShell showUserAccess>
       {/* HERO */}
       <section ref={heroRef} className="golden-time-hero relative isolate flex min-h-[640px] items-center overflow-hidden lg:min-h-[720px]">
         <img
@@ -211,7 +206,7 @@ function HomePage() {
               </span>
             </h1>
             <p className="mt-6 text-base lg:text-lg text-muted-foreground max-w-xl">
-              Nền tảng giúp người dùng đánh giá chất lượng trái cây, xem dinh dưỡng, so sánh giá và mua trái
+              Nền tảng giúp người dùng đánh giá chất lượng trái cây, xem dinh dưỡng và mua trái
               cây đáng tin cậy — tất cả trong một ứng dụng.
             </p>
           </div>
@@ -360,7 +355,7 @@ function HomePage() {
           <ul className="relative mt-8 space-y-5 before:absolute before:bottom-4 before:left-[11px] before:top-4 before:w-px before:bg-border">
             {[
               "Nhận diện và đánh giá chất lượng trái cây bằng AI",
-              "So sánh giá thị trường từ nhiều nguồn",
+              "Tìm cửa hàng và đặt mua trái cây thuận tiện",
               "Tra cứu thông tin dinh dưỡng chi tiết, dễ hiểu",
               "Xem độ tươi, độ chín và hướng dẫn bảo quản",
             ].map((benefit) => (

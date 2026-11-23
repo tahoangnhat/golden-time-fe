@@ -62,12 +62,6 @@ export type PremiumChatResponse = { answer: string; safetyNote: string };
 export type GhnAddress = { id: number; name: string };
 export type GhnShippingQuote = { shippingFee: number; expectedDeliveryAt?: string | null };
 export type NearbyChainShop = { id: string; name: string; address?: string | null; latitude: number; longitude: number };
-export type PriceQuote = { retailerCode: string; retailerName: string; pricePerKg: number; sourceUrl: string; fetchedAt: string };
-export type PriceComparison = {
-  fruitSlug: string; fruitName: string; emoji: string; sourceCount: number;
-  averagePrice?: number | null; minPrice?: number | null; maxPrice?: number | null;
-  refreshedAt?: string | null; prices: PriceQuote[]; message?: string | null;
-};
 export type ScanResult = {
   id: number; fruitId?: number | null; fruitName: string; qualityScore?: number | null;
   freshnessScore?: number | null; ripenessLabel?: string | null; sweetnessLabel?: string | null;
@@ -359,7 +353,6 @@ export const api = {
   shops: (lat?: number, lng?: number, radiusKm?: number) => request<Shop[]>(`/shops?${query({ lat, lng, radiusKm })}`),
   products: (filters: { q?: string; fruitSlug?: string; lat?: number; lng?: number; radiusKm?: number } = {}) => request<Product[]>(`/products?${query(filters)}`),
   product: (id: number) => request<Product>(`/products/${id}`),
-  prices: (fruitSlug: string) => request<PriceComparison>(`/market/prices?${query({ fruitSlug })}`),
   scan: async (file: File, shopId?: number) => {
     const form = new FormData();
     form.set("file", file);

@@ -24,7 +24,7 @@ export function Logo({ className }: { className?: string }) {
   );
 }
 
-export function SiteHeader() {
+export function SiteHeader({ showUserAccess = false }: { showUserAccess?: boolean }) {
   const [open, setOpen] = useState(false);
   return (
     <header className="sticky top-0 z-40 backdrop-blur-xl bg-white/80 border-b border-border/60">
@@ -43,13 +43,16 @@ export function SiteHeader() {
             </Link>
           ))}
         </nav>
-        <DownloadAppDialog
-          trigger={
-            <button className="hidden lg:inline-flex h-10 items-center justify-center gap-2 rounded-xl gt-gradient px-4 text-sm font-semibold text-white shadow-sm transition hover:brightness-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2">
-              Tải ứng dụng
-            </button>
-          }
-        />
+        <div className="hidden lg:flex items-center gap-2">
+          {showUserAccess && <Link to="/app/login" className="inline-flex h-10 items-center justify-center rounded-xl border border-primary/30 bg-white px-4 text-sm font-semibold text-primary transition-colors hover:bg-cream focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2">Truy cập ngay</Link>}
+          <DownloadAppDialog
+            trigger={
+              <button className="inline-flex h-10 items-center justify-center gap-2 rounded-xl gt-gradient px-4 text-sm font-semibold text-white shadow-sm transition hover:brightness-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2">
+                Tải ứng dụng
+              </button>
+            }
+          />
+        </div>
         <button
           onClick={() => setOpen((v) => !v)}
           className="lg:hidden h-10 w-10 grid place-items-center rounded-xl bg-cream"
@@ -77,6 +80,7 @@ export function SiteHeader() {
               </button>
             }
           />
+          {showUserAccess && <Link to="/app/login" onClick={() => setOpen(false)} className="mt-2 inline-flex w-full items-center justify-center rounded-xl border border-primary/30 bg-white px-4 py-3 text-sm font-semibold text-primary">Truy cập ngay</Link>}
         </div>
       )}
     </header>
@@ -123,10 +127,10 @@ export function SiteFooter() {
   );
 }
 
-export function SiteShell({ children, className }: { children: ReactNode; className?: string }) {
+export function SiteShell({ children, className, showUserAccess = false }: { children: ReactNode; className?: string; showUserAccess?: boolean }) {
   return (
     <div className={cn("min-h-screen bg-background flex flex-col", className)}>
-      <SiteHeader />
+      <SiteHeader showUserAccess={showUserAccess} />
       <main className="flex-1">{children}</main>
       <SiteFooter />
     </div>

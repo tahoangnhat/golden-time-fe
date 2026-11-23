@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Camera, CameraOff, ChevronLeft, ImageUp, Zap, Lightbulb, LoaderCircle } from "lucide-react";
+import { Camera, ChevronLeft, ImageUp, Zap, Lightbulb, LoaderCircle } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { PhoneShell } from "@/components/PhoneShell";
 import { ApiError, api, hasAuth, userStorageKey } from "@/lib/api";
@@ -163,25 +163,22 @@ function Scan() {
             <div className="absolute bottom-0 left-0 h-10 w-10 border-b-4 border-l-4 border-lime-300 rounded-bl-2xl" />
             <div className="absolute bottom-0 right-0 h-10 w-10 border-b-4 border-r-4 border-lime-300 rounded-br-2xl" />
           </div>
-          <div className="absolute bottom-5 inset-x-5 bg-black/45 rounded-2xl px-4 py-3 text-center text-sm">{cameraOpen ? "Canh trái cây trong khung hình rồi chụp" : "Chụp trực tiếp hoặc chọn ảnh PNG, JPEG, WebP"}</div>
+          <div className="absolute bottom-5 inset-x-5 bg-black/45 rounded-2xl px-4 py-3 text-center text-sm">{cameraOpen ? "Canh trái cây trong khung hình rồi chụp" : file ? "Ảnh đã sẵn sàng để phân tích" : "Chụp trực tiếp hoặc tải ảnh PNG, JPEG, WebP"}</div>
         </div>
         <div className="px-5 mt-6 space-y-3">
           <div className="grid grid-cols-2 gap-2">
-            {cameraOpen ? <>
-              <button type="button" onClick={capturePhoto} className="py-3 rounded-2xl gt-gradient font-semibold gt-shadow flex items-center justify-center gap-2"><Camera className="h-5 w-5" /> Chụp ảnh</button>
-              <button type="button" onClick={stopCamera} className="py-3 rounded-2xl bg-white/10 font-semibold border border-white/15 flex items-center justify-center gap-2"><CameraOff className="h-5 w-5" /> Tắt camera</button>
-            </> : <>
-              <button type="button" disabled={cameraBusy} onClick={() => void startCamera()} className="py-3 rounded-2xl gt-gradient font-semibold gt-shadow disabled:opacity-60 flex items-center justify-center gap-2"><Camera className="h-5 w-5" /> {cameraBusy ? "Đang mở…" : "Mở camera"}</button>
-              <label className="py-3 rounded-2xl bg-white/10 font-semibold border border-white/15 flex items-center justify-center gap-2 cursor-pointer">
-                <ImageUp className="h-5 w-5" /> Tải ảnh lên
-                <input className="sr-only" type="file" accept="image/png,image/jpeg,image/webp" onChange={(event) => { chooseFile(event.target.files?.[0]); event.currentTarget.value = ""; }} />
-              </label>
-            </>}
+            {cameraOpen
+              ? <button type="button" onClick={capturePhoto} className="py-3 rounded-2xl gt-gradient font-semibold gt-shadow flex items-center justify-center gap-2"><Camera className="h-5 w-5" /> Chụp ảnh</button>
+              : <button type="button" disabled={cameraBusy} onClick={() => void startCamera()} className="py-3 rounded-2xl gt-gradient font-semibold gt-shadow disabled:opacity-60 flex items-center justify-center gap-2"><Camera className="h-5 w-5" /> {cameraBusy ? "Đang mở…" : "Mở camera"}</button>}
+            <label className="py-3 rounded-2xl bg-white/10 font-semibold border border-white/15 flex items-center justify-center gap-2 cursor-pointer">
+              <ImageUp className="h-5 w-5" /> Tải ảnh lên
+              <input className="sr-only" type="file" accept="image/png,image/jpeg,image/webp" onChange={(event) => { chooseFile(event.target.files?.[0]); event.currentTarget.value = ""; }} />
+            </label>
           </div>
           {file && !cameraOpen && <p className="truncate text-center text-xs text-white/70">Ảnh đã chọn: {file.name}</p>}
-          <button disabled={busy} onClick={analyze} className="block w-full text-center py-4 rounded-2xl gt-gradient font-semibold gt-shadow disabled:opacity-60">
+          {file && !cameraOpen && <button type="button" disabled={busy} onClick={() => void analyze()} className="block w-full text-center py-4 rounded-2xl gt-gradient font-semibold gt-shadow disabled:opacity-60">
             <span className="inline-flex items-center gap-2">{busy ? <LoaderCircle className="h-5 w-5 animate-spin" /> : <Zap className="h-5 w-5 fill-white" />} {busy ? "Đang phân tích…" : "Phân tích ngay"}</span>
-          </button>
+          </button>}
           {error && <p className="rounded-xl bg-red-950/50 px-3 py-2 text-sm text-red-100">{error}</p>}
           <p className="text-[11px] text-white/60 text-center pt-1">Cần cấu hình dịch vụ AI trước khi có thể phân tích ảnh.</p>
         </div>

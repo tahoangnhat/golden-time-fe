@@ -1,9 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ChevronLeft, Share2, Leaf, BarChart3, ShoppingBag, CheckCircle2, LoaderCircle } from "lucide-react";
+import { ChevronLeft, Share2, Leaf, ShoppingBag, CheckCircle2, LoaderCircle } from "lucide-react";
 import { useEffect, useState } from "react";
 import { PhoneShell } from "@/components/PhoneShell";
-import { FruitThumb } from "@/components/FruitThumb";
-import { api, userStorageKey, type ScanResult } from "@/lib/api";
+import { ProductThumb } from "@/components/FruitThumb";
+import { api, assetUrl, userStorageKey, type ScanResult } from "@/lib/api";
 
 export const Route = createFileRoute("/result")({
   head: () => ({ meta: [{ title: "Kết quả phân tích — Golden Time" }] }),
@@ -49,17 +49,15 @@ function Result() {
         {loading ? <div className="py-16 grid place-items-center"><LoaderCircle className="animate-spin text-primary" /></div> : !scan ?
           <div className="bg-white rounded-2xl p-5 border border-border text-center"><p className="font-semibold">{error || "Chưa có kết quả quét."}</p><Link to="/scan" className="inline-block mt-3 text-primary font-semibold">Quét trái cây</Link></div> : <>
           <div className="rounded-3xl gt-gradient text-white p-6 gt-shadow relative overflow-hidden">
-            <div className="absolute -right-6 -top-6 text-8xl opacity-20">{scan.fruitName?.includes("Cam") ? "🍊" : "🍎"}</div>
-            <div className="relative flex items-center gap-4"><FruitThumb emoji={scan.fruitName?.includes("Cam") ? "🍊" : "🍎"} size="lg" />
+            <div className="relative flex items-center gap-4"><ProductThumb emoji={scan.fruitName?.includes("Cam") ? "🍊" : "🍎"} imageUrl={assetUrl(scan.imageUrl)} size="lg" alt={`Ảnh trái cây người dùng vừa quét: ${scan.fruitName}`} />
               <div><p className="text-[11px] uppercase tracking-wider text-white/80">Điểm chất lượng</p><p className="text-5xl font-extrabold leading-none mt-1">{score}<span className="text-2xl text-white/80">/100</span></p><p className="text-sm font-semibold mt-1">{scan.fruitName}</p></div>
             </div>
             <div className="relative mt-4 bg-white/15 rounded-xl px-3 py-2 flex items-center gap-2 text-xs"><CheckCircle2 className="h-4 w-4 shrink-0" />{scan.qualityWarning || "Đã lưu kết quả phân tích."}</div>
             <p className="relative mt-2 text-[10px] text-white/75">Phân tích từ dịch vụ AI{scan.confidence != null && ` • Độ tin cậy ${Math.round(scan.confidence * 100)}%`}</p>
           </div>
           <div className="mt-5 grid grid-cols-2 gap-3">{metrics.map((metric) => <div key={metric.label} className="bg-white rounded-2xl p-4 gt-shadow-soft border border-border"><p className="text-[11px] text-muted-foreground font-medium">{metric.label}</p><p className="text-lg font-extrabold mt-1">{metric.value}</p></div>)}</div>
-          <div className="mt-5 grid grid-cols-3 gap-2">
+          <div className="mt-5 grid grid-cols-2 gap-2">
             <Link to="/nutrition" className="py-3 rounded-2xl bg-white border border-border text-xs font-semibold flex flex-col items-center gap-1"><Leaf className="h-4 w-4 text-primary" /> Dinh dưỡng</Link>
-            <Link to="/compare" className="py-3 rounded-2xl bg-white border border-border text-xs font-semibold flex flex-col items-center gap-1"><BarChart3 className="h-4 w-4 text-primary" /> So sánh giá</Link>
             <Link to="/shop" className="py-3 rounded-2xl gt-gradient text-white text-xs font-semibold flex flex-col items-center gap-1 gt-shadow"><ShoppingBag className="h-4 w-4" /> Mua ngay</Link>
           </div>
           {scan.batchCode ? <Link to="/trace" className="mt-3 block text-center text-xs text-primary font-semibold py-2">Xem truy xuất lô {scan.batchCode} →</Link> : <p className="mt-3 text-center text-xs text-muted-foreground py-2">Kết quả này chưa gắn được mã lô truy xuất.</p>}
