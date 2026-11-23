@@ -56,6 +56,8 @@ export type PremiumRecommendation = {
 export type PremiumRecommendationResponse = {
   recommendations: PremiumRecommendation[]; aiEnhanced: boolean; message: string; safetyNote: string;
 };
+export type PremiumChatTurn = { role: "user" | "assistant"; content: string };
+export type PremiumChatResponse = { answer: string; safetyNote: string };
 export type GhnAddress = { id: number; name: string };
 export type GhnShippingQuote = { shippingFee: number; expectedDeliveryAt?: string | null };
 export type NearbyChainShop = { id: string; name: string; address?: string | null; latitude: number; longitude: number };
@@ -460,6 +462,7 @@ export const api = {
   savePremiumHealthProfile: (payload: PremiumHealthProfile & { consentToSave: boolean }) => request<PremiumHealthProfile>("/premium/health-profile", { method: "PUT", body: JSON.stringify(payload) }),
   deletePremiumHealthProfile: () => request<void>("/premium/health-profile", { method: "DELETE" }),
   premiumRecommendations: (payload: { profile: PremiumHealthProfile; consentToAi: boolean; saveProfileConsent: boolean }) => request<PremiumRecommendationResponse>("/premium/recommendations", { method: "POST", body: JSON.stringify(payload) }),
+  premiumChat: (payload: { profile: PremiumHealthProfile; history: PremiumChatTurn[]; message: string; consentToAi: boolean; recommendedProductIds: number[] }) => request<PremiumChatResponse>("/premium/chat", { method: "POST", body: JSON.stringify(payload) }),
   shopProfile: () => request<ShopProfile>("/shop/profile"),
   updateShopProfile: (payload: { name?: string; address: string; latitude: number; longitude: number; businessEmail?: string; businessPhone?: string; taxCode?: string; representativeName?: string; representativePhone?: string; logoUrl?: string; pickupAddress?: string; pickupProvinceName?: string; pickupWardName?: string }) => request<ShopProfile>("/shop/profile", { method: "PUT", body: JSON.stringify(payload) }),
   shopWallet: () => request<WalletSummary>("/shop/wallet"),

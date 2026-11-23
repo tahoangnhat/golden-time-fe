@@ -108,7 +108,7 @@ function AboutPage() {
           <div className="mx-auto grid max-w-7xl items-center gap-12 lg:grid-cols-[0.9fr_1.1fr] lg:gap-20">
             <div data-about-reveal className="about-reveal max-w-2xl">
               <div className="mb-5 flex items-center gap-3 text-[#ef8b00]"><span className="h-1 w-12 rounded-full bg-[#ef8b00]" /><span className="text-xs font-extrabold uppercase tracking-[0.22em]">Golden Time</span></div>
-              <h2 className="text-4xl font-extrabold uppercase leading-[0.95] tracking-tight sm:text-6xl">Sứ mệnh<br /><span className="font-medium">của chúng tôi</span></h2>
+              <h2 className="text-4xl font-extrabold uppercase leading-[1.15] tracking-tight sm:text-6xl">Sứ mệnh<br /><span className="font-medium">của chúng tôi</span></h2>
               <p className="mt-8 max-w-xl text-base leading-8 text-[#364136] sm:text-lg">
                 Kết nối kiến thức về trái cây, công cụ phân tích và thông tin truy xuất nguồn gốc để người dùng có thêm cơ sở tham khảo khi mua sắm.
               </p>
