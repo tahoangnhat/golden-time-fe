@@ -2,6 +2,7 @@ import { useEffect, useState, type FormEvent } from "react";
 import { Link } from "@tanstack/react-router";
 import { Bot, Crown, LoaderCircle, Send, ShieldCheck, Sparkles, X } from "lucide-react";
 import { api, hasAuth, type PremiumChatTurn, type PremiumHealthProfile } from "@/lib/api";
+import { useAndroidAppMode } from "@/lib/android-app-mode";
 import {
   appendPremiumAssistantMessage,
   bindPremiumAssistantOwner,
@@ -29,6 +30,7 @@ const starterPrompts = [
 ];
 
 export function PremiumAssistantFloat({ bottomNavVisible = true }: { bottomNavVisible?: boolean }) {
+  const { isAndroidApp, ready: platformReady } = useAndroidAppMode();
   const [available, setAvailable] = useState(false);
   const [open, setOpen] = useState(false);
   const [geminiConfigured, setGeminiConfigured] = useState(false);
@@ -143,22 +145,22 @@ export function PremiumAssistantFloat({ bottomNavVisible = true }: { bottomNavVi
 
   return (
     <>
-      {open && !available && <>
+      {open && platformReady && !available && <>
         <button type="button" aria-label="Đóng lời mời Premium" onClick={() => setOpen(false)} className="absolute inset-0 z-40 cursor-default bg-black/25" />
-        <section role="dialog" aria-modal="true" aria-label="Đăng ký Golden Time Premium" className={`absolute inset-x-3 top-1/2 z-50 -translate-y-1/2 overflow-hidden rounded-3xl border border-border bg-white shadow-2xl`}>
+        <section role="dialog" aria-modal="true" aria-label={isAndroidApp ? "Thông tin Golden Time Premium" : "Đăng ký Golden Time Premium"} className="absolute inset-x-3 top-1/2 z-50 -translate-y-1/2 overflow-hidden rounded-3xl border border-border bg-white shadow-2xl">
           <header className="flex items-center gap-3 border-b border-border px-4 py-3">
             <span className="grid h-10 w-10 place-items-center rounded-2xl bg-cream text-primary"><Crown className="h-5 w-5" /></span>
             <div className="min-w-0 flex-1"><h2 className="text-sm font-extrabold">Golden Time Premium</h2><p className="text-[10px] text-muted-foreground">Mở khóa trợ lý AI dinh dưỡng</p></div>
             <button type="button" onClick={() => setOpen(false)} aria-label="Đóng lời mời Premium" className="grid h-9 w-9 place-items-center rounded-full text-muted-foreground hover:bg-muted"><X className="h-4 w-4" /></button>
           </header>
           <div className="p-5">
-            <p className="text-sm leading-6 text-muted-foreground">Đăng ký Premium để chat với Gemini về dinh dưỡng trái cây và nhận gợi ý phù hợp với hồ sơ sức khỏe của bạn.</p>
+            <p className="text-sm leading-6 text-muted-foreground">{isAndroidApp ? "Trợ lý AI dinh dưỡng dành cho tài khoản đã kích hoạt Premium." : "Đăng ký Premium để chat với Gemini về dinh dưỡng trái cây và nhận gợi ý phù hợp với hồ sơ sức khỏe của bạn."}</p>
             <div className="mt-4 space-y-2 rounded-2xl bg-cream p-3 text-xs leading-5">
               <p className="flex items-start gap-2"><Sparkles className="mt-0.5 h-4 w-4 shrink-0 text-primary" /> Hỏi đáp dinh dưỡng trái cây ngay trong app.</p>
-              <p className="flex items-start gap-2"><ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-primary" /> Thanh toán một lần, không tự gia hạn.</p>
+              <p className="flex items-start gap-2"><ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-primary" /> {isAndroidApp ? "Quyền Premium gắn với tài khoản Golden Time." : "Thanh toán một lần, không tự gia hạn."}</p>
             </div>
-            <Link to="/profile" hash="premium-registration" onClick={() => setOpen(false)} className="mt-4 flex min-h-11 w-full items-center justify-center gap-2 rounded-xl gt-gradient px-4 py-2 text-sm font-bold text-white"><Crown className="h-4 w-4" /> Xem gói và đăng ký Premium</Link>
-            {!hasAuth() && <p className="mt-2 text-center text-[11px] text-muted-foreground">Bạn sẽ cần đăng nhập để mua gói.</p>}
+            {platformReady && <Link to="/profile" hash="premium-registration" onClick={() => setOpen(false)} className="mt-4 flex min-h-11 w-full items-center justify-center gap-2 rounded-xl gt-gradient px-4 py-2 text-sm font-bold text-white"><Crown className="h-4 w-4" /> {isAndroidApp ? "Đăng ký bằng Google Play" : "Xem gói và đăng ký Premium"}</Link>}
+            {!isAndroidApp && !hasAuth() && <p className="mt-2 text-center text-[11px] text-muted-foreground">Bạn sẽ cần đăng nhập để mua gói.</p>}
           </div>
         </section>
       </>}

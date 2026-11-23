@@ -4,6 +4,7 @@ import { Home, ScanLine, ShoppingBag, MapPin, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { api, clearAuth, hasAuth } from "@/lib/api";
 import { PremiumAssistantFloat } from "@/components/PremiumAssistantFloat";
+import { useAndroidAppMode } from "@/lib/android-app-mode";
 
 const tabs = [
   { to: "/home", label: "Trang chủ", icon: Home },
@@ -26,16 +27,15 @@ export function PhoneShell({
 }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const navigate = useNavigate();
+  const { isAndroidApp } = useAndroidAppMode();
   // Keep the first server/client render identical. Checking localStorage here
   // would make authenticated clients hydrate a different tree than the server.
   const [checkingRole, setCheckingRole] = useState(true);
   useEffect(() => {
-    const isAndroidApp = new URLSearchParams(window.location.search).get("platform") === "android";
-    if (isAndroidApp) sessionStorage.setItem("golden-time-platform", "android");
-    if (sessionStorage.getItem("golden-time-platform") === "android") {
+    if (isAndroidApp) {
       document.documentElement.classList.add("golden-time-android-app");
     }
-  }, []);
+  }, [isAndroidApp]);
   useEffect(() => {
     let active = true;
     if (!hasAuth()) {

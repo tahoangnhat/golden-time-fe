@@ -25,6 +25,12 @@ import android.window.OnBackInvokedDispatcher;
 import android.widget.FrameLayout;
 import android.widget.ProgressBar;
 
+import androidx.webkit.WebViewCompat;
+import androidx.webkit.WebViewFeature;
+
+import java.util.Arrays;
+import java.util.HashSet;
+
 import java.util.Locale;
 
 public class MainActivity extends Activity {
@@ -42,6 +48,7 @@ public class MainActivity extends Activity {
     private GeolocationPermissions.Callback pendingLocationCallback;
     private String pendingLocationOrigin;
     private OnBackInvokedCallback backInvokedCallback;
+    private GooglePlayBillingBridge googlePlayBilling;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -76,11 +83,23 @@ public class MainActivity extends Activity {
         }
 
         configureWebView();
+        configureGooglePlayBillingBridge();
         if (savedInstanceState == null) {
             webView.loadUrl(APP_URL);
         } else {
             webView.restoreState(savedInstanceState);
         }
+    }
+
+    private void configureGooglePlayBillingBridge() {
+        if (!WebViewFeature.isFeatureSupported(WebViewFeature.WEB_MESSAGE_LISTENER)) return;
+        googlePlayBilling = new GooglePlayBillingBridge(this, webView);
+        WebViewCompat.addWebMessageListener(webView, "GoldenTimeBilling",
+                new HashSet<>(Arrays.asList("https://goldentime.id.vn", "https://www.goldentime.id.vn")),
+                (view, message, sourceOrigin, isMainFrame, replyProxy) -> {
+                    if (!isMainFrame || !isTrustedOrigin(sourceOrigin.toString())) return;
+                    googlePlayBilling.handleMessage(message.getData());
+                });
     }
 
     private void applySystemBarInsets(FrameLayout container) {
@@ -321,6 +340,10 @@ public class MainActivity extends Activity {
         if (pendingCameraRequest != null) pendingCameraRequest.deny();
         if (pendingLocationCallback != null) {
             pendingLocationCallback.invoke(pendingLocationOrigin, false, false);
+        }
+        if (googlePlayBilling != null) {
+            googlePlayBilling.endConnection();
+            googlePlayBilling = null;
         }
         if (webView != null) {
             webView.stopLoading();

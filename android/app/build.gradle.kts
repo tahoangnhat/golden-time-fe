@@ -14,3 +14,8 @@ android {
         versionName = "1.0.0"
     }
 }
+
+dependencies {
+    implementation("com.android.billingclient:billing:9.1.0")
+    implementation("androidx.webkit:webkit:1.14.0")
+}

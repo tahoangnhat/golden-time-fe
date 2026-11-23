@@ -42,7 +42,7 @@ export type PremiumHealthProfile = {
   healthGoals?: string | null; notProvidedFields: string[];
 };
 export type PremiumOverview = {
-  priceVnd: number; annualPriceVnd: number; payosConfigured: boolean; geminiConfigured: boolean; premiumActive: boolean; expiresAt?: string | null;
+  priceVnd: number; annualPriceVnd: number; payosConfigured: boolean; googlePlayConfigured: boolean; geminiConfigured: boolean; premiumActive: boolean; expiresAt?: string | null;
   healthProfile?: PremiumHealthProfile | null;
 };
 export type PremiumPayment = {
@@ -452,6 +452,7 @@ export const api = {
   refreshPrices: () => request<{ sources: number; updated: number; failed: number; completedAt: string }>("/admin/prices/refresh", { method: "POST" }),
   premiumStatus: () => request<PremiumOverview>("/premium/status"),
   createPremiumPayment: (planCode: "MONTHLY" | "YEARLY" = "MONTHLY") => request<PremiumPayment>("/premium/payments", { method: "POST", body: JSON.stringify({ planCode }) }),
+  verifyGooglePlayPremiumPurchase: (productId: string, purchaseToken: string) => request<PremiumOverview>("/premium/google-play/verify", { method: "POST", body: JSON.stringify({ productId, purchaseToken }) }),
   premiumPaymentStatus: (orderCode: number) => request<PremiumPayment>(`/premium/payments/${orderCode}`),
   premiumHealthProfile: () => request<PremiumHealthProfile | null>("/premium/health-profile"),
   savePremiumHealthProfile: (payload: PremiumHealthProfile & { consentToSave: boolean }) => request<PremiumHealthProfile>("/premium/health-profile", { method: "PUT", body: JSON.stringify(payload) }),

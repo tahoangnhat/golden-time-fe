@@ -5,14 +5,27 @@ import { PhoneShell, StatusBar } from "@/components/PhoneShell";
 import { PremiumExperience } from "@/components/PremiumExperience";
 import { api, clearAuth, hasAuth, logout, type PremiumOverview, type UserProfile } from "@/lib/api";
 import { PREMIUM_MEMBERSHIP_UPDATED_EVENT } from "@/lib/premiumAssistantSession";
+import { isAndroidAppMode, useAndroidAppMode } from "@/lib/android-app-mode";
 
 export const Route = createFileRoute("/profile")({
   head: () => ({ meta: [{ title: "Cá nhân — Golden Time" }] }),
   component: Profile,
 });
 
+declare global {
+  interface Window {
+    GoldenTimeBilling?: { postMessage: (message: string) => void };
+  }
+}
+
+const GOOGLE_PLAY_MONTHLY_PRODUCT = "golden_time_premium_30d";
+const GOOGLE_PLAY_ANNUAL_PRODUCT = "golden_time_premium_365d";
+type GooglePlayProduct = { productId: string; formattedPrice: string };
+type GooglePlayPurchaseEvent = { productId: string; purchaseToken: string; purchaseState: number };
+
 function Profile() {
   const nav = useNavigate();
+  const { isAndroidApp, ready: platformReady } = useAndroidAppMode();
   const [user, setUser] = useState<UserProfile | null>(null);
   const [scanCount, setScanCount] = useState(0);
   const [orderCount, setOrderCount] = useState(0);
@@ -31,6 +44,7 @@ function Profile() {
   const [premiumError, setPremiumError] = useState("");
   const [premiumPlan, setPremiumPlan] = useState<"MONTHLY" | "YEARLY">("MONTHLY");
   const [premiumMode, setPremiumMode] = useState(false);
+  const [googlePlayProducts, setGooglePlayProducts] = useState<Record<string, GooglePlayProduct>>({});
   useEffect(() => {
     if (!hasAuth()) { setLoading(false); setPremiumLoading(false); return; }
     let active = true;
@@ -107,7 +121,75 @@ function Profile() {
     };
   }, []);
 
+  useEffect(() => {
+    if (!platformReady || !isAndroidApp || !user || !hasAuth()) return;
+    const onProducts = (event: Event) => {
+      const products = (event as CustomEvent<{ products?: GooglePlayProduct[] }>).detail?.products ?? [];
+      setGooglePlayProducts(Object.fromEntries(products.map((product) => [product.productId, product])));
+    };
+    const onPurchase = async (event: Event) => {
+      const purchase = (event as CustomEvent<GooglePlayPurchaseEvent>).detail;
+      if (!purchase?.productId || !purchase.purchaseToken) return;
+      if (purchase.purchaseState === 2) {
+        setPremiumBusy(false);
+        setPremiumMessage("Giao dịch Google Play đang chờ xử lý. Premium sẽ được kích hoạt sau khi Google xác nhận.");
+        return;
+      }
+      if (purchase.purchaseState !== 1) return;
+      setPremiumBusy(true);
+      setPremiumError("");
+      setPremiumMessage("Google Play đã nhận thanh toán. Đang xác minh và kích hoạt Premium…");
+      try {
+        const verified = await api.verifyGooglePlayPremiumPurchase(purchase.productId, purchase.purchaseToken);
+        setPremium(verified);
+        setPremiumMessage("Thanh toán thành công! Premium đã được kích hoạt cho tài khoản của bạn.");
+        window.dispatchEvent(new Event(PREMIUM_MEMBERSHIP_UPDATED_EVENT));
+        setPremiumMode(true);
+      } catch (cause) {
+        setPremiumError(cause instanceof Error ? cause.message : "Không xác minh được giao dịch Google Play.");
+        setPremiumMessage("");
+      } finally {
+        setPremiumBusy(false);
+      }
+    };
+    const onBillingError = (event: Event) => {
+      const message = (event as CustomEvent<{ message?: string }>).detail?.message;
+      setPremiumBusy(false);
+      if (message) setPremiumError(message);
+    };
+    window.addEventListener("goldentime:billing-products", onProducts);
+    window.addEventListener("goldentime:billing-purchase", onPurchase);
+    window.addEventListener("goldentime:billing-error", onBillingError);
+    if (!window.GoldenTimeBilling) {
+      setPremiumError("Không kết nối được Google Play Billing. Hãy cập nhật ứng dụng và Cửa hàng Google Play.");
+    } else {
+      window.GoldenTimeBilling.postMessage(JSON.stringify({ action: "queryProducts" }));
+      window.GoldenTimeBilling.postMessage(JSON.stringify({ action: "restorePurchases" }));
+    }
+    return () => {
+      window.removeEventListener("goldentime:billing-products", onProducts);
+      window.removeEventListener("goldentime:billing-purchase", onPurchase);
+      window.removeEventListener("goldentime:billing-error", onBillingError);
+    };
+  }, [isAndroidApp, platformReady, user]);
+
   async function registerPremium(planCode: "MONTHLY" | "YEARLY" = premiumPlan) {
+    if (isAndroidAppMode()) {
+      const productId = planCode === "YEARLY" ? GOOGLE_PLAY_ANNUAL_PRODUCT : GOOGLE_PLAY_MONTHLY_PRODUCT;
+      if (!window.GoldenTimeBilling) {
+        setPremiumError("Không kết nối được Google Play Billing. Hãy mở phiên bản ứng dụng từ Google Play.");
+        return;
+      }
+      if (!premium?.googlePlayConfigured) {
+        setPremiumError("Thanh toán Google Play đang được cấu hình. Vui lòng thử lại sau.");
+        return;
+      }
+      setPremiumBusy(true);
+      setPremiumError("");
+      setPremiumMessage("");
+      window.GoldenTimeBilling.postMessage(JSON.stringify({ action: "startPurchase", productId, accountId: user?.id }));
+      return;
+    }
     setPremiumBusy(true);
     setPremiumError("");
     setPremiumMessage("");
@@ -144,6 +226,12 @@ function Profile() {
   const monthlyPrice = premium?.priceVnd ?? 0;
   const annualPrice = premium?.annualPriceVnd ?? 0;
   const selectedPrice = premiumPlan === "YEARLY" ? annualPrice : monthlyPrice;
+  const monthlyProduct = googlePlayProducts[GOOGLE_PLAY_MONTHLY_PRODUCT];
+  const annualProduct = googlePlayProducts[GOOGLE_PLAY_ANNUAL_PRODUCT];
+  const selectedPlayProduct = premiumPlan === "YEARLY" ? annualProduct : monthlyProduct;
+  const canPurchaseSelectedPlan = isAndroidApp
+    ? Boolean(premium?.googlePlayConfigured && selectedPlayProduct)
+    : selectedPrice > 0;
   const menu = [
     { icon: History, label: "Lịch sử mua hàng", value: `${orderCount} đơn`, path: "/orders" },
     { icon: Ticket, label: "Ví Voucher & Khuyến mãi", value: `${voucherCount} khả dụng`, path: "/vouchers" },
@@ -224,29 +312,31 @@ function Profile() {
               <p className="mt-1 text-xs leading-5 text-muted-foreground">{premium?.premiumActive && premium.expiresAt
                 ? `Gói của bạn có hiệu lực đến ${new Date(premium.expiresAt).toLocaleDateString("vi-VN")}.`
                 : "Bài test sức khỏe, gợi ý trái cây đang bán và chat dinh dưỡng với Gemini; gói không tự gia hạn."}</p>
-              {premium && <div className="mt-3 grid grid-cols-2 gap-2">
-                <button type="button" onClick={() => setPremiumPlan("MONTHLY")} disabled={monthlyPrice <= 0} aria-pressed={premiumPlan === "MONTHLY"} className={`rounded-xl border p-2.5 text-left transition disabled:cursor-not-allowed disabled:opacity-50 ${premiumPlan === "MONTHLY" ? "border-primary bg-green-50" : "border-border bg-white"}`}>
+              {platformReady && premium && <div className="mt-3 grid grid-cols-2 gap-2">
+                <button type="button" onClick={() => setPremiumPlan("MONTHLY")} disabled={isAndroidApp ? !monthlyProduct || !premium.googlePlayConfigured : monthlyPrice <= 0} aria-pressed={premiumPlan === "MONTHLY"} className={`rounded-xl border p-2.5 text-left transition disabled:cursor-not-allowed disabled:opacity-50 ${premiumPlan === "MONTHLY" ? "border-primary bg-green-50" : "border-border bg-white"}`}>
                   <span className="block text-[11px] font-semibold text-muted-foreground">30 ngày</span>
-                  <span className="mt-0.5 block text-sm font-extrabold">{monthlyPrice > 0 ? `${monthlyPrice.toLocaleString("vi-VN")}₫` : "Chưa mở bán"}</span>
+                  <span className="mt-0.5 block text-sm font-extrabold">{isAndroidApp ? monthlyProduct?.formattedPrice ?? "Đang tải giá…" : monthlyPrice > 0 ? `${monthlyPrice.toLocaleString("vi-VN")}₫` : "Chưa mở bán"}</span>
                 </button>
-                <button type="button" onClick={() => setPremiumPlan("YEARLY")} disabled={annualPrice <= 0} aria-pressed={premiumPlan === "YEARLY"} className={`rounded-xl border p-2.5 text-left transition disabled:cursor-not-allowed disabled:opacity-50 ${premiumPlan === "YEARLY" ? "border-primary bg-green-50" : "border-border bg-white"}`}>
+                <button type="button" onClick={() => setPremiumPlan("YEARLY")} disabled={isAndroidApp ? !annualProduct || !premium.googlePlayConfigured : annualPrice <= 0} aria-pressed={premiumPlan === "YEARLY"} className={`rounded-xl border p-2.5 text-left transition disabled:cursor-not-allowed disabled:opacity-50 ${premiumPlan === "YEARLY" ? "border-primary bg-green-50" : "border-border bg-white"}`}>
                   <span className="block text-[11px] font-semibold text-muted-foreground">1 năm</span>
-                  <span className="mt-0.5 block text-sm font-extrabold">{annualPrice > 0 ? `${annualPrice.toLocaleString("vi-VN")}₫` : "Chưa mở bán"}</span>
+                  <span className="mt-0.5 block text-sm font-extrabold">{isAndroidApp ? annualProduct?.formattedPrice ?? "Đang tải giá…" : annualPrice > 0 ? `${annualPrice.toLocaleString("vi-VN")}₫` : "Chưa mở bán"}</span>
                 </button>
               </div>}
               {premiumLoading && <p className="mt-2 text-xs text-muted-foreground">Đang tải trạng thái gói…</p>}
-              {!premiumLoading && !premium?.premiumActive && monthlyPrice === 0 && annualPrice === 0 && <p className="mt-2 text-xs text-muted-foreground">Gói Premium hiện chưa mở đăng ký.</p>}
-              {!premiumLoading && !user && <p className="mt-2 text-xs text-muted-foreground">Đăng nhập để đăng ký và quản lý quyền Premium.</p>}
+              {!premiumLoading && !isAndroidApp && !premium?.premiumActive && monthlyPrice === 0 && annualPrice === 0 && <p className="mt-2 text-xs text-muted-foreground">Gói Premium hiện chưa mở đăng ký.</p>}
+              {!premiumLoading && !user && <p className="mt-2 text-xs text-muted-foreground">Đăng nhập để quản lý quyền Premium.</p>}
+              {!premiumLoading && platformReady && isAndroidApp && user && premium && !premium.googlePlayConfigured && <p className="mt-3 rounded-xl bg-cream p-3 text-xs leading-5 text-muted-foreground">Google Play Billing chưa được cấu hình ở máy chủ. Tạm thời chưa thể mua Premium trong ứng dụng.</p>}
+              {!premiumLoading && platformReady && isAndroidApp && premium?.googlePlayConfigured && !monthlyProduct && !annualProduct && <p className="mt-3 rounded-xl bg-cream p-3 text-xs leading-5 text-muted-foreground">Chưa tìm thấy gói Premium trên Google Play. Vui lòng thử lại sau.</p>}
               {premiumMessage && <p role="status" className="mt-3 rounded-xl bg-green-50 p-2.5 text-xs leading-5 text-green-800">{premiumMessage}</p>}
               {premiumError && <p role="alert" className="mt-3 rounded-xl bg-red-50 p-2.5 text-xs leading-5 text-red-700">{premiumError}</p>}
-              {user && !premiumLoading && premium && (premium.premiumActive || selectedPrice > 0) && <>
-                <button type="button" onClick={() => premium.premiumActive ? setPremiumMode(true) : void registerPremium()} disabled={premiumBusy || (!premium.premiumActive && selectedPrice <= 0)} className="mt-3 inline-flex min-h-10 w-full items-center justify-center gap-2 rounded-xl gt-gradient px-4 py-2 text-sm font-bold text-white disabled:opacity-60">
+              {platformReady && user && !premiumLoading && premium && (premium.premiumActive || canPurchaseSelectedPlan) && <>
+                <button type="button" onClick={() => premium.premiumActive ? setPremiumMode(true) : void registerPremium()} disabled={premiumBusy} className="mt-3 inline-flex min-h-10 w-full items-center justify-center gap-2 rounded-xl gt-gradient px-4 py-2 text-sm font-bold text-white disabled:opacity-60">
                   {premiumBusy ? <LoaderCircle className="h-4 w-4 animate-spin" /> : <Crown className="h-4 w-4" />}
-                  {premiumBusy ? "Đang chuyển đến PayOS…" : premium.premiumActive ? "Mở bài test sức khỏe & chat" : `Đăng ký gói ${premiumPlan === "YEARLY" ? "1 năm" : "30 ngày"}`}
+                  {premiumBusy ? (isAndroidApp ? "Đang mở Google Play…" : "Đang chuyển đến PayOS…") : premium.premiumActive ? "Mở bài test sức khỏe & chat" : `Đăng ký gói ${premiumPlan === "YEARLY" ? "1 năm" : "30 ngày"}`}
                 </button>
                 {premium.premiumActive && <div className="mt-2 grid grid-cols-2 gap-2">
-                  {monthlyPrice > 0 && <button type="button" onClick={() => void registerPremium("MONTHLY")} disabled={premiumBusy} className="rounded-xl border border-border px-2 py-2 text-[11px] font-semibold text-muted-foreground disabled:opacity-60">Gia hạn 30 ngày</button>}
-                  {annualPrice > 0 && <button type="button" onClick={() => void registerPremium("YEARLY")} disabled={premiumBusy} className="rounded-xl border border-border px-2 py-2 text-[11px] font-semibold text-muted-foreground disabled:opacity-60">Gia hạn 1 năm</button>}
+                  {(isAndroidApp ? Boolean(monthlyProduct && premium.googlePlayConfigured) : monthlyPrice > 0) && <button type="button" onClick={() => void registerPremium("MONTHLY")} disabled={premiumBusy} className="rounded-xl border border-border px-2 py-2 text-[11px] font-semibold text-muted-foreground disabled:opacity-60">Gia hạn 30 ngày</button>}
+                  {(isAndroidApp ? Boolean(annualProduct && premium.googlePlayConfigured) : annualPrice > 0) && <button type="button" onClick={() => void registerPremium("YEARLY")} disabled={premiumBusy} className="rounded-xl border border-border px-2 py-2 text-[11px] font-semibold text-muted-foreground disabled:opacity-60">Gia hạn 1 năm</button>}
                 </div>}
               </>}
             </div>
