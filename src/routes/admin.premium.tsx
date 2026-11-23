@@ -15,11 +15,13 @@ const paymentLabels: Record<string, string> = { PENDING: "Đang chờ", PAID: "�
 function AdminPremium() {
   const [overview, setOverview] = useState<AdminPremiumOverview | null>(null);
   const [price, setPrice] = useState("");
+  const [annualPrice, setAnnualPrice] = useState("");
   const [query, setQuery] = useState("");
   const [tab, setTab] = useState<"MEMBERS" | "PAYMENTS">("MEMBERS");
   const [loading, setLoading] = useState(true);
   const [priceLoading, setPriceLoading] = useState(true);
   const [busy, setBusy] = useState(false);
+  const [cancellingUserId, setCancellingUserId] = useState<number | null>(null);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
 
@@ -30,6 +32,7 @@ function AdminPremium() {
         if (!active) return;
         setOverview(data);
         setPrice(String(setting.priceVnd));
+        setAnnualPrice(String(setting.annualPriceVnd));
       })
       .catch((cause) => { if (active) setError(cause instanceof Error ? cause.message : "Không tải được dữ liệu Premium."); })
       .finally(() => { if (active) { setLoading(false); setPriceLoading(false); } });
@@ -44,18 +47,35 @@ function AdminPremium() {
   async function savePrice(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const amount = Number(price);
-    if (!Number.isSafeInteger(amount) || amount < 0 || amount > 999_999_999) {
-      setError("Nhập giá nguyên từ 0 đến 999.999.999 VND.");
+    const annualAmount = Number(annualPrice);
+    if (!Number.isSafeInteger(amount) || amount < 0 || amount > 999_999_999
+      || !Number.isSafeInteger(annualAmount) || annualAmount < 0 || annualAmount > 999_999_999) {
+      setError("Nhập giá nguyên từ 0 đến 999.999.999 VND cho mỗi gói.");
       return;
     }
     setBusy(true); setError(""); setNotice("");
     try {
-      const saved = await api.updateAdminPremiumPrice(amount);
+      const saved = await api.updateAdminPremiumPrice(amount, annualAmount);
       setPrice(String(saved.priceVnd));
-      setNotice(saved.priceVnd === 0 ? "Đã tạm dừng bán gói Premium." : "Đã cập nhật giá Premium.");
+      setAnnualPrice(String(saved.annualPriceVnd));
+      setNotice(saved.priceVnd === 0 && saved.annualPriceVnd === 0
+        ? "Đã tạm dừng bán các gói Premium."
+        : "Đã cập nhật giá các gói Premium.");
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : "Không thể cập nhật giá Premium.");
     } finally { setBusy(false); }
+  }
+
+  async function cancelMember(userId: number) {
+    if (!window.confirm("Hủy Premium của người dùng này ngay bây giờ? Quyền truy cập sẽ kết thúc lập tức và các giao dịch đang chờ sẽ bị hủy.")) return;
+    setCancellingUserId(userId); setError(""); setNotice("");
+    try {
+      await api.cancelAdminPremiumMember(userId);
+      setOverview(await api.adminPremiumOverview());
+      setNotice("Đã hủy quyền Premium của người dùng.");
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : "Không thể hủy gói Premium.");
+    } finally { setCancellingUserId(null); }
   }
 
   return <AdminShell title="Quản lý Premium" subtitle="Theo dõi hội viên, giao dịch và giá gói Premium">
@@ -70,9 +90,10 @@ function AdminPremium() {
     </section>
 
     <section className="mt-4 rounded-2xl border border-border bg-white p-5">
-      <div className="flex items-start gap-3"><span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-cream text-primary"><Crown className="h-5 w-5" /></span><div><h2 className="font-extrabold">Gói Premium · 30 ngày</h2><p className="mt-1 text-sm text-muted-foreground">Thanh toán một lần qua PayOS. Đặt giá bằng 0 để tạm dừng việc mua gói; các gói hiện có vẫn giữ nguyên hạn dùng.</p></div></div>
-      <form onSubmit={(event) => void savePrice(event)} className="mt-4 flex max-w-xl flex-col gap-2 sm:flex-row sm:items-end">
-        <label className="flex-1 text-sm font-semibold">Giá bán (VND)<input type="number" min="0" max="999999999" step="1" required disabled={priceLoading} value={price} onChange={(event) => setPrice(event.target.value)} className="mt-1 h-11 w-full rounded-xl border border-border bg-white px-3 font-normal outline-none focus:border-primary" /></label>
+      <div className="flex items-start gap-3"><span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-cream text-primary"><Crown className="h-5 w-5" /></span><div><h2 className="font-extrabold">Các gói Premium</h2><p className="mt-1 text-sm text-muted-foreground">Thanh toán một lần qua PayOS. Đặt giá bằng 0 để tạm dừng bán riêng gói đó; hội viên hiện có vẫn giữ nguyên hạn dùng.</p></div></div>
+      <form onSubmit={(event) => void savePrice(event)} className="mt-4 flex max-w-4xl flex-col gap-3 sm:flex-row sm:items-end">
+        <label className="flex-1 text-sm font-semibold">Gói 30 ngày (VND)<input type="number" min="0" max="999999999" step="1" required disabled={priceLoading} value={price} onChange={(event) => setPrice(event.target.value)} className="mt-1 h-11 w-full rounded-xl border border-border bg-white px-3 font-normal outline-none focus:border-primary" /></label>
+        <label className="flex-1 text-sm font-semibold">Gói 1 năm (VND)<input type="number" min="0" max="999999999" step="1" required disabled={priceLoading} value={annualPrice} onChange={(event) => setAnnualPrice(event.target.value)} className="mt-1 h-11 w-full rounded-xl border border-border bg-white px-3 font-normal outline-none focus:border-primary" /></label>
         <button type="submit" disabled={busy || priceLoading} className="h-11 rounded-xl gt-gradient px-4 text-sm font-semibold text-white disabled:opacity-60">{busy ? "Đang lưu…" : "Lưu giá"}</button>
       </form>
     </section>
@@ -85,14 +106,14 @@ function AdminPremium() {
         </div>
         <label className="flex h-10 min-w-56 flex-1 items-center gap-2 rounded-xl bg-cream px-3 sm:max-w-sm"><Search className="h-4 w-4 text-muted-foreground" /><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Tìm tên, email, mã giao dịch…" className="w-full bg-transparent text-sm outline-none" /></label>
       </div>
-      {tab === "MEMBERS" ? <div className="overflow-x-auto"><table className="w-full min-w-[700px] text-sm"><thead className="bg-cream text-left text-xs uppercase text-muted-foreground"><tr><th className="p-3">Thành viên</th><th className="p-3">Trạng thái</th><th className="p-3">Hết hạn</th><th className="p-3">Thanh toán gần nhất</th></tr></thead><tbody className="divide-y divide-border">
-        {members?.map((member) => { const active = new Date(member.expiresAt).getTime() > Date.now(); return <tr key={member.userId}><td className="p-3"><b>{member.fullName}</b><p className="text-xs text-muted-foreground">{member.email} · ID {member.userId}</p></td><td className="p-3"><span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${active ? "bg-green-50 text-green-700" : "bg-gray-100 text-gray-600"}`}>{active ? "Đang hoạt động" : "Đã hết hạn"}</span></td><td className="p-3">{new Date(member.expiresAt).toLocaleString("vi-VN")}</td><td className="p-3">{member.lastPaymentOrderCode ? `#${member.lastPaymentOrderCode}` : "—"}</td></tr>; })}
-        {loading && <tr><td colSpan={4} className="p-8 text-center text-muted-foreground"><LoaderCircle className="mr-2 inline h-4 w-4 animate-spin" />Đang tải hội viên…</td></tr>}
-        {!loading && !members?.length && <tr><td colSpan={4} className="p-8 text-center text-muted-foreground">Chưa có hội viên Premium phù hợp.</td></tr>}
-      </tbody></table></div> : <div className="overflow-x-auto"><table className="w-full min-w-[850px] text-sm"><thead className="bg-cream text-left text-xs uppercase text-muted-foreground"><tr><th className="p-3">Giao dịch</th><th className="p-3">Thành viên</th><th className="p-3 text-right">Số tiền</th><th className="p-3">Trạng thái</th><th className="p-3">Tham chiếu PayOS</th><th className="p-3">Thời gian</th></tr></thead><tbody className="divide-y divide-border">
-        {payments?.map((payment) => <tr key={payment.orderCode}><td className="p-3 font-mono">#{payment.orderCode}</td><td className="p-3"><b>{payment.fullName}</b><p className="text-xs text-muted-foreground">{payment.email}</p></td><td className="p-3 text-right font-semibold">{money(payment.amountVnd)}</td><td className="p-3"><span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${payment.status === "PAID" ? "bg-green-50 text-green-700" : payment.status === "PENDING" ? "bg-amber-50 text-amber-800" : "bg-gray-100 text-gray-600"}`}>{paymentLabels[payment.status] ?? payment.status}</span></td><td className="p-3 text-xs text-muted-foreground">{payment.reference || "—"}</td><td className="p-3 text-xs text-muted-foreground">{new Date(payment.createdAt).toLocaleString("vi-VN")}{payment.paidAt && <p className="text-green-700">Đã trả lúc {new Date(payment.paidAt).toLocaleString("vi-VN")}</p>}</td></tr>)}
-        {loading && <tr><td colSpan={6} className="p-8 text-center text-muted-foreground"><LoaderCircle className="mr-2 inline h-4 w-4 animate-spin" />Đang tải giao dịch…</td></tr>}
-        {!loading && !payments?.length && <tr><td colSpan={6} className="p-8 text-center text-muted-foreground">Chưa có giao dịch Premium phù hợp.</td></tr>}
+      {tab === "MEMBERS" ? <div className="overflow-x-auto"><table className="w-full min-w-[850px] text-sm"><thead className="bg-cream text-left text-xs uppercase text-muted-foreground"><tr><th className="p-3">Thành viên</th><th className="p-3">Trạng thái</th><th className="p-3">Hết hạn</th><th className="p-3">Thanh toán gần nhất</th><th className="p-3">Thao tác</th></tr></thead><tbody className="divide-y divide-border">
+        {members?.map((member) => { const active = new Date(member.expiresAt).getTime() > Date.now(); return <tr key={member.userId}><td className="p-3"><b>{member.fullName}</b><p className="text-xs text-muted-foreground">{member.email} · ID {member.userId}</p></td><td className="p-3"><span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${active ? "bg-green-50 text-green-700" : "bg-gray-100 text-gray-600"}`}>{active ? "Đang hoạt động" : member.cancelledAt ? "Đã hủy bởi Admin" : "Đã hết hạn"}</span></td><td className="p-3">{new Date(member.expiresAt).toLocaleString("vi-VN")}</td><td className="p-3">{member.lastPaymentOrderCode ? `#${member.lastPaymentOrderCode}` : "—"}</td><td className="p-3">{active && <button type="button" onClick={() => void cancelMember(member.userId)} disabled={cancellingUserId === member.userId} className="rounded-lg border border-red-200 px-3 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-50 disabled:opacity-50">{cancellingUserId === member.userId ? "Đang hủy…" : "Hủy gói"}</button>}</td></tr>; })}
+        {loading && <tr><td colSpan={5} className="p-8 text-center text-muted-foreground"><LoaderCircle className="mr-2 inline h-4 w-4 animate-spin" />Đang tải hội viên…</td></tr>}
+        {!loading && !members?.length && <tr><td colSpan={5} className="p-8 text-center text-muted-foreground">Chưa có hội viên Premium phù hợp.</td></tr>}
+      </tbody></table></div> : <div className="overflow-x-auto"><table className="w-full min-w-[950px] text-sm"><thead className="bg-cream text-left text-xs uppercase text-muted-foreground"><tr><th className="p-3">Giao dịch</th><th className="p-3">Thành viên</th><th className="p-3">Gói</th><th className="p-3 text-right">Số tiền</th><th className="p-3">Trạng thái</th><th className="p-3">Tham chiếu PayOS</th><th className="p-3">Thời gian</th></tr></thead><tbody className="divide-y divide-border">
+        {payments?.map((payment) => <tr key={payment.orderCode}><td className="p-3 font-mono">#{payment.orderCode}</td><td className="p-3"><b>{payment.fullName}</b><p className="text-xs text-muted-foreground">{payment.email}</p></td><td className="p-3">{payment.planCode === "YEARLY" ? "1 năm" : "30 ngày"}</td><td className="p-3 text-right font-semibold">{money(payment.amountVnd)}</td><td className="p-3"><span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${payment.status === "PAID" ? "bg-green-50 text-green-700" : payment.status === "PENDING" ? "bg-amber-50 text-amber-800" : "bg-gray-100 text-gray-600"}`}>{paymentLabels[payment.status] ?? payment.status}</span></td><td className="p-3 text-xs text-muted-foreground">{payment.reference || "—"}</td><td className="p-3 text-xs text-muted-foreground">{new Date(payment.createdAt).toLocaleString("vi-VN")}{payment.paidAt && <p className="text-green-700">Đã trả lúc {new Date(payment.paidAt).toLocaleString("vi-VN")}</p>}</td></tr>)}
+        {loading && <tr><td colSpan={7} className="p-8 text-center text-muted-foreground"><LoaderCircle className="mr-2 inline h-4 w-4 animate-spin" />Đang tải giao dịch…</td></tr>}
+        {!loading && !payments?.length && <tr><td colSpan={7} className="p-8 text-center text-muted-foreground">Chưa có giao dịch Premium phù hợp.</td></tr>}
       </tbody></table></div>}
     </section>
     <p className="mt-3 text-xs text-muted-foreground">Trang này hiển thị thông tin tài khoản, hạn Premium và giao dịch. Hồ sơ sức khỏe người dùng không được Admin xem tại đây.</p>

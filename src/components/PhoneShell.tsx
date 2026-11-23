@@ -3,6 +3,7 @@ import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { Home, ScanLine, ShoppingBag, MapPin, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { api, clearAuth, hasAuth } from "@/lib/api";
+import { PremiumAssistantFloat } from "@/components/PremiumAssistantFloat";
 
 const tabs = [
   { to: "/home", label: "Trang chủ", icon: Home },
@@ -89,6 +90,7 @@ export function PhoneShell({
             </ul>
           </nav>
         )}
+        <PremiumAssistantFloat bottomNavVisible={!hideNav} />
       </div>
     </div>
   );

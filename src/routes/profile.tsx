@@ -4,6 +4,7 @@ import { useEffect, useState, type FormEvent } from "react";
 import { PhoneShell, StatusBar } from "@/components/PhoneShell";
 import { PremiumExperience } from "@/components/PremiumExperience";
 import { api, clearAuth, hasAuth, logout, type PremiumOverview, type UserProfile } from "@/lib/api";
+import { PREMIUM_MEMBERSHIP_UPDATED_EVENT } from "@/lib/premiumAssistantSession";
 
 export const Route = createFileRoute("/profile")({
   head: () => ({ meta: [{ title: "Cá nhân — Golden Time" }] }),
@@ -28,6 +29,7 @@ function Profile() {
   const [premiumBusy, setPremiumBusy] = useState(false);
   const [premiumMessage, setPremiumMessage] = useState("");
   const [premiumError, setPremiumError] = useState("");
+  const [premiumPlan, setPremiumPlan] = useState<"MONTHLY" | "YEARLY">("MONTHLY");
   const [premiumMode, setPremiumMode] = useState(false);
   const [isAndroidApp, setIsAndroidApp] = useState(false);
   useEffect(() => {
@@ -55,7 +57,10 @@ function Profile() {
     const refreshPremium = async () => {
       try {
         const current = await api.premiumStatus();
-        if (active) setPremium(current);
+        if (active) {
+          setPremium(current);
+          if (current.priceVnd <= 0 && current.annualPriceVnd > 0) setPremiumPlan("YEARLY");
+        }
         return current;
       } catch {
         if (active) setPremium(null);
@@ -75,6 +80,7 @@ function Profile() {
             if (result.status === "PAID") {
               setPremiumMessage("Thanh toán thành công! Đang mở bài test sức khỏe Premium.");
               await refreshPremium();
+              window.dispatchEvent(new Event(PREMIUM_MEMBERSHIP_UPDATED_EVENT));
               if (active) setPremiumMode(true);
               return;
             }
@@ -100,12 +106,12 @@ function Profile() {
     return () => { active = false; };
   }, []);
 
-  async function registerPremium() {
+  async function registerPremium(planCode: "MONTHLY" | "YEARLY" = premiumPlan) {
     setPremiumBusy(true);
     setPremiumError("");
     setPremiumMessage("");
     try {
-      const payment = await api.createPremiumPayment();
+      const payment = await api.createPremiumPayment(planCode);
       if (!payment.checkoutUrl) throw new Error("PayOS chưa trả về liên kết thanh toán.");
       window.location.assign(payment.checkoutUrl);
     } catch (cause) {
@@ -134,6 +140,9 @@ function Profile() {
   }
 
   const initials = user?.fullName.split(/\s+/).slice(-2).map((part) => part[0]).join("").toUpperCase() || "GT";
+  const monthlyPrice = premium?.priceVnd ?? 0;
+  const annualPrice = premium?.annualPriceVnd ?? 0;
+  const selectedPrice = premiumPlan === "YEARLY" ? annualPrice : monthlyPrice;
   const menu = [
     { icon: History, label: "Lịch sử mua hàng", value: `${orderCount} đơn`, path: "/orders" },
     { icon: Ticket, label: "Ví Voucher & Khuyến mãi", value: `${voucherCount} khả dụng`, path: "/vouchers" },
@@ -142,7 +151,7 @@ function Profile() {
   return (
     <PhoneShell>
       <StatusBar title={premiumMode ? "Golden Time Premium" : settingsOpen ? "Cài đặt tài khoản" : "Cá nhân"} />
-      {premiumMode ? <PremiumExperience onBack={() => setPremiumMode(false)} geminiConfigured={premium?.geminiConfigured ?? false} /> : settingsOpen ? (
+      {premiumMode ? <PremiumExperience onBack={() => setPremiumMode(false)} /> : settingsOpen ? (
         <div className="px-5 pb-6">
           <button type="button" onClick={() => { setSettingsOpen(false); setSaveError(""); setSaveSuccess(""); }} className="mb-4 inline-flex items-center gap-1.5 text-sm font-semibold text-muted-foreground hover:text-primary">
             <ChevronLeft className="h-4 w-4" /> Quay lại hồ sơ
@@ -213,19 +222,31 @@ function Profile() {
               </div>
               <p className="mt-1 text-xs leading-5 text-muted-foreground">{premium?.premiumActive && premium.expiresAt
                 ? `Gói của bạn có hiệu lực đến ${new Date(premium.expiresAt).toLocaleDateString("vi-VN")}.`
-                : "Bài test sức khỏe, gợi ý trái cây đang bán và chat dinh dưỡng với Gemini trong 30 ngày; không tự gia hạn."}</p>
-              {premium && premium.priceVnd > 0 && <p className="mt-2 text-sm font-extrabold text-primary">{premium.priceVnd.toLocaleString("vi-VN")}₫ <span className="text-xs font-medium text-muted-foreground">/ 30 ngày</span></p>}
+                : "Bài test sức khỏe, gợi ý trái cây đang bán và chat dinh dưỡng với Gemini; gói không tự gia hạn."}</p>
+              {premium && <div className="mt-3 grid grid-cols-2 gap-2">
+                <button type="button" onClick={() => setPremiumPlan("MONTHLY")} disabled={monthlyPrice <= 0} aria-pressed={premiumPlan === "MONTHLY"} className={`rounded-xl border p-2.5 text-left transition disabled:cursor-not-allowed disabled:opacity-50 ${premiumPlan === "MONTHLY" ? "border-primary bg-green-50" : "border-border bg-white"}`}>
+                  <span className="block text-[11px] font-semibold text-muted-foreground">30 ngày</span>
+                  <span className="mt-0.5 block text-sm font-extrabold">{monthlyPrice > 0 ? `${monthlyPrice.toLocaleString("vi-VN")}₫` : "Chưa mở bán"}</span>
+                </button>
+                <button type="button" onClick={() => setPremiumPlan("YEARLY")} disabled={annualPrice <= 0} aria-pressed={premiumPlan === "YEARLY"} className={`rounded-xl border p-2.5 text-left transition disabled:cursor-not-allowed disabled:opacity-50 ${premiumPlan === "YEARLY" ? "border-primary bg-green-50" : "border-border bg-white"}`}>
+                  <span className="block text-[11px] font-semibold text-muted-foreground">1 năm</span>
+                  <span className="mt-0.5 block text-sm font-extrabold">{annualPrice > 0 ? `${annualPrice.toLocaleString("vi-VN")}₫` : "Chưa mở bán"}</span>
+                </button>
+              </div>}
               {premiumLoading && <p className="mt-2 text-xs text-muted-foreground">Đang tải trạng thái gói…</p>}
-              {!premiumLoading && !premium?.premiumActive && premium?.priceVnd === 0 && <p className="mt-2 text-xs text-muted-foreground">Gói Premium hiện chưa mở đăng ký.</p>}
+              {!premiumLoading && !premium?.premiumActive && monthlyPrice === 0 && annualPrice === 0 && <p className="mt-2 text-xs text-muted-foreground">Gói Premium hiện chưa mở đăng ký.</p>}
               {!premiumLoading && !user && <p className="mt-2 text-xs text-muted-foreground">Đăng nhập để đăng ký và quản lý quyền Premium.</p>}
               {premiumMessage && <p role="status" className="mt-3 rounded-xl bg-green-50 p-2.5 text-xs leading-5 text-green-800">{premiumMessage}</p>}
               {premiumError && <p role="alert" className="mt-3 rounded-xl bg-red-50 p-2.5 text-xs leading-5 text-red-700">{premiumError}</p>}
-              {user && !premiumLoading && premium && (premium.premiumActive || premium.priceVnd > 0) && <>
-                <button type="button" onClick={() => premium.premiumActive ? setPremiumMode(true) : void registerPremium()} disabled={premiumBusy} className="mt-3 inline-flex min-h-10 w-full items-center justify-center gap-2 rounded-xl gt-gradient px-4 py-2 text-sm font-bold text-white disabled:opacity-60">
+              {user && !premiumLoading && premium && (premium.premiumActive || selectedPrice > 0) && <>
+                <button type="button" onClick={() => premium.premiumActive ? setPremiumMode(true) : void registerPremium()} disabled={premiumBusy || (!premium.premiumActive && selectedPrice <= 0)} className="mt-3 inline-flex min-h-10 w-full items-center justify-center gap-2 rounded-xl gt-gradient px-4 py-2 text-sm font-bold text-white disabled:opacity-60">
                   {premiumBusy ? <LoaderCircle className="h-4 w-4 animate-spin" /> : <Crown className="h-4 w-4" />}
-                  {premiumBusy ? "Đang chuyển đến PayOS…" : premium.premiumActive ? "Mở bài test sức khỏe & chat" : "Đăng ký Premium"}
+                  {premiumBusy ? "Đang chuyển đến PayOS…" : premium.premiumActive ? "Mở bài test sức khỏe & chat" : `Đăng ký gói ${premiumPlan === "YEARLY" ? "1 năm" : "30 ngày"}`}
                 </button>
-                {premium.premiumActive && premium.priceVnd > 0 && <button type="button" onClick={() => void registerPremium()} disabled={premiumBusy} className="mt-2 w-full rounded-xl border border-border px-4 py-2 text-xs font-semibold text-muted-foreground disabled:opacity-60">Gia hạn thêm 30 ngày</button>}
+                {premium.premiumActive && <div className="mt-2 grid grid-cols-2 gap-2">
+                  {monthlyPrice > 0 && <button type="button" onClick={() => void registerPremium("MONTHLY")} disabled={premiumBusy} className="rounded-xl border border-border px-2 py-2 text-[11px] font-semibold text-muted-foreground disabled:opacity-60">Gia hạn 30 ngày</button>}
+                  {annualPrice > 0 && <button type="button" onClick={() => void registerPremium("YEARLY")} disabled={premiumBusy} className="rounded-xl border border-border px-2 py-2 text-[11px] font-semibold text-muted-foreground disabled:opacity-60">Gia hạn 1 năm</button>}
+                </div>}
               </>}
             </div>
           </div>

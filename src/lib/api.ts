@@ -42,12 +42,13 @@ export type PremiumHealthProfile = {
   healthGoals?: string | null; notProvidedFields: string[];
 };
 export type PremiumOverview = {
-  priceVnd: number; payosConfigured: boolean; geminiConfigured: boolean; premiumActive: boolean; expiresAt?: string | null;
+  priceVnd: number; annualPriceVnd: number; payosConfigured: boolean; geminiConfigured: boolean; premiumActive: boolean; expiresAt?: string | null;
   healthProfile?: PremiumHealthProfile | null;
 };
 export type PremiumPayment = {
   orderCode: number; amountVnd: number; status: "PENDING" | "PAID" | "CANCELLED" | "EXPIRED";
   checkoutUrl?: string | null; qrCode?: string | null; expiresAt: string; paidAt?: string | null;
+  planCode: "MONTHLY" | "YEARLY"; durationDays: number;
 };
 export type PremiumRecommendation = {
   productId: number; displayName: string; fruitName: string; emoji: string; shopName: string;
@@ -177,8 +178,8 @@ export type BusinessApplication = {
 };
 export type AdminProduct = { id: number; emoji: string; name: string; shop: string; price: number; stock: number; score?: number | null; status: string; category?: string | null; approvalStatus: string; productOrigin?: string | null; supplierName?: string | null; lotCode?: string | null; traceabilityProof?: string | null; reviewNote?: string | null; farmId?: number | null; farmName?: string | null; farmAddress?: string | null; orderDate?: string | null; transportDate?: string | null; receivedDate?: string | null; evidenceImageUrl?: string | null };
 export type AdminOrder = { id: number; customer: string; shop: string; total: number; subtotal: number; shippingFee: number; status: string; payment: string; paymentStatus: string; note?: string | null; deliveryName?: string | null; deliveryPhone?: string | null; deliveryAddress?: string | null; createdAt: string; itemCount: number };
-export type AdminPremiumMember = { userId: number; fullName: string; email: string; expiresAt: string; lastPaymentOrderCode?: number | null; updatedAt: string };
-export type AdminPremiumPayment = { orderCode: number; userId: number; fullName: string; email: string; amountVnd: number; status: "PENDING" | "PAID" | "CANCELLED" | "EXPIRED"; reference?: string | null; createdAt: string; paidAt?: string | null; expiresAt: string };
+export type AdminPremiumMember = { userId: number; fullName: string; email: string; expiresAt: string; lastPaymentOrderCode?: number | null; updatedAt: string; cancelledAt?: string | null; cancelledBy?: number | null };
+export type AdminPremiumPayment = { orderCode: number; userId: number; fullName: string; email: string; amountVnd: number; status: "PENDING" | "PAID" | "CANCELLED" | "EXPIRED"; planCode: "MONTHLY" | "YEARLY"; durationDays: number; reference?: string | null; createdAt: string; paidAt?: string | null; expiresAt: string };
 export type AdminPremiumOverview = { membership: { activeMembers: number; totalMembers: number }; payments: { paidCount: number; pendingCount: number; paidRevenue: number }; members: AdminPremiumMember[]; paymentHistory: AdminPremiumPayment[] };
 export type AdminProductReview = { id: number; productId: number; productName: string; shopName: string; author: string; rating: number; createdAt: string };
 export type AdminScan = { id: number; fruit?: string | null; emoji?: string | null; freshness?: number | null; quality?: number | null; confidence?: number | null; user: string; mode: string; createdAt: string };
@@ -451,12 +452,13 @@ export const api = {
   adminFarms: () => request<Farm[]>("/admin/farms"),
   decideFarm: (id: number, approved: boolean, reason?: string) => request<Farm>(`/admin/farms/${id}/decision`, { method: "POST", body: JSON.stringify({ approved, reason }) }),
   adminPriceSources: () => request<AdminPriceSource[]>("/admin/prices/sources"),
-  adminPremiumPrice: () => request<{ priceVnd: number }>("/admin/premium-settings"),
-  updateAdminPremiumPrice: (priceVnd: number) => request<{ priceVnd: number }>("/admin/premium-settings", { method: "PUT", body: JSON.stringify({ priceVnd }) }),
+  adminPremiumPrice: () => request<{ priceVnd: number; annualPriceVnd: number }>("/admin/premium-settings"),
+  updateAdminPremiumPrice: (priceVnd: number, annualPriceVnd: number) => request<{ priceVnd: number; annualPriceVnd: number }>("/admin/premium-settings", { method: "PUT", body: JSON.stringify({ priceVnd, annualPriceVnd }) }),
   adminPremiumOverview: () => request<AdminPremiumOverview>("/admin/premium"),
+  cancelAdminPremiumMember: (userId: number) => request<void>(`/admin/premium/${userId}/cancel`, { method: "POST" }),
   refreshPrices: () => request<{ sources: number; updated: number; failed: number; completedAt: string }>("/admin/prices/refresh", { method: "POST" }),
   premiumStatus: () => request<PremiumOverview>("/premium/status"),
-  createPremiumPayment: () => request<PremiumPayment>("/premium/payments", { method: "POST" }),
+  createPremiumPayment: (planCode: "MONTHLY" | "YEARLY" = "MONTHLY") => request<PremiumPayment>("/premium/payments", { method: "POST", body: JSON.stringify({ planCode }) }),
   premiumPaymentStatus: (orderCode: number) => request<PremiumPayment>(`/premium/payments/${orderCode}`),
   premiumHealthProfile: () => request<PremiumHealthProfile | null>("/premium/health-profile"),
   savePremiumHealthProfile: (payload: PremiumHealthProfile & { consentToSave: boolean }) => request<PremiumHealthProfile>("/premium/health-profile", { method: "PUT", body: JSON.stringify(payload) }),

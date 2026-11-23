@@ -7,7 +7,6 @@ import { PhoneShell, StatusBar } from "@/components/PhoneShell";
 import {
   api,
   getCurrentLocation,
-  type NearbyChainShop,
   type Shop,
 } from "@/lib/api";
 import { distanceKm, type Coordinates } from "@/lib/geo";
@@ -23,16 +22,6 @@ function hasRegisteredCoordinates(shop: Shop) {
     && !(shop.latitude === 0 && shop.longitude === 0);
 }
 
-function hasChainShopCoordinates(shop: NearbyChainShop) {
-  return Number.isFinite(shop.latitude) && shop.latitude >= -90 && shop.latitude <= 90
-    && Number.isFinite(shop.longitude) && shop.longitude >= -180 && shop.longitude <= 180
-    && !(shop.latitude === 0 && shop.longitude === 0);
-}
-
-function normalizeStoreName(name: string) {
-  return name.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]/g, "");
-}
-
 function storeMarkerHtml(background: string) {
   return `<div style="display:grid;place-items:center;width:36px;height:36px;border:3px solid white;border-radius:50%;background:${background};color:white;box-shadow:0 2px 8px #0005"><svg aria-hidden="true" viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 10 9-7 9 7"/><path d="M5 9.5V21h14V9.5"/><path d="M9 21v-7h6v7"/></svg></div>`;
 }
@@ -42,9 +31,6 @@ function MapScreen() {
   const [location, setLocation] = useState<Coordinates | null>(null);
   const [locationLoading, setLocationLoading] = useState(true);
   const [locationError, setLocationError] = useState("");
-  const [nearbyChainShops, setNearbyChainShops] = useState<NearbyChainShop[]>([]);
-  const [chainShopsLoading, setChainShopsLoading] = useState(false);
-  const [chainShopsError, setChainShopsError] = useState("");
   const [selectedShopId, setSelectedShopId] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
   const [leafletMapReady, setLeafletMapReady] = useState(false);
@@ -78,21 +64,6 @@ function MapScreen() {
     return () => { cancelled = true; };
   }, []);
 
-  useEffect(() => {
-    if (!location) return;
-    let cancelled = false;
-    setChainShopsLoading(true);
-    setChainShopsError("");
-    api.nearbyChainShops(location).then((result) => {
-      if (!cancelled) setNearbyChainShops(result);
-    }).catch((cause) => {
-      if (!cancelled) setChainShopsError(cause instanceof Error ? cause.message : "Không tải được cửa hàng ngoài GoldenTime.");
-    }).finally(() => {
-      if (!cancelled) setChainShopsLoading(false);
-    });
-    return () => { cancelled = true; };
-  }, [location]);
-
   const visibleShops = useMemo(() => {
     if (!location) return [];
     return shops
@@ -101,21 +72,6 @@ function MapScreen() {
       .sort((first, second) => first.distance - second.distance)
       .map(({ shop }) => shop);
   }, [location, shops]);
-
-  const visibleChainShops = useMemo(() => {
-    if (!location) return [];
-    return nearbyChainShops
-      .filter((externalShop) => hasChainShopCoordinates(externalShop)
-        && distanceKm(location, { lat: externalShop.latitude, lng: externalShop.longitude }) <= 10
-        && !shops.some((partnerShop) => hasRegisteredCoordinates(partnerShop)
-          && normalizeStoreName(partnerShop.name) === normalizeStoreName(externalShop.name)
-          && distanceKm(
-            { lat: partnerShop.latitude, lng: partnerShop.longitude },
-            { lat: externalShop.latitude, lng: externalShop.longitude },
-          ) <= 0.1))
-      .sort((first, second) => distanceKm(location, { lat: first.latitude, lng: first.longitude })
-        - distanceKm(location, { lat: second.latitude, lng: second.longitude }));
-  }, [location, nearbyChainShops, shops]);
 
   useEffect(() => {
     if (!location) return;
@@ -189,32 +145,6 @@ function MapScreen() {
       }).bindPopup(popup).on("click", () => setSelectedShopId(shop.id)).addTo(layer);
     });
 
-    visibleChainShops.forEach((shop) => {
-      const point: [number, number] = [shop.latitude, shop.longitude];
-      points.push(point);
-      const popup = document.createElement("div");
-      const name = document.createElement("strong");
-      name.textContent = shop.name;
-      popup.appendChild(name);
-      const source = document.createElement("div");
-      source.textContent = "Cửa hàng ngoài hệ thống GoldenTime · OpenStreetMap";
-      popup.appendChild(source);
-      if (shop.address) {
-        const address = document.createElement("div");
-        address.textContent = shop.address;
-        popup.appendChild(address);
-      }
-      if (location) {
-        const distance = document.createElement("div");
-        distance.textContent = `${distanceKm(location, { lat: shop.latitude, lng: shop.longitude }).toFixed(1)} km`;
-        popup.appendChild(distance);
-      }
-      leaflet.marker(point, {
-        icon: leaflet.divIcon({ className: "", html: storeMarkerHtml("#7c3aed"), iconSize: [36, 36], iconAnchor: [18, 18] }),
-        title: shop.name,
-      }).bindPopup(popup).addTo(layer);
-    });
-
     if (location) {
       const point: [number, number] = [location.lat, location.lng];
       points.push(point);
@@ -244,7 +174,7 @@ function MapScreen() {
     } else {
       map.setView([16.047079, 108.20623], 5);
     }
-  }, [leafletMapReady, location, visibleChainShops, visibleShops]);
+  }, [leafletMapReady, location, visibleShops]);
 
   return (
     <PhoneShell>
@@ -252,7 +182,7 @@ function MapScreen() {
       <div className="px-5">
         <div className="mb-3">
           <p className="text-xs font-semibold">{locationLoading ? "Đang lấy vị trí của bạn…" : location ? "Cửa hàng trong bán kính 10 km" : "Chưa lấy được vị trí"}</p>
-          <p className="text-[10px] text-muted-foreground">Cửa hàng đối tác GoldenTime và các chuỗi ngoài hệ thống</p>
+          <p className="text-[10px] text-muted-foreground">Cửa hàng đối tác GoldenTime quanh bạn</p>
           {locationError && <p role="status" className="mt-1 text-[10px] text-amber-800">{locationError}</p>}
         </div>
 
@@ -264,7 +194,6 @@ function MapScreen() {
         </div>
         <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-[10px] text-muted-foreground">
           <span><i className="mr-1 inline-block h-2 w-2 rounded-full bg-orange-500" />Đối tác GoldenTime</span>
-          <span><i className="mr-1 inline-block h-2 w-2 rounded-full bg-violet-600" />Chuỗi cửa hàng khác</span>
           <span><i className="mr-1 inline-block h-2 w-2 rounded-full bg-blue-600" />Vị trí của bạn</span>
         </div>
 
@@ -292,25 +221,6 @@ function MapScreen() {
           ))}
           {!loading && !locationLoading && !location && <p className="rounded-2xl border border-border bg-white p-4 text-xs text-muted-foreground">Hãy cho phép vị trí trong trình duyệt để xem các cửa hàng gần bạn.</p>}
           {!loading && location && !visibleShops.length && <p className="rounded-2xl border border-border bg-white p-4 text-xs text-muted-foreground">Không có cửa hàng đối tác GoldenTime nào được ghim trong bán kính 10 km.</p>}
-        </div>
-
-        <div className="mt-5 flex items-center justify-between">
-          <div>
-            <h3 className="font-bold">Cửa hàng ngoài GoldenTime ({visibleChainShops.length})</h3>
-            {location && <p className="mt-0.5 text-[10px] text-muted-foreground">Các chuỗi trong danh sách · trong phạm vi 10 km · dữ liệu OpenStreetMap có thể chưa đầy đủ</p>}
-          </div>
-          {chainShopsLoading && <LoaderCircle className="h-4 w-4 animate-spin text-primary" />}
-        </div>
-        {chainShopsError && <p role="status" className="mt-3 rounded-xl bg-amber-50 p-3 text-xs text-amber-800">{chainShopsError}</p>}
-        <div className="mt-3 space-y-3">
-          {visibleChainShops.map((shop) => (
-            <article key={shop.id} className="rounded-2xl border border-border bg-white p-4 gt-shadow-soft">
-              <h4 className="text-sm font-bold">{shop.name}</h4>
-              <p className="mt-0.5 text-[11px] text-muted-foreground">{shop.address || "Chưa có địa chỉ chi tiết trên OpenStreetMap"}</p>
-              {location && <p className="mt-1 text-[11px] text-muted-foreground">{distanceKm(location, { lat: shop.latitude, lng: shop.longitude }).toFixed(1)} km · OpenStreetMap</p>}
-            </article>
-          ))}
-          {!locationLoading && location && !chainShopsLoading && !chainShopsError && !visibleChainShops.length && <p className="rounded-2xl border border-border bg-white p-4 text-xs text-muted-foreground">Không tìm thấy cửa hàng trong danh sách ở OpenStreetMap trong bán kính 10 km.</p>}
         </div>
 
         <div className="h-5" />
