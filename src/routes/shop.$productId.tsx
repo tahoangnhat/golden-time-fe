@@ -162,7 +162,12 @@ function ProductDetail() {
     setSubmitting(true);
     setSubmitError("");
     try {
+      if (!eligibility?.eligibleOrderId) {
+        setSubmitError("Không tìm thấy lần mua đủ điều kiện để gắn đánh giá.");
+        return;
+      }
       await api.createProductReview(productId, {
+        orderId: eligibility.eligibleOrderId,
         rating: formRating,
         comment: formComment.trim() ? formComment.trim() : null,
       });
@@ -367,7 +372,7 @@ function ProductDetail() {
               <div className="flex items-start justify-between gap-3">
                 <div>
                   <h2 className="text-lg font-extrabold">Đánh giá sản phẩm</h2>
-                  <p className="mt-0.5 text-[11px] text-muted-foreground">Đánh giá thực tế từ người mua đã nhận hàng</p>
+                  <p className="mt-0.5 text-[11px] text-muted-foreground">Mỗi lần mua đã nhận hàng có thể gửi một đánh giá riêng</p>
                 </div>
               </div>
 
@@ -442,15 +447,15 @@ function ProductDetail() {
                 </div>
               ) : eligibility?.alreadyReviewed ? (
                 <div className="mt-4 rounded-2xl border border-emerald-200 bg-emerald-50/70 p-3 text-xs text-emerald-800">
-                  <p className="font-semibold">✓ Bạn đã gửi đánh giá cho sản phẩm này.</p>
-                  <p className="mt-0.5 text-[11px] text-emerald-700">Cảm ơn bạn đã chia sẻ trải nghiệm với cộng đồng Golden Time!</p>
+                  <p className="font-semibold">✓ Bạn đã đánh giá các lần mua đã nhận hàng của sản phẩm này.</p>
+                  <p className="mt-0.5 text-[11px] text-emerald-700">Nếu bạn mua lại và nhận hàng, bạn có thể gửi thêm một đánh giá riêng.</p>
                 </div>
               ) : eligibility?.eligible ? (
                 <form onSubmit={handleSubmitReview} className="mt-4 rounded-2xl border border-primary/20 bg-white p-4 gt-shadow-soft">
                   <div className="flex items-center justify-between">
                     <h3 className="text-sm font-bold text-foreground">Viết đánh giá của bạn</h3>
                     <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold text-emerald-700">
-                      Đủ điều kiện đánh giá
+                      Lần mua #{eligibility.eligibleOrderId}
                     </span>
                   </div>
 

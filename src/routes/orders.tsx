@@ -42,18 +42,13 @@ function Orders() {
   const [expandedOrderId, setExpandedOrderId] = useState<number | null>(null);
   const [details, setDetails] = useState<Record<number, OrderDetail>>({});
   const [loadingDetailsId, setLoadingDetailsId] = useState<number | null>(null);
-  const [ratingOrderId, setRatingOrderId] = useState<number | null>(null);
-  const [activeProductReviewId, setActiveProductReviewId] = useState<number | null>(null);
-  const [reviewEligibility, setReviewEligibility] = useState<Record<number, ProductReviewEligibility>>({});
+  const [activeReviewKey, setActiveReviewKey] = useState<string | null>(null);
+  const [reviewEligibility, setReviewEligibility] = useState<Record<string, ProductReviewEligibility>>({});
   const [reviewRating, setReviewRating] = useState(5);
   const [reviewComment, setReviewComment] = useState("");
   const [reviewError, setReviewError] = useState("");
-  const [reviewBusyProductId, setReviewBusyProductId] = useState<number | null>(null);
+  const [reviewBusyKey, setReviewBusyKey] = useState<string | null>(null);
   const [loadingReviewOrderId, setLoadingReviewOrderId] = useState<number | null>(null);
-  const [shopRatingOrderId, setShopRatingOrderId] = useState<number | null>(null);
-  const [shopRatingValue, setShopRatingValue] = useState(5);
-  const [shopRatingError, setShopRatingError] = useState("");
-  const [shopRatingBusyId, setShopRatingBusyId] = useState<number | null>(null);
 
   const refresh = useCallback(async () => {
     try {
@@ -89,97 +84,56 @@ function Orders() {
     }
   }
 
-  async function toggleDetails(orderId: number) {
+  async function toggleDetails(order: OrderSummary) {
+    const orderId = order.id;
     if (expandedOrderId === orderId) {
       setExpandedOrderId(null);
-      if (ratingOrderId === orderId) {
-        setRatingOrderId(null);
-        setActiveProductReviewId(null);
-      }
+      setActiveReviewKey(null);
       return;
     }
     setExpandedOrderId(orderId);
-    if (ratingOrderId !== orderId) setRatingOrderId(null);
-    if (details[orderId]) return;
-    setLoadingDetailsId(orderId);
+    setActiveReviewKey(null);
     setError("");
+    setLoadingReviewOrderId(orderId);
     try {
-      const detail = await api.order(orderId);
-      setDetails((current) => ({ ...current, [orderId]: detail }));
+      let detail = details[orderId];
+      if (!detail) {
+        setLoadingDetailsId(orderId);
+        detail = await api.order(orderId);
+        setDetails((current) => ({ ...current, [orderId]: detail }));
+      }
+      if (order.status === "DELIVERED") {
+        const eligibility = await Promise.all(detail.items.map(async (item) => [
+          `${orderId}:${item.productId}`,
+          await api.productReviewEligibility(item.productId, orderId),
+        ] as const));
+        setReviewEligibility((current) => ({ ...current, ...Object.fromEntries(eligibility) }));
+      }
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : "Không tải được sản phẩm trong đơn hàng.");
-    } finally {
-      setLoadingDetailsId(null);
-    }
-  }
-
-  async function openOrderRating(order: OrderSummary) {
-    if (ratingOrderId === order.id) {
-      setRatingOrderId(null);
-      setActiveProductReviewId(null);
-      return;
-    }
-
-    setRatingOrderId(order.id);
-    setExpandedOrderId(order.id);
-    setActiveProductReviewId(null);
-    setReviewError("");
-    setLoadingReviewOrderId(order.id);
-    try {
-      let detail = details[order.id];
-      if (!detail) {
-        setLoadingDetailsId(order.id);
-        detail = await api.order(order.id);
-        setDetails((current) => ({ ...current, [order.id]: detail }));
-        setLoadingDetailsId(null);
-      }
-      const eligibility = await Promise.all(detail.items.map(async (item) => [
-        item.productId,
-        await api.productReviewEligibility(item.productId),
-      ] as const));
-      setReviewEligibility((current) => ({ ...current, ...Object.fromEntries(eligibility) }));
-    } catch (cause) {
-      setReviewError(cause instanceof Error ? cause.message : "Không tải được sản phẩm để đánh giá.");
     } finally {
       setLoadingDetailsId(null);
       setLoadingReviewOrderId(null);
     }
   }
 
-  async function submitProductReview(event: FormEvent<HTMLFormElement>, productId: number, productName: string) {
+  async function submitProductReview(event: FormEvent<HTMLFormElement>, orderId: number, productId: number, productName: string) {
     event.preventDefault();
-    setReviewBusyProductId(productId);
+    const key = `${orderId}:${productId}`;
+    setReviewBusyKey(key);
     setReviewError("");
     setNotice("");
     try {
-      await api.createProductReview(productId, { rating: reviewRating, comment: reviewComment.trim() || null });
-      const eligibility = await api.productReviewEligibility(productId);
-      setReviewEligibility((current) => ({ ...current, [productId]: eligibility }));
-      setActiveProductReviewId(null);
+      await api.createProductReview(productId, { orderId, rating: reviewRating, comment: reviewComment.trim() || null });
+      const eligibility = await api.productReviewEligibility(productId, orderId);
+      setReviewEligibility((current) => ({ ...current, [key]: eligibility }));
+      setActiveReviewKey(null);
       setReviewComment("");
-      setNotice(`Cảm ơn bạn đã đánh giá sản phẩm ${productName}.`);
+      setNotice(`Cảm ơn bạn đã đánh giá ${productName} trong lần mua này.`);
     } catch (cause) {
       setReviewError(cause instanceof Error ? cause.message : "Không gửi được đánh giá sản phẩm.");
     } finally {
-      setReviewBusyProductId(null);
-    }
-  }
-
-  async function submitShopRating(event: FormEvent<HTMLFormElement>, order: OrderSummary) {
-    event.preventDefault();
-    setShopRatingBusyId(order.id);
-    setShopRatingError("");
-    setNotice("");
-    try {
-      await api.rateOrder(order.id, shopRatingValue);
-      setOrders((current) => current.map((item) => item.id === order.id ? { ...item, shopRating: shopRatingValue } : item));
-      setShopRatingOrderId(null);
-      await refresh();
-      setNotice(`Đã ghi nhận ${shopRatingValue}/5 điểm cho đơn hàng #${order.id}.`);
-    } catch (cause) {
-      setShopRatingError(cause instanceof Error ? cause.message : "Không gửi được điểm đánh giá đơn hàng.");
-    } finally {
-      setShopRatingBusyId(null);
+      setReviewBusyKey(null);
     }
   }
 
@@ -214,13 +168,39 @@ function Orders() {
                     <strong className="text-base">{order.total.toLocaleString("vi-VN")}đ</strong>
                   </div>
                   {order.trackingCode && <div className="mt-3 rounded-xl border border-blue-100 bg-blue-50 p-3 text-xs text-blue-900"><p><b>GHN · Mã vận đơn:</b> <span className="font-mono font-bold">{order.trackingCode}</span></p>{order.carrierStatus && <p className="mt-1">Trạng thái: {carrierStatusLabel[order.carrierStatus] ?? order.carrierStatus}</p>}{order.expectedDeliveryAt && <p className="mt-1">Dự kiến giao: {new Date(order.expectedDeliveryAt).toLocaleString("vi-VN")}</p>}</div>}
-                  <button type="button" aria-expanded={expandedOrderId === order.id} onClick={() => void toggleDetails(order.id)} className="mt-3 flex w-full items-center justify-between rounded-xl bg-cream px-3 py-2.5 text-sm font-semibold">
+                  <button type="button" aria-expanded={expandedOrderId === order.id} onClick={() => void toggleDetails(order)} className="mt-3 flex w-full items-center justify-between rounded-xl bg-cream px-3 py-2.5 text-sm font-semibold">
                     <span>{expandedOrderId === order.id ? "Ẩn sản phẩm" : "Xem sản phẩm đã mua"}</span><ChevronDown className={`h-4 w-4 transition-transform ${expandedOrderId === order.id ? "rotate-180" : ""}`} />
                   </button>
                   {expandedOrderId === order.id && <div className="mt-2 rounded-xl border border-border px-3">
                     {loadingDetailsId === order.id ? <p className="py-3 text-sm text-muted-foreground">Đang tải chi tiết đơn…</p>
                       : details[order.id] ? <>
-                        <ul className="divide-y divide-border">{details[order.id].items.map((item, index) => <li key={`${order.id}-${index}`} className="flex items-start justify-between gap-3 py-3 text-sm"><span>{item.emoji} {item.name}<span className="block text-xs text-muted-foreground">{item.quantityKg} kg × {item.unitPrice.toLocaleString("vi-VN")}đ/kg</span></span><strong className="shrink-0">{item.lineTotal.toLocaleString("vi-VN")}đ</strong></li>)}</ul>
+                        <ul className="divide-y divide-border">{details[order.id].items.map((item, index) => {
+                          const key = `${order.id}:${item.productId}`;
+                          const eligibility = reviewEligibility[key];
+                          return <li key={`${order.id}-${index}`} className="py-3 text-sm">
+                            <div className="flex items-start justify-between gap-3"><span>{item.emoji} {item.name}<span className="block text-xs text-muted-foreground">{item.quantityKg} kg × {item.unitPrice.toLocaleString("vi-VN")}đ/kg</span></span><strong className="shrink-0">{item.lineTotal.toLocaleString("vi-VN")}đ</strong></div>
+                            {received && <div className="mt-2">
+                              {loadingReviewOrderId === order.id ? <p className="text-xs text-muted-foreground">Đang kiểm tra quyền đánh giá…</p>
+                                : eligibility?.eligible ? activeReviewKey === key ? <form onSubmit={(event) => void submitProductReview(event, order.id, item.productId, item.name)} className="rounded-xl border border-border bg-[#fbfcf9] p-3">
+                                  <p className="text-xs font-semibold">Đánh giá {item.name} trong đơn #{order.id}</p>
+                                  <div className="mt-2 flex items-center gap-1" role="group" aria-label={`Chọn số sao cho ${item.name}`}>
+                                    {[1, 2, 3, 4, 5].map((star) => <button key={star} type="button" aria-label={`${star} sao`} aria-pressed={reviewRating === star} onClick={() => setReviewRating(star)} className="rounded-md p-1 transition hover:scale-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400">
+                                      <Star className={`h-5 w-5 ${star <= reviewRating ? "fill-amber-400 text-amber-400" : "text-slate-300"}`} />
+                                    </button>)}
+                                    <span className="ml-1 text-xs font-semibold text-muted-foreground">{reviewRating}/5</span>
+                                  </div>
+                                  <textarea value={reviewComment} onChange={(event) => setReviewComment(event.target.value)} maxLength={2000} rows={2} placeholder="Nhận xét về sản phẩm (không bắt buộc)" className="mt-2 w-full rounded-lg border border-border bg-white px-3 py-2 text-xs outline-none focus:border-primary" />
+                                  {reviewError && <p role="alert" className="mt-1 text-xs text-red-700">{reviewError}</p>}
+                                  <div className="mt-2 flex gap-2">
+                                    <button type="button" onClick={() => { setActiveReviewKey(null); setReviewError(""); }} className="flex-1 rounded-lg border border-border bg-white py-2 text-xs font-semibold">Để sau</button>
+                                    <button type="submit" disabled={reviewBusyKey === key} className="flex flex-1 items-center justify-center gap-1 rounded-lg gt-gradient py-2 text-xs font-bold text-white disabled:opacity-50"><Send className="h-3.5 w-3.5" />{reviewBusyKey === key ? "Đang gửi…" : "Gửi đánh giá"}</button>
+                                  </div>
+                                </form> : <button type="button" onClick={() => { setReviewRating(5); setReviewComment(""); setReviewError(""); setActiveReviewKey(key); }} className="inline-flex items-center gap-1.5 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs font-semibold text-amber-900 hover:bg-amber-100"><Star className="h-3.5 w-3.5" />Đánh giá sản phẩm</button>
+                                : eligibility?.alreadyReviewed ? <p className="rounded-lg bg-emerald-50 px-3 py-2 text-xs text-emerald-800">Bạn đã đánh giá sản phẩm trong lần mua này.</p>
+                                : null}
+                            </div>}
+                          </li>;
+                        })}</ul>
                         <div className="space-y-1 border-t border-border py-3 text-xs"><p className="flex justify-between"><span className="text-muted-foreground">Tạm tính</span><span>{details[order.id].subtotal.toLocaleString("vi-VN")}đ</span></p><p className="flex justify-between"><span className="text-muted-foreground">Phí giao hàng</span><span>{details[order.id].shippingFee.toLocaleString("vi-VN")}đ</span></p><p className="flex justify-between font-bold"><span>Tổng đơn</span><span>{details[order.id].total.toLocaleString("vi-VN")}đ</span></p><p className="pt-1 text-muted-foreground">Giao đến: {details[order.id].deliveryAddress}</p></div>
                       </> : null}
                   </div>}
@@ -232,41 +212,6 @@ function Orders() {
                     </button>
                   </div>}
                   {received && <p className="mt-3 rounded-xl bg-green-50 p-3 text-xs text-green-800">Bạn đã xác nhận nhận được hàng.</p>}
-                  {order.status !== "CANCELLED" && <div className="mt-3">
-                    {order.shopRating != null ? <div className="flex items-center gap-2 rounded-xl bg-amber-50 p-3 text-xs font-semibold text-amber-900">
-                      <span className="inline-flex items-center gap-0.5" aria-label={`${order.shopRating} trên 5 điểm`}>{[1, 2, 3, 4, 5].map((star) => <Star key={star} className={`h-3.5 w-3.5 ${star <= order.shopRating! ? "fill-amber-400 text-amber-400" : "text-amber-200"}`} />)}</span>
-                      <span>Điểm đơn hàng: {order.shopRating}/5</span>
-                    </div> : <>
-                      <button
-                        type="button"
-                        disabled={!received || shopRatingBusyId === order.id}
-                        onClick={() => {
-                          setShopRatingError("");
-                          setShopRatingOrderId((current) => current === order.id ? null : order.id);
-                          setShopRatingValue(5);
-                        }}
-                        className="flex w-full items-center justify-center gap-2 rounded-xl border border-amber-200 bg-amber-50 py-2.5 text-sm font-bold text-amber-900 transition hover:bg-amber-100 disabled:cursor-not-allowed disabled:opacity-60"
-                      >
-                        <Star className="h-4 w-4" />{received ? "Chấm điểm đơn hàng" : "Chấm điểm sau khi nhận hàng"}
-                      </button>
-                      {shopRatingOrderId === order.id && received && <form onSubmit={(event) => void submitShopRating(event, order)} className="mt-3 rounded-xl border border-border bg-[#fbfcf9] p-3">
-                        <p className="text-sm font-bold">Chấm điểm trải nghiệm đơn hàng</p>
-                        <div className="mt-2 flex items-center gap-1" role="group" aria-label="Chọn số điểm cho đơn hàng">
-                          {[1, 2, 3, 4, 5].map((star) => <button key={star} type="button" aria-label={`${star} điểm`} aria-pressed={shopRatingValue === star} onClick={() => setShopRatingValue(star)} className="rounded-md p-1 transition hover:scale-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400">
-                            <Star className={`h-6 w-6 ${star <= shopRatingValue ? "fill-amber-400 text-amber-400" : "text-slate-300"}`} />
-                          </button>)}
-                          <span className="ml-1 text-xs font-semibold text-muted-foreground">{shopRatingValue}/5</span>
-                        </div>
-                        {shopRatingError && <p role="alert" className="mt-2 text-xs text-red-700">{shopRatingError}</p>}
-                        <div className="mt-2 flex gap-2">
-                          <button type="button" onClick={() => { setShopRatingOrderId(null); setShopRatingError(""); }} className="flex-1 rounded-xl border border-border bg-white py-2 text-sm font-semibold">Để sau</button>
-                          <button type="submit" disabled={shopRatingBusyId === order.id} className="flex flex-1 items-center justify-center gap-2 rounded-xl gt-gradient py-2 text-sm font-bold text-white disabled:opacity-50">
-                            <Send className="h-4 w-4" />{shopRatingBusyId === order.id ? "Đang gửi…" : "Gửi điểm"}
-                          </button>
-                        </div>
-                      </form>}
-                    </>}
-                  </div>}
                 </article>;
               })}
             </div>}

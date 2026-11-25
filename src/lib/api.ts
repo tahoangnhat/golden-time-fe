@@ -145,7 +145,7 @@ export type ApplicableVoucherItem = {
   applicable: boolean;
   reasonNotApplicable?: string | null;
 };
-export type OrderSummary = { id: number; shopId: number; shopName: string; status: string; total: number; paymentMethod: string; paymentStatus: string; createdAt: string; itemCount: number; trackingCode?: string | null; carrierStatus?: string | null; expectedDeliveryAt?: string | null; shopRating?: number | null };
+export type OrderSummary = { id: number; shopId: number; shopName: string; status: string; total: number; paymentMethod: string; paymentStatus: string; createdAt: string; itemCount: number; trackingCode?: string | null; carrierStatus?: string | null; expectedDeliveryAt?: string | null };
 export type ProductReviewItem = { id: number; productId: number; userId: number; authorName: string; rating: number; comment?: string | null; createdAt: string; orderId?: number | null };
 export type ProductRatingDistribution = { star: number; count: number };
 export type ProductReviewSummary = { ratingAvg: number; reviewCount: number; distribution: ProductRatingDistribution[]; reviews: ProductReviewItem[] };
@@ -374,10 +374,9 @@ export const api = {
   confirmOrderReceived: (id: number) => request<{ walletCredited: boolean }>(`/orders/${id}/confirm-received`, { method: "POST" }),
   cancelPayment: (id: number) => request<void>(`/orders/${id}/cancel-payment`, { method: "POST" }),
   orders: () => request<OrderSummary[]>("/orders/mine"),
-  rateOrder: (orderId: number, rating: number) => request<{ orderId: number; rating: number }>(`/orders/${orderId}/rating`, { method: "POST", body: JSON.stringify({ rating }) }),
   productReviews: (productId: number) => request<ProductReviewSummary>(`/products/${productId}/reviews`),
-  productReviewEligibility: (productId: number) => request<ProductReviewEligibility>(`/products/${productId}/review-eligibility`),
-  createProductReview: (productId: number, payload: { rating: number; comment?: string | null }) => request<ProductReviewResponse>(`/products/${productId}/reviews`, { method: "POST", body: JSON.stringify(payload) }),
+  productReviewEligibility: (productId: number, orderId?: number) => request<ProductReviewEligibility>(`/products/${productId}/review-eligibility${orderId ? `?orderId=${orderId}` : ""}`),
+  createProductReview: (productId: number, payload: { orderId: number; rating: number; comment?: string | null }) => request<ProductReviewResponse>(`/products/${productId}/reviews`, { method: "POST", body: JSON.stringify(payload) }),
   paymentMethods: () => request<PaymentMethods>("/payment-methods"),
   articles: (filters: { q?: string; category?: string } = {}) => request<Article[]>(`/articles?${query(filters)}`),
   article: (slug: string) => request<Article>(`/articles/${encodeURIComponent(slug)}`),
