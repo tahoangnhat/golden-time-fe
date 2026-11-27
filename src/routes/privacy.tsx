@@ -108,7 +108,8 @@ function PrivacyPage() {
           <section className={sectionClass}>
             <h2 className={headingClass}>6. Quyền và lựa chọn của bạn</h2>
             <ul className={listClass}>
-              <li>Bạn có thể yêu cầu xem, cập nhật hoặc xóa thông tin cá nhân bằng cách gửi email cho Golden Time.</li>
+              <li>Bạn có thể cập nhật hồ sơ trong Cài đặt. Để xóa tài khoản, gửi yêu cầu tại <a className="font-semibold text-primary underline underline-offset-4" href="/delete-account">trang yêu cầu xóa tài khoản</a> hoặc mở Cá nhân → Cài đặt → Xóa tài khoản trong app. Yêu cầu trên website cần xác nhận qua email đã đăng ký.</li>
+              <li>Khi xóa tài khoản, chúng tôi xóa thông tin hồ sơ, dữ liệu sức khỏe Premium, lịch sử quét, đánh giá, voucher, thông báo và dữ liệu Premium gắn với tài khoản. Một số dòng đơn hàng và số liệu giao dịch có thể được giữ ở dạng đã gỡ thông tin nhận hàng để đối soát, xử lý tranh chấp hoặc đáp ứng nghĩa vụ pháp lý.</li>
               <li>Nếu bạn đã lưu hồ sơ sức khỏe Premium trước đây, hãy liên hệ Golden Time qua email để yêu cầu xem, sửa hoặc xóa hồ sơ.</li>
               <li>Bạn có thể từ chối hoặc thu hồi quyền vị trí trong cài đặt của trình duyệt; tính năng tìm cửa hàng gần bạn khi đó có thể không hoạt động.</li>
               <li>Bạn có thể đăng xuất để kết thúc phiên trên thiết bị đang dùng. Dữ liệu giỏ hàng lưu trong trình duyệt có thể được xóa bằng cách xóa dữ liệu website của trình duyệt.</li>

@@ -107,6 +107,7 @@ export function SiteFooter() {
               <li key={n.label}><Link to={n.to} className="hover:text-white transition-colors">{n.label}</Link></li>
             ))}
             <li><Link to="/privacy" className="hover:text-white transition-colors">Chính sách quyền riêng tư</Link></li>
+            <li><Link to="/delete-account" className="hover:text-white transition-colors">Yêu cầu xóa tài khoản</Link></li>
           </ul>
         </div>
         <div>

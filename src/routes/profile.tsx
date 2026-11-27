@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { ChevronLeft, ChevronRight, History, Settings, LogOut, Save, UserRound, Phone, Mail, LoaderCircle, Ticket, Crown } from "lucide-react";
+import { ChevronLeft, ChevronRight, History, Settings, LogOut, Save, UserRound, Phone, Mail, LoaderCircle, Ticket, Crown, Trash2, AlertTriangle } from "lucide-react";
 import { useEffect, useState, type FormEvent } from "react";
 import { PhoneShell, StatusBar } from "@/components/PhoneShell";
 import { PremiumExperience } from "@/components/PremiumExperience";
@@ -37,6 +37,10 @@ function Profile() {
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState("");
   const [saveSuccess, setSaveSuccess] = useState("");
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [deletePassword, setDeletePassword] = useState("");
+  const [deleteBusy, setDeleteBusy] = useState(false);
+  const [deleteError, setDeleteError] = useState("");
   const [premium, setPremium] = useState<PremiumOverview | null>(null);
   const [premiumLoading, setPremiumLoading] = useState(true);
   const [premiumBusy, setPremiumBusy] = useState(false);
@@ -222,6 +226,22 @@ function Profile() {
     }
   }
 
+  async function deleteAccount(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setDeleteBusy(true);
+    setDeleteError("");
+    try {
+      await api.deleteMyAccount(deletePassword);
+      clearAuth();
+      setDeleteDialogOpen(false);
+      nav({ to: "/" });
+    } catch (cause) {
+      setDeleteError(cause instanceof Error ? cause.message : "Không thể xóa tài khoản. Vui lòng thử lại.");
+    } finally {
+      setDeleteBusy(false);
+    }
+  }
+
   const initials = user?.fullName.split(/\s+/).slice(-2).map((part) => part[0]).join("").toUpperCase() || "GT";
   const monthlyPrice = premium?.priceVnd ?? 0;
   const annualPrice = premium?.annualPriceVnd ?? 0;
@@ -270,6 +290,42 @@ function Profile() {
               {saving ? "Đang lưu…" : "Lưu thay đổi"}
             </button>
           </form>
+          <section className="mt-4 rounded-3xl border border-red-200 bg-white p-5 gt-shadow-soft">
+            <div className="flex items-start gap-3">
+              <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-red-50 text-red-600"><Trash2 className="h-5 w-5" /></span>
+              <div className="min-w-0 flex-1">
+                <h2 className="font-bold text-sm text-red-700">Xóa tài khoản</h2>
+                <p className="mt-1 text-xs leading-relaxed text-muted-foreground">Xóa thông tin cá nhân, hồ sơ sức khỏe, lịch sử quét và đánh giá. Thông tin người nhận trong đơn hàng sẽ được gỡ; số liệu giao dịch có thể được giữ ở dạng ẩn danh để đối soát.</p>
+                <button type="button" onClick={() => { setDeleteError(""); setDeletePassword(""); setDeleteDialogOpen(true); }} className="mt-3 inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-red-200 px-4 text-sm font-semibold text-red-700 transition hover:bg-red-50">
+                  <Trash2 className="h-4 w-4" /> Xóa tài khoản Golden Time
+                </button>
+                <a href="/delete-account" className="ml-3 inline-block py-2 text-xs font-semibold text-primary underline underline-offset-4">Yêu cầu xóa từ website</a>
+              </div>
+            </div>
+          </section>
+          {deleteDialogOpen && <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/45 p-5" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget && !deleteBusy) setDeleteDialogOpen(false); }}>
+            <form role="dialog" aria-modal="true" aria-labelledby="delete-account-title" onSubmit={deleteAccount} className="w-full max-w-md rounded-3xl bg-white p-5 shadow-2xl">
+              <div className="flex items-start gap-3">
+                <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-red-50 text-red-600"><AlertTriangle className="h-5 w-5" /></span>
+                <div>
+                  <h2 id="delete-account-title" className="font-extrabold text-lg">Xác nhận xóa tài khoản</h2>
+                  <p className="mt-1 text-sm leading-relaxed text-muted-foreground">Thao tác này không thể hoàn tác. Nhập mật khẩu hiện tại để xác nhận; bạn sẽ được đăng xuất sau khi xóa.</p>
+                </div>
+              </div>
+              <label className="mt-5 block text-sm font-semibold">
+                Mật khẩu hiện tại
+                <input type="password" required minLength={8} maxLength={128} autoComplete="current-password" value={deletePassword} onChange={(event) => setDeletePassword(event.target.value)} className="mt-1.5 h-11 w-full rounded-xl border border-border px-3 font-normal outline-none focus:border-red-400" />
+              </label>
+              {deleteError && <p role="alert" className="mt-3 rounded-xl border border-red-200 bg-red-50 px-3 py-2.5 text-sm text-red-700">{deleteError}</p>}
+              <div className="mt-5 flex gap-2">
+                <button type="button" onClick={() => setDeleteDialogOpen(false)} disabled={deleteBusy} className="h-11 flex-1 rounded-xl border border-border font-semibold text-sm disabled:opacity-50">Giữ tài khoản</button>
+                <button type="submit" disabled={deleteBusy} className="inline-flex h-11 flex-1 items-center justify-center gap-2 rounded-xl bg-red-600 font-bold text-sm text-white disabled:opacity-60">
+                  {deleteBusy ? <LoaderCircle className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
+                  {deleteBusy ? "Đang xóa…" : "Xóa tài khoản"}
+                </button>
+              </div>
+            </form>
+          </div>}
         </div>
       ) : (
       <div className="px-5">

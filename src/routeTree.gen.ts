@@ -16,6 +16,7 @@ import { Route as BusinessRouteImport } from './routes/business'
 import { Route as CartRouteImport } from './routes/cart'
 import { Route as CompareRouteImport } from './routes/compare'
 import { Route as ContactRouteImport } from './routes/contact'
+import { Route as DeleteAccountRouteImport } from './routes/delete-account'
 import { Route as DownloadRouteImport } from './routes/download'
 import { Route as HomeRouteImport } from './routes/home'
 import { Route as KnowledgeRouteImport } from './routes/knowledge'
@@ -60,6 +61,7 @@ import { Route as BusinessReviewsRouteImport } from './routes/business.reviews'
 import { Route as BusinessSupportRouteImport } from './routes/business.support'
 import { Route as BusinessTraceabilityRouteImport } from './routes/business.traceability'
 import { Route as BusinessWalletRouteImport } from './routes/business.wallet'
+import { Route as DeleteAccountConfirmRouteImport } from './routes/delete-account.confirm'
 import { Route as KnowledgeSlugRouteImport } from './routes/knowledge.$slug'
 import { Route as ShopIndexRouteImport } from './routes/shop.index'
 import { Route as ShopProductIdRouteImport } from './routes/shop.$productId'
@@ -98,6 +100,11 @@ const CompareRoute = CompareRouteImport.update({
 const ContactRoute = ContactRouteImport.update({
   id: '/contact',
   path: '/contact',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DeleteAccountRoute = DeleteAccountRouteImport.update({
+  id: '/delete-account',
+  path: '/delete-account',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DownloadRoute = DownloadRouteImport.update({
@@ -320,6 +327,11 @@ const BusinessWalletRoute = BusinessWalletRouteImport.update({
   path: '/wallet',
   getParentRoute: () => BusinessRoute,
 } as any)
+const DeleteAccountConfirmRoute = DeleteAccountConfirmRouteImport.update({
+  id: '/confirm',
+  path: '/confirm',
+  getParentRoute: () => DeleteAccountRoute,
+} as any)
 const KnowledgeSlugRoute = KnowledgeSlugRouteImport.update({
   id: '/$slug',
   path: '/$slug',
@@ -349,6 +361,7 @@ export interface FileRoutesByFullPath {
   '/cart': typeof CartRoute
   '/compare': typeof CompareRoute
   '/contact': typeof ContactRoute
+  '/delete-account': typeof DeleteAccountRouteWithChildren
   '/download': typeof DownloadRoute
   '/home': typeof HomeRoute
   '/knowledge': typeof KnowledgeRouteWithChildren
@@ -392,6 +405,7 @@ export interface FileRoutesByFullPath {
   '/business/support': typeof BusinessSupportRoute
   '/business/traceability': typeof BusinessTraceabilityRoute
   '/business/wallet': typeof BusinessWalletRoute
+  '/delete-account/confirm': typeof DeleteAccountConfirmRoute
   '/knowledge/$slug': typeof KnowledgeSlugRoute
   '/shop/$productId': typeof ShopProductIdRoute
   '/admin/': typeof AdminIndexRoute
@@ -405,6 +419,7 @@ export interface FileRoutesByTo {
   '/cart': typeof CartRoute
   '/compare': typeof CompareRoute
   '/contact': typeof ContactRoute
+  '/delete-account': typeof DeleteAccountRouteWithChildren
   '/download': typeof DownloadRoute
   '/home': typeof HomeRoute
   '/knowledge': typeof KnowledgeRouteWithChildren
@@ -447,6 +462,7 @@ export interface FileRoutesByTo {
   '/business/support': typeof BusinessSupportRoute
   '/business/traceability': typeof BusinessTraceabilityRoute
   '/business/wallet': typeof BusinessWalletRoute
+  '/delete-account/confirm': typeof DeleteAccountConfirmRoute
   '/knowledge/$slug': typeof KnowledgeSlugRoute
   '/shop/$productId': typeof ShopProductIdRoute
   '/admin': typeof AdminIndexRoute
@@ -462,6 +478,7 @@ export interface FileRoutesById {
   '/cart': typeof CartRoute
   '/compare': typeof CompareRoute
   '/contact': typeof ContactRoute
+  '/delete-account': typeof DeleteAccountRouteWithChildren
   '/download': typeof DownloadRoute
   '/home': typeof HomeRoute
   '/knowledge': typeof KnowledgeRouteWithChildren
@@ -505,6 +522,7 @@ export interface FileRoutesById {
   '/business/support': typeof BusinessSupportRoute
   '/business/traceability': typeof BusinessTraceabilityRoute
   '/business/wallet': typeof BusinessWalletRoute
+  '/delete-account/confirm': typeof DeleteAccountConfirmRoute
   '/knowledge/$slug': typeof KnowledgeSlugRoute
   '/shop/$productId': typeof ShopProductIdRoute
   '/admin/': typeof AdminIndexRoute
@@ -521,6 +539,7 @@ export interface FileRouteTypes {
     | '/cart'
     | '/compare'
     | '/contact'
+    | '/delete-account'
     | '/download'
     | '/home'
     | '/knowledge'
@@ -564,6 +583,7 @@ export interface FileRouteTypes {
     | '/business/support'
     | '/business/traceability'
     | '/business/wallet'
+    | '/delete-account/confirm'
     | '/knowledge/$slug'
     | '/shop/$productId'
     | '/admin/'
@@ -577,6 +597,7 @@ export interface FileRouteTypes {
     | '/cart'
     | '/compare'
     | '/contact'
+    | '/delete-account'
     | '/download'
     | '/home'
     | '/knowledge'
@@ -619,6 +640,7 @@ export interface FileRouteTypes {
     | '/business/support'
     | '/business/traceability'
     | '/business/wallet'
+    | '/delete-account/confirm'
     | '/knowledge/$slug'
     | '/shop/$productId'
     | '/admin'
@@ -633,6 +655,7 @@ export interface FileRouteTypes {
     | '/cart'
     | '/compare'
     | '/contact'
+    | '/delete-account'
     | '/download'
     | '/home'
     | '/knowledge'
@@ -676,6 +699,7 @@ export interface FileRouteTypes {
     | '/business/support'
     | '/business/traceability'
     | '/business/wallet'
+    | '/delete-account/confirm'
     | '/knowledge/$slug'
     | '/shop/$productId'
     | '/admin/'
@@ -691,6 +715,7 @@ export interface RootRouteChildren {
   CartRoute: typeof CartRoute
   CompareRoute: typeof CompareRoute
   ContactRoute: typeof ContactRoute
+  DeleteAccountRoute: typeof DeleteAccountRouteWithChildren
   DownloadRoute: typeof DownloadRoute
   HomeRoute: typeof HomeRoute
   KnowledgeRoute: typeof KnowledgeRouteWithChildren
@@ -757,6 +782,13 @@ declare module '@tanstack/react-router' {
       path: '/contact'
       fullPath: '/contact'
       preLoaderRoute: typeof ContactRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/delete-account': {
+      id: '/delete-account'
+      path: '/delete-account'
+      fullPath: '/delete-account'
+      preLoaderRoute: typeof DeleteAccountRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/download': {
@@ -1067,6 +1099,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof BusinessWalletRouteImport
       parentRoute: typeof BusinessRoute
     }
+    '/delete-account/confirm': {
+      id: '/delete-account/confirm'
+      path: '/confirm'
+      fullPath: '/delete-account/confirm'
+      preLoaderRoute: typeof DeleteAccountConfirmRouteImport
+      parentRoute: typeof DeleteAccountRoute
+    }
     '/knowledge/$slug': {
       id: '/knowledge/$slug'
       path: '/$slug'
@@ -1174,6 +1213,18 @@ const BusinessRouteWithChildren = BusinessRoute._addFileChildren(
   BusinessRouteChildren,
 )
 
+interface DeleteAccountRouteChildren {
+  DeleteAccountConfirmRoute: typeof DeleteAccountConfirmRoute
+}
+
+const DeleteAccountRouteChildren: DeleteAccountRouteChildren = {
+  DeleteAccountConfirmRoute: DeleteAccountConfirmRoute,
+}
+
+const DeleteAccountRouteWithChildren = DeleteAccountRoute._addFileChildren(
+  DeleteAccountRouteChildren,
+)
+
 interface KnowledgeRouteChildren {
   KnowledgeSlugRoute: typeof KnowledgeSlugRoute
 }
@@ -1208,6 +1259,7 @@ const rootRouteChildren: RootRouteChildren = {
   CartRoute: CartRoute,
   CompareRoute: CompareRoute,
   ContactRoute: ContactRoute,
+  DeleteAccountRoute: DeleteAccountRouteWithChildren,
   DownloadRoute: DownloadRoute,
   HomeRoute: HomeRoute,
   KnowledgeRoute: KnowledgeRouteWithChildren,
