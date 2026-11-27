@@ -399,7 +399,7 @@ function Profile() {
           </div>
         </section>
 
-        {user && <button onClick={() => { void logout(); nav({ to: "/" }); }} className="mt-4 w-full py-3 rounded-2xl bg-white border border-border font-semibold text-sm flex items-center justify-center gap-2 text-muted-foreground"><LogOut className="h-4 w-4" /> Đăng xuất</button>}
+        {user && <button onClick={() => { void logout(); nav({ to: "/app/login", replace: true }); }} className="mt-4 w-full py-3 rounded-2xl bg-white border border-border font-semibold text-sm flex items-center justify-center gap-2 text-muted-foreground"><LogOut className="h-4 w-4" /> Đăng xuất</button>}
         <p className="text-center text-[11px] text-muted-foreground mt-3">Golden Time</p>
         <div className="h-4" />
       </div>
