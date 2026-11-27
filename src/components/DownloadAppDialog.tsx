@@ -1,5 +1,5 @@
-import type { ReactElement } from "react";
-import { Apple, QrCode } from "lucide-react";
+import type { ReactElement, ReactNode } from "react";
+import { Apple, Download } from "lucide-react";
 import {
   Dialog,
   DialogClose,
@@ -12,8 +12,9 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 
-// Replace these placeholders with the published store URLs when they are available.
-export const ANDROID_APP_URL = "ANDROID_APP_URL";
+// This stable Play URL will continue to work after the app moves from internal
+// testing to public release. During testing, only invited tester accounts can install it.
+export const ANDROID_APP_URL = "https://play.google.com/store/apps/details?id=vn.goldentime.customer";
 export const IOS_APP_URL = "IOS_APP_URL";
 
 function isStoreUrl(url: string) {
@@ -77,23 +78,17 @@ export function DownloadAppDialog({
       <DialogContent className="max-h-[90dvh] max-w-md overflow-y-auto rounded-3xl border-border/70 p-6 sm:p-7">
         <DialogHeader className="items-center text-center sm:text-center">
           <div className="mb-2 grid h-12 w-12 place-items-center rounded-2xl gt-gradient text-white shadow-sm">
-            <QrCode className="h-6 w-6" />
+            <Download className="h-6 w-6" />
           </div>
           <DialogTitle className="text-xl font-bold tracking-tight">Tải ứng dụng Golden Time</DialogTitle>
           <DialogDescription className="max-w-sm text-sm leading-relaxed">
-            Quét mã QR bằng điện thoại hoặc chọn nền tảng của bạn.
+            Chọn Google Play để mở trang tải ứng dụng Golden Time trên Android.
           </DialogDescription>
         </DialogHeader>
 
-        <div className="flex flex-col items-center gap-3 py-1">
-          <div className="hidden h-48 w-48 flex-col items-center justify-center gap-3 rounded-3xl border border-dashed border-primary/30 bg-cream/70 text-primary sm:flex">
-            <QrCode className="h-14 w-14" strokeWidth={1.4} />
-            <span className="text-xs font-semibold">Mã QR sẽ được cập nhật</span>
-          </div>
-          <p className="hidden max-w-xs text-center text-xs leading-relaxed text-muted-foreground sm:block">
-            Mã QR sẽ hoạt động khi có liên kết tải ứng dụng chính thức.
-          </p>
-        </div>
+        <p className="rounded-2xl bg-cream/70 px-4 py-3 text-center text-xs leading-relaxed text-muted-foreground">
+          Ứng dụng hiện đang ở đợt thử nghiệm nội bộ. Bạn cần dùng tài khoản Google đã được thêm vào danh sách tester để cài đặt.
+        </p>
 
         <div className="grid gap-3 sm:grid-cols-2">
           <StoreOption label="Google Play" platform="Android" href={ANDROID_APP_URL}>
